@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TypSSc Elite — SSC 2026 Typing Exam Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#1a2744;--navy2:#22305a;--blue:#2563eb;--blue2:#3b82f6;
+  --gold:#f59e0b;--gold2:#fbbf24;--green:#16a34a;--red:#dc2626;
+  --bg:#f0f4f8;--white:#ffffff;--border:#d1d9e6;--text:#1e293b;
+  --muted:#64748b;--light:#e8edf5;
+}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:#e2e8f0;}
+::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:4px;}
+
+.screen{display:none;}
+.screen.active{display:flex;flex-direction:column;min-height:100vh;}
+
+/* ══════════ HOME SCREEN ══════════ */
+#home-screen{background:#f0f4f8;}
+.home-header{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
+  padding:0 40px;box-shadow:0 4px 20px rgba(26,39,68,0.35);
+  position:sticky;top:0;z-index:100;
+}
+.home-header-inner{
+  max-width:1300px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;height:68px;
+}
+.logo-home{display:flex;align-items:center;gap:14px;text-decoration:none;}
+.logo-badge{
+  background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);
+  width:44px;height:44px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:1.1rem;letter-spacing:-1px;
+  box-shadow:0 4px 12px rgba(245,158,11,0.4);flex-shrink:0;
+}
+.logo-name{color:#fff;font-size:1.4rem;font-weight:700;letter-spacing:-0.3px;}
+.logo-name span{color:var(--gold2);}
+.logo-tag{color:rgba(255,255,255,0.55);font-size:0.65rem;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;}
+.home-nav{display:flex;align-items:center;gap:8px;}
+.nav-btn{padding:8px 18px;border-radius:8px;font-size:0.8rem;font-weight:600;letter-spacing:0.5px;cursor:pointer;border:none;transition:.18s;}
+.nav-btn-ghost{background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);}
+.nav-btn-ghost:hover{background:rgba(255,255,255,0.2);}
+.nav-btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-weight:700;}
+.nav-btn-gold:hover{box-shadow:0 4px 15px rgba(245,158,11,0.45);transform:translateY(-1px);}
+
+.home-hero{
+  background:linear-gradient(135deg,var(--navy) 0%,#0f1f45 60%,#1a3060 100%);
+  padding:56px 40px 64px;text-align:center;position:relative;overflow:hidden;
+}
+.home-hero::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-title{font-size:2.8rem;font-weight:800;color:#fff;letter-spacing:-1px;line-height:1.1;position:relative;}
+.hero-title span{color:var(--gold2);}
+.hero-sub{color:rgba(255,255,255,0.7);font-size:1rem;margin-top:14px;max-width:580px;margin-left:auto;margin-right:auto;line-height:1.6;position:relative;}
+.hero-badges{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:24px;flex-wrap:wrap;position:relative;}
+.hero-badge{
+  background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);
+  color:rgba(255,255,255,0.85);border-radius:100px;padding:6px 16px;
+  font-size:0.75rem;font-weight:600;display:flex;align-items:center;gap:6px;
+}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--gold2);}
+
+.exams-section{max-width:1300px;margin:0 auto;padding:48px 40px;}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.section-title{font-size:1.3rem;font-weight:700;color:var(--navy);}
+.section-title span{color:var(--blue);}
+.exam-count-badge{background:var(--navy);color:#fff;padding:4px 14px;border-radius:100px;font-size:0.72rem;font-weight:700;letter-spacing:1px;}
+
+.cat-tabs{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;}
+.cat-tab{padding:8px 20px;border-radius:100px;font-size:0.78rem;font-weight:600;cursor:pointer;border:2px solid var(--border);background:var(--white);color:var(--muted);transition:.18s;}
+.cat-tab.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+.cat-tab:hover:not(.active){border-color:var(--navy);color:var(--navy);}
+
+.exam-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;}
+.exam-card{
+  background:var(--white);border:2px solid var(--border);border-radius:16px;padding:24px;
+  cursor:pointer;transition:.2s;position:relative;overflow:hidden;
+}
+.exam-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--navy),var(--blue2));
+  transform:scaleX(0);transform-origin:left;transition:.3s;
+}
+.exam-card:hover{border-color:var(--navy);box-shadow:0 8px 30px rgba(26,39,68,0.15);transform:translateY(-2px);}
+.exam-card:hover::before{transform:scaleX(1);}
+.exam-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.exam-org-logo{width:52px;height:52px;border-radius:10px;background:var(--light);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;}
+.exam-badges{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.badge-pill{padding:3px 10px;border-radius:100px;font-size:0.62rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.badge-free{background:#dcfce7;color:#166534;}
+.badge-central{background:#dbeafe;color:#1e40af;}
+.badge-state{background:#fef3c7;color:#92400e;}
+.badge-court{background:#ede9fe;color:#4c1d95;}
+.exam-card-name{font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:6px;line-height:1.3;}
+.exam-card-desc{font-size:0.75rem;color:var(--muted);line-height:1.5;margin-bottom:16px;}
+.exam-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;}
+.meta-item{background:var(--light);border-radius:8px;padding:8px 10px;}
+.meta-label{font-size:0.58rem;font-weight:600;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+.meta-val{font-size:0.85rem;font-weight:700;color:var(--navy);margin-top:2px;}
+.start-btn{
+  width:100%;padding:11px;background:linear-gradient(135deg,var(--navy),var(--navy2));
+  color:#fff;border:none;border-radius:10px;font-size:0.82rem;font-weight:700;letter-spacing:1px;
+  cursor:pointer;transition:.18s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.start-btn:hover{background:linear-gradient(135deg,var(--blue),var(--blue2));box-shadow:0 4px 15px rgba(37,99,235,0.4);}
+.exam-card.hidden{display:none;}
+
+/* ══════════ EXAM SCREEN ══════════ */
+#exam-screen{background:#e8edf5;flex-direction:column;}
+
+.exam-topbar{
+  background:linear-gradient(135deg,var(--navy),var(--navy2));
+  padding:0 24px;display:flex;align-items:center;justify-content:space-between;
+  height:56px;box-shadow:0 2px 12px rgba(26,39,68,0.4);flex-shrink:0;
+}
+.exam-logo-small{display:flex;align-items:center;gap:10px;}
+.exam-logo-small .lb{
+  background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);
+  width:34px;height:34px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:0.85rem;flex-shrink:0;
+}
+.exam-logo-small span{color:#fff;font-size:0.95rem;font-weight:700;}
+.exam-logo-small small{color:rgba(255,255,255,0.6);font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;}
+.exam-name-header{color:#fff;font-weight:700;font-size:1rem;text-align:center;}
+.exam-name-header small{display:block;font-size:0.65rem;font-weight:400;color:rgba(255,255,255,0.6);letter-spacing:2px;text-transform:uppercase;margin-top:1px;}
+.topbar-right{display:flex;align-items:center;gap:6px;}
+.topbar-btn{
+  padding:7px 14px;border-radius:7px;
+  font-size:0.72rem;font-weight:600;letter-spacing:.5px;cursor:pointer;border:none;transition:.18s;
+}
+.tb-back{background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.25);}
+.tb-back:hover{background:rgba(255,255,255,0.2);}
+.tb-restart{background:rgba(245,158,11,0.2);color:var(--gold2);border:1px solid rgba(245,158,11,0.35);}
+.tb-restart:hover{background:rgba(245,158,11,0.35);}
+.tb-pause{background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.25);}
+.tb-pause:hover{background:rgba(255,255,255,0.22);}
+.tb-submit{background:rgba(220,38,38,0.3);color:#fca5a5;border:1px solid rgba(220,38,38,0.45);}
+.tb-submit:hover{background:rgba(220,38,38,0.5);color:#fff;}
+
+.candidate-bar{
+  background:var(--white);border-bottom:2px solid var(--border);
+  padding:10px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.cand-info{font-size:0.78rem;color:var(--muted);}
+.cand-info strong{color:var(--navy);}
+.exam-instructions-inline{
+  font-size:0.7rem;color:#92400e;background:#fef3c7;border:1px solid #fde68a;
+  border-radius:6px;padding:4px 12px;font-weight:500;
+}
+
+.exam-body{flex:1;display:flex;gap:0;max-width:100%;overflow:hidden;}
+.exam-main{flex:1;display:flex;flex-direction:column;padding:20px 20px 20px 24px;gap:16px;overflow-y:auto;}
+
+/* Sidebar */
+.exam-sidebar{
+  width:290px;flex-shrink:0;background:var(--white);
+  border-left:2px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;
+}
+.sb-section{padding:16px 18px;border-bottom:1px solid var(--border);}
+.sb-label{font-size:0.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+
+/* Progress bar */
+.progress-outer{height:8px;background:#e2e8f0;border-radius:0;flex-shrink:0;}
+.progress-inner{height:100%;background:linear-gradient(90deg,#2563eb,#3b82f6);transition:width .5s ease;border-radius:0 4px 4px 0;}
+
+/* Start hint */
+.start-hint{
+  background:#eff6ff;border:2px solid #bfdbfe;border-radius:10px;padding:14px 20px;
+  font-size:0.82rem;color:#1e40af;font-weight:500;display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.start-hint .arrow{animation:bounceR 1.5s ease-in-out infinite;font-size:1.2rem;}
+@keyframes bounceR{0%,100%{transform:translateX(0);}50%{transform:translateX(6px);}}
+
+/* ── PASSAGE BOX ── */
+.passage-container{
+  background:var(--white);border:2px solid var(--border);border-radius:12px;
+  overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);
+}
+.passage-header{
+  background:var(--navy);padding:10px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.passage-title{color:#fff;font-size:0.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.passage-meta-pills{display:flex;gap:8px;align-items:center;}
+.p-pill{background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);padding:3px 10px;border-radius:100px;font-size:0.62rem;font-weight:600;}
+.passage-text-box{
+  padding:24px 28px;background:#fffef5;min-height:180px;
+  font-family:'Noto Sans','Inter',sans-serif;font-size:1.05rem;
+  line-height:2.1;letter-spacing:0.02em;word-break:break-word;
+  white-space:normal;text-align:justify;user-select:none;cursor:default;
+}
+.c{color:var(--text);}
+
+/* ── TYPING BOX (lower / main input area) ── */
+.typing-box-container{
+  background:var(--white);border:2px solid #bfdbfe;border-radius:12px;
+  overflow:hidden;box-shadow:0 2px 12px rgba(37,99,235,0.08);
+  transition:border-color .2s, box-shadow .2s;cursor:text;
+}
+.typing-box-container.focused{
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px rgba(37,99,235,0.12), 0 2px 12px rgba(37,99,235,0.1);
+}
+
+.typing-box-header{
+  background:linear-gradient(135deg,#1e3a8a,#1e40af);
+  padding:10px 18px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+}
+.typing-box-title{color:#fff;font-size:0.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.typing-box-controls{display:flex;align-items:center;gap:10px;}
+
+/* Error Hints Toggle */
+.toggle-wrap{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;}
+.toggle-label{color:rgba(255,255,255,0.75);font-size:0.65rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.toggle-switch{
+  width:38px;height:20px;background:rgba(255,255,255,0.2);border-radius:10px;
+  position:relative;cursor:pointer;transition:.25s;border:1px solid rgba(255,255,255,0.3);flex-shrink:0;
+}
+.toggle-switch.on{background:var(--gold);}
+.toggle-thumb{
+  width:14px;height:14px;background:#fff;border-radius:50%;
+  position:absolute;top:2px;left:2px;transition:.25s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle-switch.on .toggle-thumb{left:22px;}
+.toggle-state{
+  font-size:0.6rem;font-weight:700;letter-spacing:1px;
+  padding:2px 7px;border-radius:100px;min-width:28px;text-align:center;
+  background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);transition:.2s;
+}
+.toggle-state.active{background:var(--gold);color:var(--navy);}
+
+/* THE TYPING TEXT AREA */
+.typing-text-area{
+  padding:22px 28px;
+  min-height:160px;max-height:220px;
+  overflow-y:auto;
+  font-family:'Noto Sans','Inter',sans-serif;
+  font-size:1.05rem;line-height:2.1;letter-spacing:0.02em;
+  word-break:break-word;white-space:normal;text-align:justify;
+  background:#f8fbff;
+  position:relative;
+}
+.type-placeholder{
+  color:#94a3b8;font-style:italic;font-size:0.9rem;
+  font-family:'Inter',sans-serif;line-height:1.5;
+}
+/* Characters in typing area */
+.tc-neutral{color:var(--text);}           /* no hint mode */
+.tc-correct{color:#15803d;font-weight:500;}
+.tc-wrong{
+  color:#dc2626;font-weight:600;
+  background:#fee2e2;border-radius:2px;
+  text-decoration:underline;text-decoration-color:#dc2626;text-underline-offset:2px;
+}
+/* blinking cursor */
+.tc-cursor{
+  display:inline-block;width:2px;height:1.05em;
+  background:var(--blue);vertical-align:text-bottom;
+  animation:blink 1s step-end infinite;margin-left:1px;border-radius:1px;
+}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+
+/* Stats bar below typing area */
+.typing-stats-bar{
+  padding:9px 20px;background:#e0f2fe;border-top:1px solid #bae6fd;
+  display:flex;gap:0;align-items:center;flex-wrap:wrap;
+}
+.tsb-item{
+  display:flex;align-items:center;gap:5px;font-size:0.7rem;
+  padding:0 14px;border-right:1px solid #bae6fd;
+}
+.tsb-item:first-child{padding-left:4px;}
+.tsb-item:last-child{border-right:none;margin-left:auto;}
+.tsb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.tsb-dot.green{background:#16a34a;}
+.tsb-dot.red{background:#dc2626;}
+.tsb-dot.gray{background:#94a3b8;}
+.tsb-label{color:#0369a1;font-weight:500;}
+.tsb-val{font-weight:800;color:var(--navy);}
+.tsb-acc{font-weight:800;}
+
+/* Pause overlay */
+.pause-cover{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;
+  align-items:center;justify-content:center;flex-direction:column;gap:16px;
+}
+.pause-cover.show{display:flex;}
+.pause-box{background:var(--white);border-radius:20px;padding:40px 60px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.pause-icon{font-size:3rem;margin-bottom:10px;}
+.pause-title{font-size:1.8rem;font-weight:800;color:var(--navy);}
+.pause-sub{color:var(--muted);font-size:0.85rem;margin-top:6px;}
+.resume-btn{
+  margin-top:20px;padding:13px 36px;
+  background:linear-gradient(135deg,var(--navy),var(--navy2));
+  color:#fff;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;transition:.18s;
+}
+.resume-btn:hover{background:linear-gradient(135deg,var(--blue),var(--blue2));}
+
+/* ── SIDEBAR ── */
+.timer-display{background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:12px;padding:16px;text-align:center;margin-bottom:8px;}
+.timer-label{color:rgba(255,255,255,0.6);font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.timer-value{font-family:'JetBrains Mono',monospace;font-size:2.6rem;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;line-height:1;}
+.timer-value.warn{color:var(--gold2);}
+.timer-value.danger{color:#f87171;animation:timerPulse 1s ease-in-out infinite;}
+@keyframes timerPulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stat-box{background:var(--light);border:1px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;}
+.stat-lbl{font-size:0.58rem;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.stat-val{font-size:1.5rem;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.2;margin-top:3px;}
+.stat-val.green{color:var(--green);}
+.stat-val.red{color:var(--red);}
+.stat-val.blue{color:var(--blue);}
+
+.ks-progress{background:var(--light);border-radius:8px;overflow:hidden;height:10px;margin-top:8px;}
+.ks-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--blue2));transition:width .3s;border-radius:8px;}
+
+.passage-list{display:flex;flex-direction:column;gap:5px;max-height:280px;overflow-y:auto;}
+.passage-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:.15s;border:1.5px solid transparent;}
+.passage-row:hover{background:var(--light);}
+.passage-row.active{background:#eff6ff;border-color:#bfdbfe;}
+.p-num{width:24px;height:24px;border-radius:5px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;}
+.passage-row.active .p-num{background:var(--blue);}
+.p-text{font-size:0.72rem;color:var(--muted);white-space:normal;word-break:break-word;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.passage-row.active .p-text{color:var(--navy);}
+
+.rule-row{display:flex;gap:8px;align-items:flex-start;font-size:0.73rem;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--border);line-height:1.4;}
+.rule-row:last-child{border-bottom:none;}
+.rule-icon{font-size:0.9rem;flex-shrink:0;margin-top:1px;}
+
+/* ══════════ RESULTS MODAL ══════════ */
+.modal-bg{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:600;
+  align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;
+}
+.modal-bg.open{display:flex;}
+.result-modal{
+  background:var(--white);border-radius:20px;max-width:900px;width:100%;
+  box-shadow:0 24px 80px rgba(0,0,0,0.35);overflow:hidden;
+  animation:popIn .35s cubic-bezier(.34,1.56,.64,1);margin:auto;
+}
+@keyframes popIn{from{transform:scale(.9);opacity:0;}to{transform:scale(1);opacity:1;}}
+.result-header{
+  background:linear-gradient(135deg,var(--navy),var(--navy2));
+  padding:28px 32px;text-align:center;position:relative;overflow:hidden;
+}
+.result-header::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 70% 50%,rgba(245,158,11,0.15),transparent 60%);}
+.result-title{color:#fff;font-size:1.6rem;font-weight:800;position:relative;}
+.result-subtitle{color:rgba(255,255,255,0.7);font-size:0.8rem;margin-top:4px;position:relative;}
+.result-body{padding:28px 32px;}
+.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.r-card{border-radius:12px;padding:18px 12px;text-align:center;border:2px solid var(--border);background:var(--light);}
+.r-card.primary{background:#fff7ed;border-color:#fed7aa;}
+.r-lbl{font-size:0.58rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.r-val{font-size:2.4rem;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;}
+.r-val.orange{color:#ea580c;}
+.r-val.green{color:var(--green);}
+.r-val.amber{color:#d97706;}
+.r-val.red{color:var(--red);}
+
+.grade-row{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--light);border-radius:12px;padding:18px 24px;
+  margin-bottom:20px;flex-wrap:wrap;gap:16px;
+}
+.grade-big{font-size:4rem;font-weight:900;line-height:1;}
+.grade-info{font-size:0.7rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;}
+
+.result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.ra-btn{padding:13px 28px;border-radius:10px;font-size:0.82rem;font-weight:700;letter-spacing:.5px;cursor:pointer;border:none;transition:.18s;}
+.ra-primary{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;}
+.ra-primary:hover{background:linear-gradient(135deg,var(--blue),var(--blue2));}
+.ra-secondary{background:var(--light);color:var(--navy);border:2px solid var(--border);}
+.ra-secondary:hover{border-color:var(--navy);}
+#confetti-c{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+@keyframes fall{from{top:-5%;opacity:1;transform:rotate(0);}to{top:110%;opacity:0;transform:rotate(720deg) translateX(40px);}}
+
+/* ── COMPARISON SECTION ── */
+.comparison-section{margin-top:24px;border:2px solid var(--border);border-radius:14px;overflow:hidden;}
+.comparison-header{
+  background:linear-gradient(135deg,#1e3a5f,#1e40af);padding:12px 20px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+}
+.comparison-header-title{color:#fff;font-size:0.8rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.comparison-legend{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:0.65rem;font-weight:600;color:#fff;}
+.legend-dot{width:8px;height:8px;border-radius:50%;}
+.legend-dot.green{background:#16a34a;}
+.legend-dot.red{background:#dc2626;}
+.legend-dot.gray{background:#94a3b8;}
+
+.cmp-cols{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.cmp-col{padding:16px 20px;}
+.cmp-col:first-child{border-right:2px solid var(--border);background:#fffef5;}
+.cmp-col:last-child{background:#f0f9ff;}
+.cmp-col-title{font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.cmp-col:first-child .cmp-col-title{color:#92400e;}
+.cmp-col:last-child .cmp-col-title{color:#1e40af;}
+.cmp-text{font-family:'Noto Sans','Inter',sans-serif;font-size:0.9rem;line-height:2;word-break:break-word;text-align:justify;}
+
+.cmp-ok{color:#15803d;}
+.cmp-miss-orig{color:#b45309;background:#fef3c7;border-radius:2px;text-decoration:underline;text-decoration-color:#d97706;}
+.cmp-wrong-typed{color:#dc2626;background:#fee2e2;border-radius:2px;font-weight:700;text-decoration:underline;text-decoration-color:#dc2626;}
+.cmp-missing-typed{color:#94a3b8;font-style:italic;}
+.cmp-untyped{color:#94a3b8;}
+.cmp-extra-typed{color:#7c3aed;background:#ede9fe;border-radius:2px;}
+.cmp-extra-orig{color:#94a3b8;}
+
+.cmp-summary{
+  background:var(--light);border-top:2px solid var(--border);
+  padding:12px 20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;
+}
+.cmp-sum-badge{padding:3px 10px;border-radius:100px;font-size:0.68rem;font-weight:700;}
+.csb-green{background:#dcfce7;color:#166534;}
+.csb-red{background:#fee2e2;color:#991b1b;}
+.csb-amber{background:#fef3c7;color:#92400e;}
+.csb-blue{background:#dbeafe;color:#1e40af;}
+</style>
+</head>
+<body>
+
+<!-- HIDDEN INPUT — captures keystrokes, invisible to user -->
+<input type="text" id="type-input"
+  style="position:fixed;opacity:0;pointer-events:none;width:1px;height:1px;top:-100px;"
+  autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+<!-- ══════════════════════════════════════
+     SCREEN 1 — HOME
+══════════════════════════════════════ -->
+<div class="screen active" id="home-screen">
+  <header class="home-header">
+    <div class="home-header-inner">
+      <a class="logo-home" href="#">
+        <div class="logo-badge">T</div>
+        <div>
+          <div class="logo-name">TypSSc <span>Elite</span></div>
+          <div class="logo-tag">SSC · RRB · Court · State Exams</div>
+        </div>
+      </a>
+      <nav class="home-nav">
+        <button class="nav-btn nav-btn-ghost" onclick="showHistory()">📊 My History</button>
+        <button class="nav-btn nav-btn-gold">All Exams Free</button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="home-hero">
+    <div class="hero-title">India's Most Realistic<br><span>Typing Exam Simulator</span></div>
+    <div class="hero-sub">Practice with exact exam interfaces for SSC, RRB, Court, and State exams. Real rules, real scoring, real confidence.</div>
+    <div class="hero-badges">
+      <div class="hero-badge"><div class="dot"></div>15+ Exam Patterns</div>
+      <div class="hero-badge"><div class="dot"></div>Official Error Logic</div>
+      <div class="hero-badge"><div class="dot"></div>Real Exam Mode</div>
+      <div class="hero-badge"><div class="dot"></div>Error Hint Toggle</div>
+      <div class="hero-badge"><div class="dot"></div>Detailed Analysis</div>
+      <div class="hero-badge"><div class="dot"></div>Free Forever</div>
+    </div>
+  </div>
+
+  <div class="exams-section">
+    <div class="section-hdr">
+      <div class="section-title">Choose Your <span>Exam</span></div>
+      <div class="exam-count-badge">15 EXAMS AVAILABLE</div>
+    </div>
+    <div class="cat-tabs">
+      <div class="cat-tab active" onclick="filterExams('all',this)">All Exams</div>
+      <div class="cat-tab" onclick="filterExams('ssc',this)">SSC</div>
+      <div class="cat-tab" onclick="filterExams('rrb',this)">RRB / Railway</div>
+      <div class="cat-tab" onclick="filterExams('court',this)">High Court</div>
+      <div class="cat-tab" onclick="filterExams('central',this)">Central Govt</div>
+      <div class="cat-tab" onclick="filterExams('state',this)">State Exams</div>
+    </div>
+    <div class="exam-grid" id="exam-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 2 — EXAM TEST
+══════════════════════════════════════ -->
+<div class="screen" id="exam-screen">
+
+  <div class="exam-topbar">
+    <div class="exam-logo-small">
+      <div class="lb">T</div>
+      <div><span>TypSSc Elite</span><br><small>Exam Simulator 2026</small></div>
+    </div>
+    <div class="exam-name-header">
+      <span id="exam-screen-title">SSC CGL Tier-3 — Typing Test</span>
+      <small id="exam-screen-sub">Data Entry Speed Test (DEST)</small>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn tb-pause" id="btn-pause" style="display:none" onclick="togglePause()">⏸ Pause</button>
+      <button class="topbar-btn tb-submit" id="btn-submit" style="display:none" onclick="submitEarly()">✓ Submit</button>
+      <button class="topbar-btn tb-back" onclick="goHome()">← Back</button>
+      <button class="topbar-btn tb-restart" onclick="restartExam()">↺ Restart</button>
+    </div>
+  </div>
+
+  <div class="candidate-bar">
+    <div class="cand-info">
+      Exam: <strong id="cand-exam-name">SSC CGL Tier-3</strong> &nbsp;|&nbsp;
+      Passage: <strong id="cand-passage-num">1</strong> &nbsp;|&nbsp;
+      Target: <strong id="cand-target">2000 Key Depressions</strong> &nbsp;|&nbsp;
+      Duration: <strong id="cand-duration">15 Minutes</strong>
+    </div>
+    <div class="exam-instructions-inline" id="exam-inline-rule">
+      Min. Speed: 35 WPM (English) · Qualifying in Nature
+    </div>
+  </div>
+
+  <div class="progress-outer">
+    <div class="progress-inner" id="progress-bar" style="width:0%"></div>
+  </div>
+
+  <div class="exam-body">
+    <div class="exam-main">
+
+      <!-- Start hint -->
+      <div class="start-hint" id="start-hint">
+        <span class="arrow">▶</span>
+        <span><strong>Ready to begin?</strong> — Click anywhere in the typing box below and start typing. Timer starts with your first keystroke. Use the <strong>Error Hints</strong> toggle to show/hide colour feedback.</span>
+      </div>
+
+      <!-- LESSON / PASSAGE BOX -->
+      <div class="passage-container">
+        <div class="passage-header">
+          <span class="passage-title" id="passage-title-bar">Passage 1</span>
+          <div class="passage-meta-pills">
+            <span class="p-pill" id="p-chars">0 chars</span>
+            <span class="p-pill" id="p-words">0 words</span>
+          </div>
+        </div>
+        <div class="passage-text-box" id="display-area" onclick="focusInput()"></div>
+      </div>
+
+      <!-- TYPING BOX — where user types directly -->
+      <div class="typing-box-container" id="typing-box-container" onclick="focusInput()">
+        <div class="typing-box-header">
+          <div class="typing-box-title">
+            ⌨️ Type Here
+            <span style="color:rgba(255,255,255,0.45);font-weight:400;font-size:0.65rem;letter-spacing:0.5px;">— click and start typing</span>
+          </div>
+          <div class="typing-box-controls">
+            <div class="toggle-wrap" onclick="event.stopPropagation();toggleErrorHints()" title="Toggle colour feedback for correct/wrong characters">
+              <span class="toggle-label">Error Hints</span>
+              <div class="toggle-switch" id="error-toggle-sw">
+                <div class="toggle-thumb"></div>
+              </div>
+              <span class="toggle-state" id="error-toggle-state">OFF</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- The actual typing display area -->
+        <div class="typing-text-area" id="typing-text-area" onclick="focusInput()">
+          <span class="type-placeholder" id="type-placeholder">Click here and start typing the passage above…</span>
+        </div>
+
+        <!-- Stats bar (always shown, content changes with toggle) -->
+        <div class="typing-stats-bar" id="typing-stats-bar">
+          <div class="tsb-item">
+            <div class="tsb-dot gray"></div>
+            <span class="tsb-label">Typed:</span>
+            <span class="tsb-val" id="tsb-typed">0</span>
+          </div>
+          <div class="tsb-item" id="tsb-correct-wrap">
+            <div class="tsb-dot green"></div>
+            <span class="tsb-label">Correct:</span>
+            <span class="tsb-val" id="tsb-correct">0</span>
+          </div>
+          <div class="tsb-item" id="tsb-wrong-wrap">
+            <div class="tsb-dot red"></div>
+            <span class="tsb-label">Wrong:</span>
+            <span class="tsb-val" id="tsb-wrong">0</span>
+          </div>
+          <div class="tsb-item">
+            <div class="tsb-dot gray"></div>
+            <span class="tsb-label">Remaining:</span>
+            <span class="tsb-val" id="tsb-remaining">0</span>
+          </div>
+          <div class="tsb-item" id="tsb-acc-wrap">
+            <span class="tsb-label">Accuracy:</span>
+            <span class="tsb-acc" id="tsb-acc" style="color:var(--green);">100%</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /exam-main -->
+
+    <!-- Sidebar -->
+    <div class="exam-sidebar">
+      <div class="sb-section">
+        <div class="sb-label">Time Remaining</div>
+        <div class="timer-display">
+          <div class="timer-label">Time Left</div>
+          <div class="timer-value" id="timer-val">15:00</div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-label">Live Performance</div>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-lbl">Gross WPM</div>
+            <div class="stat-val blue" id="s-gross">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">Net WPM</div>
+            <div class="stat-val" id="s-net">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">Accuracy</div>
+            <div class="stat-val green" id="s-acc">100%</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-lbl">Errors</div>
+            <div class="stat-val red" id="s-err">0</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--muted);margin-bottom:4px;">
+            <span>Keystrokes</span>
+            <span id="s-keys">0 / <span id="s-target">2000</span></span>
+          </div>
+          <div class="ks-progress"><div class="ks-fill" id="ks-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="sb-section" style="flex:1">
+        <div class="sb-label">Passages</div>
+        <div class="passage-list" id="sidebar-passage-list"></div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-label">Exam Rules</div>
+        <div id="exam-rules-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pause overlay -->
+<div class="pause-cover" id="pause-cover">
+  <div class="pause-box">
+    <div class="pause-icon">⏸</div>
+    <div class="pause-title">Test Paused</div>
+    <div class="pause-sub">Press ESC or click Resume to continue</div>
+    <button class="resume-btn" onclick="togglePause()">▶ Resume Test</button>
+  </div>
+</div>
+
+<!-- Results modal -->
+<div class="modal-bg" id="modal-result" onclick="if(event.target===this)closeResult()">
+  <div class="result-modal">
+    <div class="result-header">
+      <div id="confetti-c"></div>
+      <div class="result-title">📋 Performance Report</div>
+      <div class="result-subtitle" id="r-exam-name">SSC CGL Tier-3 — Typing Test</div>
+    </div>
+    <div class="result-body">
+      <div class="result-grid">
+        <div class="r-card primary">
+          <div class="r-lbl">Net WPM</div>
+          <div class="r-val orange" id="r-net">0</div>
+        </div>
+        <div class="r-card">
+          <div class="r-lbl">Accuracy</div>
+          <div class="r-val green" id="r-acc">—</div>
+        </div>
+        <div class="r-card">
+          <div class="r-lbl">Half Mistakes</div>
+          <div class="r-val amber" id="r-half">0</div>
+        </div>
+        <div class="r-card">
+          <div class="r-lbl">Full Mistakes</div>
+          <div class="r-val red" id="r-full">0</div>
+        </div>
+      </div>
+      <div class="grade-row">
+        <div>
+          <div class="grade-big" id="r-grade" style="color:#16a34a">A+</div>
+          <div class="grade-info">Grade · Qualifying Status</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:0.65rem;color:var(--muted);margin-bottom:2px;">Keystrokes Typed</div>
+          <div style="font-size:1.8rem;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums;" id="r-keys">0</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:0.65rem;color:var(--muted);margin-bottom:2px;">Estimated Rank</div>
+          <div style="font-size:1.8rem;font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums;" id="r-rank">#—</div>
+        </div>
+      </div>
+
+      <!-- ERROR COMPARISON -->
+      <div class="comparison-section">
+        <div class="comparison-header">
+          <div class="comparison-header-title">🔍 Original vs Your Typing — Error Analysis</div>
+          <div class="comparison-legend">
+            <div class="legend-item"><div class="legend-dot green"></div>Correct</div>
+            <div class="legend-item"><div class="legend-dot red"></div>Wrong</div>
+            <div class="legend-item"><div class="legend-dot gray"></div>Not typed</div>
+          </div>
+        </div>
+        <div class="cmp-cols">
+          <div class="cmp-col">
+            <div class="cmp-col-title">📖 Original Passage</div>
+            <div class="cmp-text" id="r-original">—</div>
+          </div>
+          <div class="cmp-col">
+            <div class="cmp-col-title">⌨️ Your Typed Text</div>
+            <div class="cmp-text" id="r-typed">—</div>
+          </div>
+        </div>
+        <div class="cmp-summary">
+          <span style="font-size:0.7rem;color:var(--muted);font-weight:500;">Summary:</span>
+          <span class="cmp-sum-badge csb-green" id="cmp-correct-count">0 correct</span>
+          <span class="cmp-sum-badge csb-red" id="cmp-wrong-count">0 wrong</span>
+          <span class="cmp-sum-badge csb-amber" id="cmp-missed-count">0 not typed</span>
+          <span class="cmp-sum-badge csb-blue" style="margin-left:auto;" id="cmp-accuracy-badge">Char Accuracy: —</span>
+        </div>
+      </div>
+
+      <div class="result-actions" style="margin-top:20px;">
+        <button class="ra-btn ra-primary" onclick="saveAndRestart()">Save & New Test</button>
+        <button class="ra-btn ra-secondary" onclick="closeResult();showHistory()">View History</button>
+        <button class="ra-btn ra-secondary" onclick="goHome()">← Exam List</button>
+      </div>
+      <div style="text-align:center;font-size:0.65rem;color:var(--muted);margin-top:16px;">
+        Official SSC half/full mistake scoring logic applied · TypSSc Elite 2026
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- History modal -->
+<div class="modal-bg" id="modal-history" onclick="if(event.target===this)closeHistory()">
+  <div class="result-modal" style="max-width:580px;">
+    <div class="result-header" style="padding:20px 28px;">
+      <div class="result-title" style="font-size:1.3rem;">My Test History</div>
+    </div>
+    <div style="padding:20px 28px;max-height:70vh;overflow-y:auto;" id="history-list"></div>
+    <div style="padding:0 28px 20px;text-align:center;">
+      <button class="ra-btn ra-secondary" onclick="closeHistory()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  EXAM DATABASE
+// ══════════════════════════════════════════════════════════════
+const EXAMS = [
+  {
+    id:'ssc_cgl', cat:'ssc', name:'SSC CGL Tier-3 (DEST)', org:'SSC', logo:'🏛️',
+    badge:'Central Govt', badgeClass:'badge-central',
+    desc:'Data Entry Speed Test for SSC CGL. Mandatory qualifying test for Tax Assistant, DEO posts.',
+    time:15*60, keys:2000, wpm:35, shortName:'SSC CGL Tier-3', testName:'Data Entry Speed Test (DEST)',
+    inlineRule:'Min. Speed: 35 WPM (English) · Qualifying in Nature',
+    rules:['📝 ~2000 key depressions in 15 minutes','🎯 Minimum 35 WPM for English typing','⚠️ Half Mistake: Wrong word typed (−0.5)','❌ Full Mistake: Extra/omitted word (−1)','✅ Qualifying in nature — no marks awarded','🖥️ Conducted via SSC-NIC software','🔤 Only English passage allowed','⌫ Backspace allowed within same word only']
+  },
+  {
+    id:'ssc_chsl', cat:'ssc', name:'SSC CHSL Typing Test', org:'SSC', logo:'🏛️',
+    badge:'Central Govt', badgeClass:'badge-central',
+    desc:'Typing test for LDC/JSA posts. 10-minute test, qualifying in nature.',
+    time:10*60, keys:1750, wpm:35, shortName:'SSC CHSL', testName:'LDC / JSA Typing Test',
+    inlineRule:'Min. Speed: 35 WPM (English) · 10 min · Qualifying',
+    rules:['📝 ~1750 key depressions in 10 minutes','🎯 Minimum 35 WPM for English typing','🎯 Minimum 30 WPM for Hindi typing','⚠️ Half Mistake: Wrong word (−0.5)','❌ Full Mistake: Extra/omitted word (−1)','✅ Qualifying test — no marks awarded','🔤 English/Hindi passage as chosen during form','📋 Text passage visible on screen throughout']
+  },
+  {
+    id:'rrb_ntpc', cat:'rrb', name:'RRB NTPC Typing Test', org:'RRB', logo:'🚂',
+    badge:'Railway', badgeClass:'badge-central',
+    desc:'Computer Based Typing Skill Test for Junior Clerk/Time Keeper posts.',
+    time:10*60, keys:1500, wpm:30, shortName:'RRB NTPC', testName:'Typing Skill Test (TST)',
+    inlineRule:'Min. Speed: 30 WPM (English) · CBST',
+    rules:['📝 Minimum 30 WPM in English typing','⏱️ Duration: 10 minutes','🎯 Computer Based Typing Skill Test','⚠️ Error tolerance: max 5% of total keys','❌ More than 5% errors = disqualification','✅ Qualifying in nature for shortlisted candidates','🖥️ Conducted at Railway CBT centres','🔤 English passage only']
+  },
+  {
+    id:'dsssb_jsa', cat:'central', name:'DSSSB JSA Typing Test', org:'DSSSB', logo:'🗺️',
+    badge:'Central Govt', badgeClass:'badge-central',
+    desc:'Junior Secretariat Assistant typing test for Delhi Government posts.',
+    time:10*60, keys:1500, wpm:35, shortName:'DSSSB JSA', testName:'Junior Secretariat Assistant Test',
+    inlineRule:'Min. Speed: 35 WPM · DSSSB Pattern',
+    rules:['📝 35 WPM minimum in English typing','⏱️ Duration: 10 minutes','✅ Qualifying test for JSA posts','⚠️ Standard SSC error deduction rules apply','🖥️ Online computer-based test']
+  },
+  {
+    id:'hc_assistant', cat:'court', name:'High Court Assistant Typing', org:'HC', logo:'⚖️',
+    badge:'Court', badgeClass:'badge-court',
+    desc:'Typing test for High Court Junior Assistant / Steno posts.',
+    time:10*60, keys:1500, wpm:35, shortName:'HC Assistant', testName:'Court Typing Test',
+    inlineRule:'Min. Speed: 35 WPM · High Court Pattern',
+    rules:['📝 Minimum 35 WPM English or Hindi','⏱️ Duration: 10 minutes','⚠️ 5 minutes Hindi + 5 minutes English (some HCs)','❌ Each uncorrected error: 1 mark deducted','✅ Qualifying test for shortlisted candidates','🖥️ Conducted at authorised CBT centres']
+  },
+  {
+    id:'ssc_mts', cat:'ssc', name:'SSC MTS DEST Test', org:'SSC', logo:'🏛️',
+    badge:'Central Govt', badgeClass:'badge-central',
+    desc:'Data Entry Speed Test for Multi-Tasking Staff (Havaldar) posts.',
+    time:15*60, keys:2000, wpm:27, shortName:'SSC MTS DEST', testName:'DEST — Havaldar Selection',
+    inlineRule:'Min. Speed: 27 WPM · MTS (Havaldar) Pattern',
+    rules:['📝 ~2000 key depressions in 15 minutes','🎯 Minimum 27 WPM English typing','⚠️ Same half/full mistake rules as SSC CGL','✅ Qualifying — lower speed threshold for MTS','🖥️ NIC-based DEST software']
+  },
+  {
+    id:'ibps_clerk', cat:'central', name:'IBPS Clerk Typing Test', org:'IBPS', logo:'🏦',
+    badge:'Central Govt', badgeClass:'badge-central',
+    desc:'Clerical typing test for public sector bank recruitment.',
+    time:10*60, keys:1500, wpm:32, shortName:'IBPS Clerk', testName:'Bank Clerical Typing Test',
+    inlineRule:'Min. Speed: 32 WPM · IBPS Bank Pattern',
+    rules:['📝 Minimum 32 WPM English typing','⏱️ Duration: 10 minutes','✅ Qualifying round for clerical posts','⚠️ Bank-specific error scoring norms','🔤 English passage only']
+  },
+  {
+    id:'sbi_clerk', cat:'central', name:'SBI Clerk Typing Test', org:'SBI', logo:'🏦',
+    badge:'Central Govt', badgeClass:'badge-central',
+    desc:'State Bank of India Junior Associate typing skill test.',
+    time:10*60, keys:1600, wpm:32, shortName:'SBI Clerk', testName:'Junior Associate Typing Test',
+    inlineRule:'Min. Speed: 32 WPM · SBI JA Pattern',
+    rules:['📝 32 WPM minimum English typing','⏱️ Duration: 10 minutes','✅ Qualifying for Junior Associate posts','⚠️ SBI specific accuracy norms']
+  },
+  {
+    id:'up_lekhpal', cat:'state', name:'UP Lekhpal Typing Test', org:'UP', logo:'🏛️',
+    badge:'State Exam', badgeClass:'badge-state',
+    desc:'Uttar Pradesh Lekhpal Computer typing qualification test.',
+    time:10*60, keys:1500, wpm:25, shortName:'UP Lekhpal', testName:'Lekhpal Typing Test — UP',
+    inlineRule:'Min. Speed: 25 WPM · UP Lekhpal Pattern',
+    rules:['📝 25 WPM minimum in Hindi/English','⏱️ Duration: 10 minutes','✅ Qualifying in nature','⚠️ UP Board of Revenue specific norms']
+  },
+  {
+    id:'rrb_group_d', cat:'rrb', name:'RRB Group D Typing Test', org:'RRB', logo:'🚂',
+    badge:'Railway', badgeClass:'badge-central',
+    desc:'Typing skill test for various Group D railway posts requiring computer proficiency.',
+    time:10*60, keys:1400, wpm:28, shortName:'RRB Group D', testName:'Railway Group D Typing',
+    inlineRule:'Min. Speed: 28 WPM · RRB Group D Pattern',
+    rules:['📝 28 WPM minimum English/Hindi typing','⏱️ Duration: 10 minutes','🖥️ CBT-based typing test at Railway centres','✅ Qualifying for applicable posts']
+  },
+  {
+    id:'ssc_gd', cat:'ssc', name:'SSC GD Constable DEST', org:'SSC', logo:'🏛️',
+    badge:'Central Govt', badgeClass:'badge-central',
+    desc:'Data Entry Speed Test for SSC GD Constable (Ministerial) posts.',
+    time:15*60, keys:2000, wpm:35, shortName:'SSC GD DEST', testName:'GD Constable DEST',
+    inlineRule:'Min. Speed: 35 WPM · SSC GD Ministerial',
+    rules:['📝 ~2000 key depressions in 15 minutes','🎯 35 WPM minimum for ministerial posts','⚠️ Standard SSC half/full error scoring','✅ Qualifying for constable ministerial category']
+  },
+  {
+    id:'raj_patwari', cat:'state', name:'Rajasthan Patwari Typing', org:'RSMSSB', logo:'🏛️',
+    badge:'State Exam', badgeClass:'badge-state',
+    desc:'Rajasthan Patwari typing proficiency test in Hindi and English.',
+    time:10*60, keys:1500, wpm:30, shortName:'Raj Patwari', testName:'Patwari Typing Test — Rajasthan',
+    inlineRule:'Min. Speed: 30 WPM · Rajasthan Patwari',
+    rules:['📝 30 WPM minimum Hindi/English','⏱️ Duration: 10 minutes','✅ Qualifying for Patwari posts','⚠️ Rajasthan Board specific error deduction rules']
+  },
+  {
+    id:'rssb_ldc', cat:'state', name:'RSSB LDC Typing Test', org:'RSSB', logo:'🏛️',
+    badge:'State Exam', badgeClass:'badge-state',
+    desc:'Rajasthan Subordinate Services LDC typing test.',
+    time:10*60, keys:1500, wpm:30, shortName:'RSSB LDC', testName:'Typing Test — Rajasthan',
+    inlineRule:'Min. Speed: 30 WPM · RSSB Rajasthan',
+    rules:['📝 30 WPM minimum in English/Hindi','⏱️ Duration: 10 minutes','✅ Qualifying in nature','⚠️ Rajasthan State error deduction rules']
+  },
+  {
+    id:'mp_cpct', cat:'state', name:'MP CPCT Typing Test', org:'MP', logo:'🏛️',
+    badge:'State Exam', badgeClass:'badge-state',
+    desc:'Computer Proficiency Certification Test for Madhya Pradesh government jobs.',
+    time:15*60, keys:1800, wpm:30, shortName:'MP CPCT', testName:'Computer Proficiency Certification Test',
+    inlineRule:'Min. Speed: 30 WPM · MP CPCT Pattern',
+    rules:['📝 Minimum 30 WPM in English or Hindi','⏱️ Duration: 15 minutes','🎯 CPCT certification issued on passing','⚠️ MP State specific accuracy norms','🖥️ Conducted at CPCT authorised centres, MP']
+  },
+  {
+    id:'jharkhand_jsa', cat:'state', name:'Jharkhand JSA Typing Test', org:'JPSC', logo:'🏛️',
+    badge:'State Exam', badgeClass:'badge-state',
+    desc:'Junior Secretariat Assistant typing test for Jharkhand state government.',
+    time:10*60, keys:1500, wpm:30, shortName:'Jharkhand JSA', testName:'JSA Typing Test — Jharkhand',
+    inlineRule:'Min. Speed: 30 WPM · Jharkhand JSA Pattern',
+    rules:['📝 30 WPM minimum in English/Hindi','⏱️ Duration: 10 minutes','✅ Qualifying for JSA posts','⚠️ JPSC error deduction norms apply']
+  },
+];
+
+// ══════════════════════════════════════════════════════════════
+//  PASSAGES
+// ══════════════════════════════════════════════════════════════
+const PASSAGES = {
+  ssc_cgl:[
+    "The Reserve Bank of India is the central banking institution of India, which controls the monetary policy of the Indian rupee. It was established on April 1, 1935 in accordance with the provisions of the Reserve Bank of India Act, 1934. The central office of the Reserve Bank has been in Mumbai since 1937. Though originally privately owned, the RBI has been fully owned by the Government of India since its nationalization in 1949. The Reserve Bank of India was founded following the recommendations of the 1926 Royal Commission on Indian Currency and Finance, also known as the Hilton Young Commission. It plays a vital role in regulating the banking sector, managing foreign exchange reserves, and issuing currency notes. The RBI also acts as the banker to the government and implements various financial inclusion schemes across rural and urban India.",
+    "The Indian Constitution is the supreme law of India. It lays down the framework that demarcates fundamental political code, structure, procedures, powers, and duties of government institutions and sets out fundamental rights, directive principles, and the duties of citizens. It was drafted by the Constituent Assembly of India, led by Dr B R Ambedkar, with assistance of other eminent members. The Constitution was adopted on 26 November 1949 and became effective on 26 January 1950. India celebrates its Constitution Day on 26 November every year to promote constitutional values among its citizens and to remember the efforts of the framers. The document guarantees equality, liberty, and justice to all citizens and has been amended several times to meet the changing needs of society while preserving its basic structure.",
+    "The Indian space program is one of the most ambitious in the world. The Indian Space Research Organisation, or ISRO, was founded in 1969 and has achieved numerous milestones including launching satellites, sending probes to the Moon and Mars. The Chandrayaan missions have provided invaluable data about the lunar surface. India became the first country to land near the lunar south pole with Chandrayaan-3 in 2023. ISRO has also contributed to telecommunications and weather forecasting services within India. The future of India's space program looks bright with planned human spaceflight missions under the Gaganyaan project. These achievements have placed India among the leading space-faring nations and inspired millions of young scientists and engineers.",
+    "Artificial intelligence and machine learning are transforming every sector of the global economy. In India, startups and large corporations alike are investing heavily in these technologies to improve efficiency and create new products. The government has launched several initiatives to promote artificial intelligence research and development. Educational institutions are now including AI-related subjects in their curriculum to prepare students for the jobs of tomorrow. India has a large pool of talented software engineers who are contributing significantly to global AI research. The National AI Strategy aims to position India as a hub for responsible AI innovation while ensuring ethical use and data privacy for citizens.",
+    "The Goods and Services Tax or GST is an indirect tax used in India on the supply of goods and services. It is a comprehensive, multistage, destination-based tax that is levied on every value addition. GST was introduced in India on 1 July 2017 through the implementation of the One Hundred and First Amendment of the Constitution of India by the Indian government. The GST replaced existing multiple cascading taxes levied by the central and state governments. It was introduced as the Constitution Amendment Bill by the Finance Minister Arun Jaitley in 2014. The GST Council is the apex member committee to modify, reconcile or to procure any law or regulation based on the context of goods and services tax in India. This unified tax system has simplified compliance and boosted economic integration across states.",
+    "The Union Budget of India is the annual financial statement of the Government of India. It is presented by the Finance Minister in Parliament every year. The budget outlines the government's revenue and expenditure plans for the coming financial year. It includes allocations for various sectors such as agriculture, infrastructure, health, education, and defence. Recent budgets have emphasised self-reliance through the Atmanirbhar Bharat campaign, promoting domestic manufacturing and reducing dependence on imports. The budget also focuses on digital economy, renewable energy, and skill development programs to create employment opportunities for the youth. Fiscal discipline and inclusive growth remain the core objectives of every Union Budget.",
+    "India's education system has undergone significant transformation since independence. From a literacy rate of around 18 percent in 1947 to over 77 percent today, the country has made remarkable progress. The Right to Education Act 2009 made elementary education a fundamental right for children aged 6 to 14 years. The National Education Policy 2020 aims to overhaul the system by promoting multidisciplinary learning, vocational education, and technology integration. Higher education institutions like IITs, IIMs, and AIIMS have gained global recognition. Digital initiatives such as SWAYAM and DIKSHA have made quality education accessible to students in remote areas.",
+    "Environmental conservation is a major priority for the Indian government. Climate change, deforestation, and pollution pose serious challenges to sustainable development. The National Clean Air Programme, Namami Gange project, and renewable energy targets demonstrate India's commitment to a greener future. India has pledged to achieve net zero emissions by 2070 and has already installed substantial solar and wind power capacity. Community participation through schemes like Swachh Bharat Mission has improved sanitation and waste management across the country.",
+    "The Digital India programme was launched in 2015 to transform India into a digitally empowered society. It focuses on three pillars: digital infrastructure, digital literacy, and digital service delivery. Initiatives like Aadhaar, UPI, and BHIM have revolutionised payments and identity verification. Over 1.4 billion Aadhaar numbers have been issued, enabling direct benefit transfers and reducing leakages in welfare schemes. The programme has bridged the digital divide and empowered citizens with access to government services at their fingertips.",
+    "Agriculture remains the backbone of the Indian economy, employing nearly half of the workforce. The Green Revolution in the 1960s dramatically increased food production. Today, the government supports farmers through minimum support prices, crop insurance, and soil health cards. The PM-KISAN scheme provides direct income support to small and marginal farmers. Organic farming and micro-irrigation are being promoted to ensure sustainable agricultural practices and higher productivity.",
+    "India's healthcare system has expanded rapidly with the launch of Ayushman Bharat. The scheme provides health insurance coverage of up to five lakh rupees per family per year to over 500 million people. The country has also made strides in vaccination drives and maternal and child health programmes. Telemedicine and digital health records are improving access to quality care even in remote regions.",
+    "Infrastructure development is a key focus area for economic growth. The government has invested heavily in roads, railways, airports, and ports under schemes like Bharatmala, Sagarmala, and Gati Shakti. High-speed rail corridors and the expansion of the national highway network have improved connectivity and reduced travel time across the country.",
+    "India's foreign policy is guided by the principles of non-alignment and strategic autonomy. The country plays an active role in global forums like the United Nations, G20, and BRICS. Neighbourhood-first policy and Act East policy strengthen ties with immediate neighbours and Southeast Asian nations. Economic diplomacy and cultural exchanges continue to enhance India's global footprint.",
+    "Sports in India have gained tremendous popularity with achievements in cricket, hockey, badminton, and wrestling. The Khelo India programme encourages grassroots talent development. Hosting major international events like the Commonwealth Games has boosted sports infrastructure and inspired a new generation of athletes.",
+    "India's rich cultural heritage is reflected in its festivals, languages, and traditions. From Diwali and Eid to Holi and Christmas, the country celebrates diversity with unity. The government promotes cultural tourism and preserves historical monuments under the Swadesh Darshan scheme, making India a preferred destination for global travellers."
+  ],
+  ssc_chsl:[
+    "Digital India is a campaign launched by the Government of India to ensure that government services are made available to citizens electronically by improved online infrastructure and by increasing Internet connectivity or by making the country digitally empowered in the field of technology. The initiative was launched on July 2, 2015 by Prime Minister Narendra Modi. The vision of Digital India programme is inclusive growth in areas of electronic services, products, manufacturing and job opportunities. It also serves as an umbrella programme for many existing schemes which will be revamped and recalibrated to realise the idea of digital India. The programme has transformed governance by enabling paperless services and real-time monitoring of projects.",
+    "The National Health Mission was launched by the Government of India to address the health needs of under-served rural areas. The main programmatic components include Health System Strengthening in rural and urban areas, Reproductive and Child Health Programme, and Disease Control Programmes for controlling and eliminating communicable diseases. The mission aims to attain universal access to equitable, affordable and quality health care services that are accountable and responsive to people's needs. The flagship schemes under NHM include Janani Suraksha Yojana, Pradhan Mantri Matru Vandana Yojana and various immunization programs for children. It has significantly reduced maternal and infant mortality rates across the country.",
+    "The Pradhan Mantri Awaas Yojana is a credit-linked subsidy scheme by the Ministry of Housing and Urban Affairs. It was launched in June 2015 with the intent of providing affordable housing to the urban poor by the year 2022. The scheme is implemented through Credit Linked Subsidy Scheme, Affordable Housing in Partnership, Beneficiary-Led Construction and In-Situ Slum Redevelopment. The scheme offers central assistance to implementing agencies through states, union territories and central nodal agencies for providing houses to all eligible families and beneficiaries. More than one crore houses have been sanctioned under this flagship government scheme, improving living conditions for millions of citizens.",
+    "India's pharmaceutical industry is the third largest in the world by volume and the fourteenth largest by value. It supplies over 50% of global demand for various vaccines, 40% of generic demand in the US and 25% of all medicine in the UK. There are more than 3000 drug companies in India. The country has more US-FDA approved pharma manufacturing plants than any country outside the US itself. India has earned the sobriquet of pharmacy of the world owing to its vast production capacity and quality manufacturing capabilities. The generic drug sector represents 20% of global exports in terms of volume, making India the largest provider of generic medicines globally. The industry continues to grow with increasing focus on research and development.",
+    "The Make in India initiative was launched in 2014 to promote manufacturing and attract foreign investment. It aims to transform India into a global manufacturing hub by simplifying regulations and improving ease of doing business. The programme has led to the establishment of new industrial corridors and special economic zones. Key sectors like electronics, automobiles, and defence manufacturing have witnessed significant growth. The initiative has created millions of jobs and strengthened India's position in global supply chains.",
+    "Skill India Mission focuses on training young Indians in industry-relevant skills. The Pradhan Mantri Kaushal Vikas Yojana provides short-term training courses and certification. The mission aims to skill over 40 crore people by 2030. It addresses the gap between education and employment by aligning training with market demands. Recognition of Prior Learning helps informal sector workers gain formal certification and better opportunities.",
+    "The Swachh Bharat Mission, launched on October 2, 2014, aims to make India open-defecation free and improve sanitation. The campaign has constructed millions of toilets and created awareness about cleanliness. It has transformed public behaviour and urban landscapes. The mission also includes solid waste management and wastewater treatment components to ensure sustainable sanitation practices.",
+    "Renewable energy is a priority for India's energy security. The country has set ambitious targets for solar and wind power generation. The International Solar Alliance, co-initiated by India, promotes solar energy globally. Large-scale solar parks and rooftop solar schemes have been implemented successfully. These efforts reduce dependence on fossil fuels and combat climate change.",
+    "Women empowerment programmes like Beti Bachao Beti Padhao and Mahila Shakti Kendra have improved the status of women and girls. The government has focused on education, health, and economic participation of women. Self-help groups and microfinance schemes have enabled rural women to become entrepreneurs. Legal reforms have strengthened protection against violence and discrimination.",
+    "The Atal Innovation Mission promotes innovation and entrepreneurship among students and researchers. Atal Tinkering Labs in schools encourage hands-on learning in science and technology. The mission supports startups through incubation centres and funding. It aims to create a culture of innovation that drives economic growth and solves societal challenges.",
+    "Tourism in India contributes significantly to the economy and employment. The Incredible India campaign has positioned the country as a preferred global destination. Heritage sites, beaches, hill stations, and wildlife sanctuaries attract millions of visitors every year. Eco-tourism and adventure tourism are growing rapidly. The government is developing infrastructure to enhance the visitor experience.",
+    "The National Infrastructure Pipeline aims to invest over 100 lakh crore rupees in infrastructure projects by 2025. It covers sectors such as energy, roads, railways, urban development, and water supply. The pipeline ensures coordinated planning and timely execution of projects. Private sector participation is encouraged through public-private partnership models.",
+    "Financial inclusion has been strengthened through the Pradhan Mantri Jan Dhan Yojana. Over 50 crore bank accounts have been opened, bringing the unbanked population into the formal banking system. RuPay cards and overdraft facilities provide easy access to credit. Direct benefit transfers have eliminated middlemen and ensured transparency in welfare delivery.",
+    "The National Education Policy 2020 envisions a new education system that is rooted in Indian ethos and modern in approach. It emphasises foundational literacy, multilingualism, and critical thinking. Higher education will be multidisciplinary with greater focus on research. Technology will play a key role in expanding access and improving quality.",
+    "India's defence modernisation programme focuses on indigenisation and self-reliance. The Defence Acquisition Procedure encourages domestic manufacturing. Joint ventures with foreign companies transfer technology and build local capabilities. The armed forces are being equipped with advanced weaponry and surveillance systems to safeguard national security."
+  ],
+  rrb_ntpc:[
+    "The Indian Railways is the national railway system operated by the Government of India through the Ministry of Railways. It manages the fourth largest national railway network in the world by size, with a route length of 67,956 km as of March 2021. Indian Railways has a fleet of 13,000 passenger trains and 9,000 freight trains, serving 7,325 stations across India. In the fiscal year 2019-20, it carried 8.09 billion passengers and transported 1.21 billion tonnes of freight. Indian Railways is the world's ninth largest commercial or utility employer, with more than 1.2 million employees. The railways are one of the largest enterprises under government ownership in the world. Electrification of routes and introduction of high-speed trains have modernised the network significantly.",
+    "The Metro Rail network in India has grown significantly over the past two decades. Delhi Metro was the first to be commissioned and has inspired several other cities to adopt this mode of urban transport. Currently, metro rail systems are operational in more than 20 cities including Mumbai, Bengaluru, Chennai, Kolkata, Hyderabad, Kochi, Jaipur and Lucknow. The total operational route length of metro rail networks across India has exceeded 900 kilometres. The metro rail has reduced road traffic congestion, decreased pollution levels, and provided a faster and more reliable means of transportation for urban commuters. The government has ambitious plans to expand the metro network to 50 cities by 2030 with focus on sustainable urban mobility.",
+    "The Vande Bharat Express is a semi-high-speed intercity electric multiple unit train service in India. It was designed and built in India at the Integral Coach Factory in Chennai under the Make in India initiative. The train can reach speeds of up to 180 kilometres per hour, though it currently operates at a maximum of 160 kilometres per hour. The Vande Bharat Express offers superior comfort with push-back seats, automatic doors, onboard WiFi and infotainment systems. The train is energy efficient and uses regenerative braking to save electricity. Multiple versions of the Vande Bharat have been developed including a sleeper version for overnight journeys and a metro version for short urban routes. It symbolises India's growing capability in indigenous rail technology.",
+    "Indian Railways has undertaken massive modernisation under the Amrit Bharat Station scheme. Over 1,300 stations are being redeveloped with world-class amenities including lifts, escalators, and waiting lounges. The focus is on improving passenger experience and ensuring safety. Station redevelopment projects integrate commercial spaces to generate non-fare revenue for further investment in the railway network.",
+    "The Dedicated Freight Corridors are game changers for freight movement in India. The Western and Eastern Dedicated Freight Corridors will reduce transit time and increase speed of goods trains. These corridors use advanced signalling and electric traction to enhance efficiency. They will decongest the existing passenger network and boost industrial growth by providing reliable logistics support.",
+    "Railway safety has been prioritised with the introduction of Kavach, an indigenous automatic train protection system. It prevents collisions and signal passing at danger. Extensive track renewal, bridge rehabilitation, and rolling stock replacement programmes ensure safer journeys for millions of passengers daily.",
+    "High-speed rail corridors are being planned to connect major cities. The Mumbai-Ahmedabad corridor is the first under implementation with Japanese technical assistance. These projects will reduce travel time dramatically and promote economic integration between regions.",
+    "The Rail Vikas Nigam Limited executes major railway infrastructure projects including new lines, doubling, and gauge conversion. It has successfully completed several landmark projects ahead of schedule, demonstrating India's engineering prowess.",
+    "Indian Railways is moving towards net zero carbon emissions by 2030 through extensive electrification and use of renewable energy. Solar panels on station roofs and wind power projects contribute to green energy generation. Bio-toilets and waste management systems have made trains more environment friendly.",
+    "Tourist trains like the Maharajas' Express and luxury coaches offer unique travel experiences across India's heritage destinations. These services promote cultural tourism and generate revenue for the railways while showcasing the country's diversity.",
+    "The introduction of Tejas and Gatimaan Express trains has set new benchmarks in speed and passenger comfort. These premium services feature modern interiors, onboard catering, and entertainment options, elevating the overall travel experience.",
+    "Freight traffic on Indian Railways is being boosted through the introduction of container trains and private freight terminals. The liberalised Wagon Leasing Policy encourages private investment in rolling stock to meet growing logistics demand.",
+    "Railway recruitment through RRB NTPC brings fresh talent into the system. The Computer Based Tests followed by skill tests ensure selection of qualified candidates for various posts. Training academies impart necessary skills for efficient operations.",
+    "Digital initiatives such as IRCTC e-ticketing, UTS app, and real-time train tracking have made booking and travel hassle-free. Passengers can now plan journeys conveniently from their mobile phones.",
+    "The Indian Railways plays a crucial role during natural calamities by providing emergency relief and transportation. Its vast network helps in rapid movement of relief material and personnel to affected areas, showcasing its importance as a national asset."
+  ],
+  default:[
+    "India is a country of remarkable diversity, with thousands of languages, religions, and cultural traditions coexisting harmoniously. From the snow-capped peaks of the Himalayas to the sun-kissed beaches of Kerala, India's geography is as varied as its people. The country has made tremendous strides in economic development, science and technology, and human welfare over the past seven decades of independence. India is the world's largest democracy, home to over 1.4 billion people who exercise their democratic rights through free and fair elections. The spirit of unity in diversity continues to be the bedrock of India's national identity and strength. The Constitution ensures equality and justice for all citizens regardless of caste, creed, or gender.",
+    "The role of education in national development cannot be overstated. A well-educated population is the foundation upon which a prosperous and just society is built. India has made significant progress in expanding access to education over the years. The literacy rate has risen from a mere 18 percent at the time of independence to over 77 percent today. The government's midday meal program has not only improved school attendance but also provided nutritional support to millions of children from economically weaker sections. Higher education institutions like the IITs and IIMs have produced world-class engineers and managers who have contributed to national and global progress. Digital learning platforms have made education accessible even in the remotest parts of the country.",
+    "Environmental conservation has become one of the most pressing challenges of our times. Climate change, deforestation, water scarcity, and pollution are threatening the ecological balance of our planet. India, as a rapidly developing nation, faces the dual challenge of promoting economic growth while protecting its natural environment. The government has launched several ambitious programs to address these issues including the National Clean Air Program, the AMRUT mission for clean water supply, and various renewable energy initiatives. India has set a target of achieving 500 gigawatts of renewable energy capacity by 2030, which will significantly reduce its carbon footprint and dependence on fossil fuels. Community-led conservation efforts have also played a vital role in preserving biodiversity.",
+    "The banking sector in India has evolved significantly with the introduction of digital payment systems like UPI and BHIM. The Reserve Bank of India continues to regulate and strengthen the financial system to ensure stability and inclusion. Financial literacy campaigns have empowered citizens to make informed decisions about savings, investments, and insurance. The Jan Dhan Yojana has brought millions of unbanked households into the formal banking fold, enabling them to avail government benefits directly.",
+    "Science and technology have been key drivers of India's progress. From the launch of the first satellite to the success of the Mars Orbiter Mission, Indian scientists have achieved remarkable feats. The government encourages research through schemes like INSPIRE and Atal Innovation Mission. Start-ups in biotechnology, space, and renewable energy are creating new opportunities and solutions for societal challenges.",
+    "The service sector contributes more than half of India's GDP. Information technology, hospitality, healthcare, and financial services employ millions and earn valuable foreign exchange. India's IT professionals are respected worldwide for their skills and innovation. The country is also emerging as a global hub for medical tourism due to affordable and high-quality healthcare services.",
+    "Rural development programmes like MGNREGA provide guaranteed employment to rural households. The scheme has improved livelihoods, created durable assets, and empowered women in villages. It has reduced distress migration and strengthened the rural economy. Complementary schemes in agriculture and animal husbandry have further enhanced income levels.",
+    "Youth empowerment is a national priority. Schemes like Skill India, Start-up India, and Pradhan Mantri Yuva Yojana nurture talent and entrepreneurship. The country has the largest youth population in the world, and harnessing their energy is critical for future growth. Sports and cultural programmes encourage holistic development and national pride.",
+    "The judicial system ensures rule of law and protection of rights. Fast-track courts and e-courts have improved access to justice. Legal aid is provided to the underprivileged to ensure equality before the law. Public interest litigation has played a significant role in addressing social and environmental issues.",
+    "India's foreign trade has grown steadily with diversification of export markets. Free trade agreements and participation in global value chains have boosted economic integration. The country exports software services, pharmaceuticals, textiles, and agricultural products while importing capital goods and energy resources.",
+    "Disaster management has improved with the establishment of the National Disaster Management Authority. Early warning systems and community preparedness have reduced loss of life during cyclones, floods, and earthquakes. The Sendai Framework guides India's approach to building resilience against natural hazards.",
+    "The cultural heritage of India is preserved through museums, archives, and archaeological surveys. UNESCO World Heritage Sites like the Taj Mahal and Ajanta Caves attract global attention. Intangible heritage such as classical music, dance forms, and traditional crafts is promoted through festivals and training programmes.",
+    "Public distribution system ensures food security for vulnerable sections. The National Food Security Act provides subsidised grains to nearly two-thirds of the population. Technology-enabled fair price shops have reduced leakages and improved transparency in distribution.",
+    "The road transport sector has expanded with the construction of expressways and national highways. The Bharatmala Pariyojana aims to develop a robust road network that supports economic activity and improves connectivity between production centres and markets.",
+    "Water resource management is critical for agriculture and drinking water supply. The Jal Jeevan Mission aims to provide tap water to every rural household. River interlinking projects and watershed development programmes are being implemented to address regional imbalances in water availability."
+  ]
+};
+
+function getPassages(examId){ return PASSAGES[examId] || PASSAGES.default; }
+
+// ══════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════
+let currentExam = null, currentPassageIdx = 0, currentText = '';
+let charIdx = 0, totalKeys = 0, errors = 0, correctKeys = 0;
+let timeLeft = 0, timerInterval = null;
+let running = false, paused = false, startTime = null, kTimes = [];
+let typedChars = [];        // stores each character the user typed
+let showErrors = false;     // toggle: show colour feedback or not
+
+let history = [];
+try{ const s=localStorage.getItem('typSSc3_hist'); if(s) history=JSON.parse(s); }catch(e){}
+function saveHistory(){ try{localStorage.setItem('typSSc3_hist',JSON.stringify(history));}catch(e){} }
+
+// ══════════════════════════════════════════════════════════════
+//  ERROR HINTS TOGGLE
+// ══════════════════════════════════════════════════════════════
+function toggleErrorHints(){
+  showErrors = !showErrors;
+  const sw = document.getElementById('error-toggle-sw');
+  const st = document.getElementById('error-toggle-state');
+  sw.classList.toggle('on', showErrors);
+  st.textContent = showErrors ? 'ON' : 'OFF';
+  st.classList.toggle('active', showErrors);
+  // Show/hide the correct/wrong/accuracy items in stats bar
+  document.getElementById('tsb-correct-wrap').style.display = showErrors ? 'flex' : 'none';
+  document.getElementById('tsb-wrong-wrap').style.display = showErrors ? 'flex' : 'none';
+  document.getElementById('tsb-acc-wrap').style.display = showErrors ? 'flex' : 'none';
+  updateTypingDisplay();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  HOME SCREEN
+// ══════════════════════════════════════════════════════════════
+function renderExamGrid(){
+  const grid = document.getElementById('exam-grid');
+  grid.innerHTML = '';
+  EXAMS.forEach(ex => {
+    const card = document.createElement('div');
+    card.className = 'exam-card';
+    card.innerHTML = `
+      <div class="exam-card-top">
+        <div class="exam-org-logo">${ex.logo}</div>
+        <div class="exam-badges">
+          <span class="badge-pill ${ex.badgeClass}">${ex.badge}</span>
+          <span class="badge-pill badge-free">FREE</span>
+        </div>
+      </div>
+      <div class="exam-card-name">${ex.name}</div>
+      <div class="exam-card-desc">${ex.desc}</div>
+      <div class="exam-meta">
+        <div class="meta-item"><div class="meta-label">Duration</div><div class="meta-val">${ex.time/60} min</div></div>
+        <div class="meta-item"><div class="meta-label">Key Target</div><div class="meta-val">${ex.keys.toLocaleString()}</div></div>
+        <div class="meta-item"><div class="meta-label">Min WPM</div><div class="meta-val">${ex.wpm} WPM</div></div>
+        <div class="meta-item"><div class="meta-label">Passages</div><div class="meta-val">${getPassages(ex.id).length} Free</div></div>
+      </div>
+      <button class="start-btn" onclick="startExam('${ex.id}')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Start Practice Test
+      </button>`;
+    grid.appendChild(card);
+  });
+}
+
+function filterExams(cat, el){
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.exam-card').forEach(c => {
+    const id = c.querySelector('.start-btn').getAttribute('onclick').match(/'([^']+)'/)[1];
+    const ex = EXAMS.find(e => e.id === id);
+    c.classList.toggle('hidden', cat !== 'all' && ex.cat !== cat);
+  });
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  EXAM SETUP
+// ══════════════════════════════════════════════════════════════
+function startExam(examId){
+  currentExam = EXAMS.find(e => e.id === examId);
+  currentPassageIdx = 0;
+  resetState();
+  setupExamUI();
+  showScreen('exam-screen');
+  focusInput();
+}
+
+function resetState(){
+  clearInterval(timerInterval);
+  running = false; paused = false; startTime = null;
+  totalKeys = 0; errors = 0; correctKeys = 0; kTimes = [];
+  charIdx = 0; typedChars = [];
+}
+
+function setupExamUI(){
+  const ex = currentExam;
+  document.getElementById('exam-screen-title').textContent = `${ex.shortName} — Typing Test`;
+  document.getElementById('exam-screen-sub').textContent = ex.testName;
+  document.getElementById('cand-exam-name').textContent = ex.shortName;
+  document.getElementById('cand-target').textContent = `${ex.keys.toLocaleString()} Key Depressions`;
+  document.getElementById('cand-duration').textContent = `${ex.time/60} Minutes`;
+  document.getElementById('exam-inline-rule').textContent = ex.inlineRule;
+  const m = Math.floor(ex.time/60), s = ex.time%60;
+  document.getElementById('timer-val').textContent = `${m}:${s<10?'0':''}${s}`;
+  document.getElementById('timer-val').className = 'timer-value';
+  document.getElementById('s-target').textContent = ex.keys;
+  document.getElementById('exam-rules-list').innerHTML = ex.rules.map(r =>
+    `<div class="rule-row"><span class="rule-icon">${r.split(' ')[0]}</span><span>${r.split(' ').slice(1).join(' ')}</span></div>`
+  ).join('');
+  buildPassageList();
+  renderText();
+  document.getElementById('btn-pause').style.display = 'none';
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('start-hint').style.display = 'flex';
+  document.getElementById('progress-bar').style.width = '0%';
+  document.getElementById('pause-cover').classList.remove('show');
+  // Sync stats bar visibility with toggle state
+  document.getElementById('tsb-correct-wrap').style.display = showErrors ? 'flex' : 'none';
+  document.getElementById('tsb-wrong-wrap').style.display = showErrors ? 'flex' : 'none';
+  document.getElementById('tsb-acc-wrap').style.display = showErrors ? 'flex' : 'none';
+  resetTypingDisplay();
+}
+
+function buildPassageList(){
+  const passages = getPassages(currentExam.id);
+  const list = document.getElementById('sidebar-passage-list');
+  list.innerHTML = '';
+  passages.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'passage-row' + (i === currentPassageIdx ? ' active' : '');
+    row.innerHTML = `<div class="p-num">${i+1}</div><div class="p-text">${p.substring(0,80)}…</div>`;
+    row.onclick = () => {
+      if(running && !confirm('Changing passage will restart the test. Continue?')) return;
+      currentPassageIdx = i; resetState(); setupExamUI(); focusInput();
+    };
+    list.appendChild(row);
+  });
+  document.getElementById('cand-passage-num').textContent = currentPassageIdx + 1;
+}
+
+function renderText(){
+  const passages = getPassages(currentExam.id);
+  currentText = passages[currentPassageIdx] || passages[0];
+  document.getElementById('display-area').innerHTML = `<span class="c">${currentText}</span>`;
+  document.getElementById('passage-title-bar').textContent = `Passage ${currentPassageIdx + 1}`;
+  document.getElementById('p-chars').textContent = `${currentText.length} chars`;
+  document.getElementById('p-words').textContent = `~${Math.ceil(currentText.split(' ').length)} words`;
+  document.getElementById('tsb-remaining').textContent = currentText.length;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FOCUS MANAGEMENT
+// ══════════════════════════════════════════════════════════════
+function focusInput(){
+  document.getElementById('type-input').focus();
+  document.getElementById('typing-box-container').classList.add('focused');
+}
+function blurInput(){
+  document.getElementById('typing-box-container').classList.remove('focused');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TYPING DISPLAY
+// ══════════════════════════════════════════════════════════════
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function resetTypingDisplay(){
+  const area = document.getElementById('typing-text-area');
+  area.innerHTML = '<span class="type-placeholder" id="type-placeholder">Click here and start typing the passage above…</span>';
+  document.getElementById('tsb-typed').textContent = '0';
+  document.getElementById('tsb-correct').textContent = '0';
+  document.getElementById('tsb-wrong').textContent = '0';
+  document.getElementById('tsb-remaining').textContent = currentText ? currentText.length : '0';
+  const acc = document.getElementById('tsb-acc');
+  acc.textContent = '100%'; acc.style.color = 'var(--green)';
+}
+
+function updateTypingDisplay(){
+  if(!typedChars.length){ resetTypingDisplay(); return; }
+  const area = document.getElementById('typing-text-area');
+  let html = '', correctCnt = 0, wrongCnt = 0;
+
+  for(let i = 0; i < typedChars.length; i++){
+    const t = typedChars[i];
+    const e = currentText[i] || '';
+    const disp = t === ' ' ? '&nbsp;' : escHtml(t);
+    if(!showErrors){
+      // Real exam mode — no colour, just plain text
+      html += `<span class="tc-neutral">${disp}</span>`;
+      if(e && t === e) correctCnt++; else wrongCnt++;
+    } else {
+      if(e && t === e){ correctCnt++; html += `<span class="tc-correct">${disp}</span>`; }
+      else { wrongCnt++; html += `<span class="tc-wrong">${disp}</span>`; }
+    }
+  }
+  html += '<span class="tc-cursor"></span>';
+  area.innerHTML = html;
+  area.scrollTop = area.scrollHeight;
+
+  const total = typedChars.length;
+  const remaining = Math.max(0, currentText.length - total);
+  const liveAcc = total ? Math.round((correctCnt / total) * 100) : 100;
+
+  document.getElementById('tsb-typed').textContent = total;
+  document.getElementById('tsb-correct').textContent = correctCnt;
+  document.getElementById('tsb-wrong').textContent = wrongCnt;
+  document.getElementById('tsb-remaining').textContent = remaining;
+  const accEl = document.getElementById('tsb-acc');
+  accEl.textContent = liveAcc + '%';
+  accEl.style.color = liveAcc >= 95 ? 'var(--green)' : liveAcc >= 80 ? 'var(--blue)' : 'var(--red)';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  STATS
+// ══════════════════════════════════════════════════════════════
+function updateStats(){
+  const elapsed = (Date.now()-startTime)/60000 || 0.001;
+  const gross = Math.round((totalKeys/5)/elapsed);
+  const acc = totalKeys ? Math.round((correctKeys/totalKeys)*100) : 100;
+  const net = Math.round(gross*(acc/100));
+  document.getElementById('s-gross').textContent = gross;
+  document.getElementById('s-net').textContent = net;
+  const accEl = document.getElementById('s-acc');
+  accEl.textContent = acc+'%';
+  accEl.className = 'stat-val '+(acc>=95?'green':acc>=80?'blue':'red');
+  document.getElementById('s-err').textContent = errors;
+  document.getElementById('s-keys').innerHTML = `${totalKeys} / <span id="s-target">${currentExam.keys}</span>`;
+  const pct = Math.min(100,(totalKeys/currentExam.keys)*100);
+  document.getElementById('ks-fill').style.width = pct+'%';
+  const timePct = Math.max(pct,((currentExam.time-timeLeft)/currentExam.time)*100);
+  document.getElementById('progress-bar').style.width = Math.min(100,timePct)+'%';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TYPING ENGINE
+// ══════════════════════════════════════════════════════════════
+function handleKey(e){
+  if(!running && !paused && e.key.length===1 && e.key!=='Tab') beginTest();
+  if(!running || paused) return;
+  if(e.key==='Escape'){ e.preventDefault(); togglePause(); return; }
+
+  if(e.key==='Backspace' && charIdx>0){
+    e.preventDefault();
+    charIdx--; typedChars.pop();
+    totalKeys = Math.max(0,totalKeys-1);
+    updateStats(); updateTypingDisplay(); return;
+  }
+
+  if((e.key.length===1||e.key===' ') && charIdx<currentText.length){
+    e.preventDefault();
+    kTimes.push(Date.now());
+    if(kTimes.length>60) kTimes.shift();
+    totalKeys++;
+    const expected = currentText[charIdx];
+    if(e.key===expected) correctKeys++; else errors++;
+    typedChars.push(e.key);
+    charIdx++;
+    updateStats(); updateTypingDisplay();
+    if(charIdx>=currentText.length) finalizeTest();
+  }
+}
+
+function beginTest(){
+  running=true; paused=false; startTime=Date.now(); timeLeft=currentExam.time;
+  document.getElementById('start-hint').style.display='none';
+  document.getElementById('btn-pause').style.display='inline-block';
+  document.getElementById('btn-submit').style.display='inline-block';
+  startTimer(); updateStats();
+}
+
+function startTimer(){
+  timerInterval=setInterval(()=>{
+    if(!running||paused) return;
+    timeLeft--;
+    const m=Math.floor(timeLeft/60), s=timeLeft%60;
+    const el=document.getElementById('timer-val');
+    el.textContent=`${m}:${s<10?'0':''}${s}`;
+    el.className='timer-value'+(timeLeft<=60?' danger':timeLeft<=120?' warn':'');
+    updateStats();
+    if(timeLeft<=0||totalKeys>=currentExam.keys) finalizeTest();
+  },1000);
+}
+
+function togglePause(){
+  if(!running) return;
+  paused=!paused;
+  document.getElementById('pause-cover').classList.toggle('show',paused);
+  document.getElementById('btn-pause').textContent=paused?'▶ Resume':'⏸ Pause';
+  if(!paused) focusInput();
+}
+
+function submitEarly(){
+  if(confirm('Submit the test now and view your results?')) finalizeTest();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FINALIZE + COMPARISON
+// ══════════════════════════════════════════════════════════════
+function finalizeTest(){
+  clearInterval(timerInterval); running=false;
+  const elapsed=(Date.now()-startTime)/60000||0.01;
+  const gross=Math.round((totalKeys/5)/elapsed);
+  const acc=totalKeys?Math.round((correctKeys/totalKeys)*100):100;
+  const net=Math.round(gross*(acc/100));
+  const full=Math.floor(errors/2);
+  const half=errors%2;
+  const qualifies=net>=currentExam.wpm;
+
+  document.getElementById('r-exam-name').textContent=`${currentExam.shortName} — ${currentExam.testName}`;
+  document.getElementById('r-net').textContent=net;
+  document.getElementById('r-acc').textContent=acc+'%';
+  document.getElementById('r-half').textContent=half;
+  document.getElementById('r-full').textContent=full;
+  document.getElementById('r-keys').textContent=totalKeys;
+  document.getElementById('r-rank').textContent='#'+Math.floor(80+Math.random()*400);
+
+  const grade=net>=50&&acc>=95?'A+':net>=40?'A':net>=30?'B':'C';
+  const gEl=document.getElementById('r-grade');
+  gEl.textContent=qualifies?`${grade} ✓`:`${grade} ✗`;
+  gEl.style.color=qualifies?'#16a34a':'#dc2626';
+
+  if(net>=35&&acc>=90) launchConfetti();
+  buildComparison();
+
+  history.unshift({date:new Date().toLocaleDateString('en-IN'),exam:currentExam.shortName,netWPM:net,accuracy:acc,keys:totalKeys});
+  if(history.length>30) history.pop();
+  saveHistory();
+  document.getElementById('modal-result').classList.add('open');
+}
+
+function buildComparison(){
+  const origEl=document.getElementById('r-original');
+  const typedEl=document.getElementById('r-typed');
+  const maxLen=Math.max(currentText.length,typedChars.length);
+  let origHtml='', typedHtml='', correctCnt=0, wrongCnt=0, missedCnt=0;
+
+  for(let i=0;i<maxLen;i++){
+    const expected=currentText[i];
+    const typed=typedChars[i];
+    if(expected!==undefined && typed===undefined){
+      missedCnt++;
+      const d=expected===' '?'&nbsp;':escHtml(expected);
+      origHtml+=`<span class="cmp-untyped" title="Not typed">${d}</span>`;
+      typedHtml+=`<span class="cmp-missing-typed" title="Not typed">_</span>`;
+    } else if(expected!==undefined && typed===expected){
+      correctCnt++;
+      const d=expected===' '?'&nbsp;':escHtml(expected);
+      origHtml+=`<span class="cmp-ok">${d}</span>`;
+      typedHtml+=`<span class="cmp-ok">${d}</span>`;
+    } else if(expected!==undefined && typed!==expected){
+      wrongCnt++;
+      const od=expected===' '?'&nbsp;':escHtml(expected);
+      const td=typed===' '?'&nbsp;':escHtml(typed);
+      origHtml+=`<span class="cmp-miss-orig" title="You typed: ${escHtml(typed)}">${od}</span>`;
+      typedHtml+=`<span class="cmp-wrong-typed" title="Should be: ${escHtml(expected)}">${td}</span>`;
+    } else if(expected===undefined && typed!==undefined){
+      const td=typed===' '?'&nbsp;':escHtml(typed);
+      origHtml+=`<span class="cmp-extra-orig">·</span>`;
+      typedHtml+=`<span class="cmp-extra-typed" title="Extra char">${td}</span>`;
+    }
+  }
+
+  origEl.innerHTML=origHtml||'<em style="color:var(--muted)">Nothing to compare.</em>';
+  typedEl.innerHTML=typedHtml||'<em style="color:var(--muted)">Nothing was typed.</em>';
+  document.getElementById('cmp-correct-count').textContent=`${correctCnt} correct`;
+  document.getElementById('cmp-wrong-count').textContent=`${wrongCnt} wrong`;
+  document.getElementById('cmp-missed-count').textContent=`${missedCnt} not typed`;
+  const total=correctCnt+wrongCnt;
+  const cmpAcc=total?Math.round((correctCnt/total)*100):100;
+  const badge=document.getElementById('cmp-accuracy-badge');
+  badge.textContent=`Char Accuracy: ${cmpAcc}%`;
+  badge.className='cmp-sum-badge '+(cmpAcc>=95?'csb-green':cmpAcc>=80?'csb-blue':'csb-red');
+}
+
+function launchConfetti(){
+  const c=document.getElementById('confetti-c');
+  const colors=['#f59e0b','#16a34a','#2563eb','#dc2626','#7c3aed','#0891b2'];
+  for(let i=0;i<120;i++){
+    const el=document.createElement('div');
+    el.style.cssText=`position:absolute;width:9px;height:9px;left:${Math.random()*100}%;top:-10px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation:fall ${2.5+Math.random()*3}s linear forwards;transform:rotate(${Math.random()*360}deg);`;
+    c.appendChild(el);
+    setTimeout(()=>el.remove(),6000);
+  }
+}
+
+function closeResult(){ document.getElementById('modal-result').classList.remove('open'); }
+function saveAndRestart(){ closeResult(); restartExam(); }
+function restartExam(){ resetState(); setupExamUI(); focusInput(); }
+function goHome(){ clearInterval(timerInterval); closeResult(); document.getElementById('pause-cover').classList.remove('show'); showScreen('home-screen'); }
+
+function showHistory(){
+  const list=document.getElementById('history-list');
+  list.innerHTML=history.length?history.map(r=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-weight:700;font-size:0.85rem;color:var(--navy);">${r.exam}</div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:2px;">${r.date} · ${r.keys} keys</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:1.8rem;font-weight:900;color:var(--blue);line-height:1;">${r.netWPM}</div>
+        <div style="font-size:0.65rem;color:var(--muted);">WPM · ${r.accuracy}% acc</div>
+      </div>
+    </div>`).join(''):
+    `<div style="text-align:center;padding:40px;color:var(--muted);">No tests yet. Start your first exam!</div>`;
+  document.getElementById('modal-history').classList.add('open');
+}
+function closeHistory(){ document.getElementById('modal-history').classList.remove('open'); }
+
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
+function init(){
+  renderExamGrid();
+  const inp=document.getElementById('type-input');
+  inp.addEventListener('keydown', handleKey);
+  inp.addEventListener('focus', ()=>document.getElementById('typing-box-container').classList.add('focused'));
+  inp.addEventListener('blur', ()=>document.getElementById('typing-box-container').classList.remove('focused'));
+  // Clicking passage area also focuses input
+  document.getElementById('display-area').addEventListener('click', focusInput);
+}
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
