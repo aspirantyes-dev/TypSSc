@@ -1011,11 +1011,30 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
       <span id="nav-username">Set Name</span>
     </div>
     <button class="nav-admin-btn" onclick="navigate('admin')">⚙ Admin</button>
+    <button class="nav-admin-btn" style="background:linear-gradient(135deg,#1e3a5f,var(--blue));color:#fff" onclick="openMessageModal()">💬 Message Admin</button>
   </div>
 </nav>
 
 <!-- ─── TOASTS ─── -->
 <div class="toast-container" id="toast-container"></div>
+
+<!-- ─── MESSAGE ADMIN MODAL ─── -->
+<div class="modal-overlay hidden" id="modal-message" onclick="if(event.target===this)closeModal('modal-message')">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-close" onclick="closeModal('modal-message')">✕</button>
+    <h3>💬 Message Admin</h3>
+    <p>Send your feedback, ideas, or questions directly to the admin.</p>
+    <div class="form-group" style="margin-bottom:1rem" id="msg-name-group">
+      <label class="form-label">Your Name</label>
+      <input class="form-input" id="msg-name" placeholder="Auto-filled if you're logged in" readonly style="opacity:0.7">
+    </div>
+    <div class="form-group" style="margin-bottom:1.25rem">
+      <label class="form-label">Your Message</label>
+      <textarea class="form-textarea" id="msg-text" placeholder="Type your message, idea or feedback here..." style="min-height:110px"></textarea>
+    </div>
+    <button class="btn-primary" id="msg-send-btn" style="width:100%" onclick="sendMessageToAdmin()">Send Message →</button>
+  </div>
+</div>
 
 <!-- ─── USER NAME MODAL ─── -->
 <div class="modal-overlay" id="modal-user" onclick="if(event.target===this&&APP.user.name)closeModal('modal-user')">
@@ -1405,6 +1424,7 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
       <button class="admin-tab" data-tab="live" onclick="switchAdminTab('live',this)">🔴 Live Tests</button>
       <button class="admin-tab" data-tab="exams" onclick="switchAdminTab('exams',this)">📋 Exam Config</button>
       <button class="admin-tab" data-tab="results" onclick="switchAdminTab('results',this)">📊 All Results</button>
+      <button class="admin-tab" data-tab="messages" onclick="switchAdminTab('messages',this);renderAdminMessages()">💬 Messages</button>
       <button class="admin-tab" data-tab="settings" onclick="switchAdminTab('settings',this)">⚙ Settings</button>
     </div>
 
@@ -1462,21 +1482,32 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
             <label class="form-label">Exam Type</label>
             <select class="form-select" id="live-exam-select" onchange="updateLiveDuration()"></select>
           </div>
-          <div class="form-group">
-            <label class="form-label">Duration (minutes)</label>
-            <input class="form-input" id="live-duration" type="number" min="1" max="60" value="10">
-          </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Schedule Start Time</label>
-            <input class="form-input" id="live-start-time" type="datetime-local">
+            <label class="form-label">📅 Start Date & Time</label>
+            <input class="form-input" id="live-start-time" type="datetime-local" oninput="syncEndFromDuration()">
           </div>
           <div class="form-group">
+            <label class="form-label">🏁 End Date & Time</label>
+            <input class="form-input" id="live-end-time" type="datetime-local" oninput="syncDurationFromTimes()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration (auto-calculated, minutes)</label>
+            <input class="form-input" id="live-duration" type="number" min="1" max="180" value="10" oninput="syncEndFromDuration()" placeholder="Or enter manually">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="align-self:flex-end">
             <label class="form-label">Or — Start Immediately</label>
             <div style="padding-top:0.5rem;display:flex;align-items:center;gap:0.5rem">
               <input type="checkbox" id="live-start-now" onchange="toggleLiveStartNow()">
-              <label for="live-start-now" style="font-size:0.875rem;cursor:pointer">Start this test NOW (live immediately)</label>
+              <label for="live-start-now" style="font-size:0.875rem;cursor:pointer">Start this test NOW</label>
+            </div>
+          </div>
+          <div class="form-group" id="live-time-preview-group" style="align-self:flex-end">
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:0.65rem 0.9rem;font-size:0.8rem;color:var(--text-dim)" id="live-time-preview">
+              Set start & end time above to preview schedule.
             </div>
           </div>
         </div>
@@ -1578,6 +1609,17 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
       </div>
     </div>
 
+    <!-- ── Tab: Messages ── -->
+    <div class="admin-tab-content" id="atab-messages">
+      <div class="admin-section">
+        <h3>User Messages & Ideas</h3>
+        <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:1rem">Messages sent by users via the "Message Admin" option.</p>
+        <div id="admin-messages-list">
+          <div class="empty-state"><span class="empty-icon">💬</span><div>Click the tab to load messages.</div></div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Tab: Settings ── -->
     <div class="admin-tab-content" id="atab-settings">
       <div class="admin-section">
@@ -1636,6 +1678,44 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
     <button class="btn-submit" onclick="saveEditLesson()">Save Changes</button>
   </div>
 </div>
+
+<script type="module">
+// ════════════════════════════════════════════════════════════
+//  FIREBASE SETUP
+// ════════════════════════════════════════════════════════════
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD_NFPDQEljZgrw5kt5Gdy5o7P12dSSUM8",
+  authDomain: "typssc.firebaseapp.com",
+  projectId: "typssc",
+  storageBucket: "typssc.firebasestorage.app",
+  messagingSenderId: "1069130970096",
+  appId: "1:1069130970096:web:7244ac146e4a9aada7a335",
+  measurementId: "G-BK9GN8031J"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+
+// ── Expose DB helpers to global scope ──
+window._db = db;
+window._fbDoc = doc;
+window._fbGetDoc = getDoc;
+window._fbSetDoc = setDoc;
+window._fbCollection = collection;
+window._fbAddDoc = addDoc;
+window._fbServerTimestamp = serverTimestamp;
+window._fbQuery = query;
+window._fbOrderBy = orderBy;
+window._fbOnSnapshot = onSnapshot;
+
+// ── Load shared platform data from Firestore once DB is ready ──
+window._firebaseReady = true;
+if (typeof window._onFirebaseReady === 'function') window._onFirebaseReady();
+</script>
 
 <script>
 // ════════════════════════════════════════════════════════════
@@ -1864,53 +1944,216 @@ const DEFAULT_LESSONS = [
 // ════════════════════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════════════════════
-function initApp() {
-  loadData();
-  // Apply saved theme
+async function initApp() {
+  // Apply saved theme immediately
   const savedTheme = localStorage.getItem('typssc_theme') || 'dark';
   APP.theme = savedTheme;
   if (savedTheme === 'light') {
     document.body.classList.add('light-mode');
     document.getElementById('theme-label').textContent = '☀️';
   }
+  // Load user from localStorage first (instant — no delay)
+  const userSaved = localStorage.getItem('typemaster_user');
+  if (userSaved) { try { APP.user = JSON.parse(userSaved); } catch(e) {} }
+  // Load platform data from Firestore (or localStorage fallback)
+  await loadData();
   renderNavUser();
+  // Only prompt name if truly new user
   if (!APP.user.name) {
     setTimeout(() => openModal('modal-user'), 500);
   }
   renderHomeExams();
   updateHeroStats();
-  // Populate admin selects
   populateExamSelects();
-  // Check live tests periodically
   setInterval(checkLiveTestStatus, 10000);
-  // Track textarea char count
   document.getElementById('lesson-content').addEventListener('input', function() {
     document.getElementById('lesson-char-count').textContent = this.value.length + ' characters';
   });
-  // Restore last page if any
   navigate('home');
 }
 
-function loadData() {
-  const saved = localStorage.getItem('typemaster_data');
-  if (saved) {
-    try {
-      const d = JSON.parse(saved);
-      APP.exams = d.exams || DEFAULT_EXAMS.map(e=>({...e,lessons:[]}));
-      APP.lessons = d.lessons || DEFAULT_LESSONS;
-      APP.liveTests = d.liveTests || [];
-      APP.results = d.results || [];
-      APP.adminPassword = d.adminPassword || 'TypeMaster@Admin';
-    } catch(e) {
-      resetToDefaults();
-    }
-  } else {
-    resetToDefaults();
-  }
+// ════════════════════════════════════════════════════════════
+//  FIREBASE DATA LAYER
+// ════════════════════════════════════════════════════════════
+const PLATFORM_DOC = 'platform/main';
+const USERS_COL = 'users';
+const MESSAGES_COL = 'messages';
+
+async function saveData() {
+  // Always save to localStorage as fallback
+  localStorage.setItem('typemaster_data', JSON.stringify({
+    exams: APP.exams, lessons: APP.lessons,
+    liveTests: APP.liveTests, results: APP.results,
+    adminPassword: APP.adminPassword
+  }));
+  // Sync to Firestore (shared across all users)
+  if (!window._db) return;
+  try {
+    await window._fbSetDoc(window._fbDoc(window._db, PLATFORM_DOC), {
+      exams: APP.exams,
+      lessons: APP.lessons,
+      liveTests: APP.liveTests,
+      results: APP.results,
+      adminPassword: APP.adminPassword,
+      updatedAt: window._fbServerTimestamp()
+    });
+  } catch(e) { console.warn('Firestore save failed:', e); }
+}
+
+async function loadData() {
+  // Load user profile first (localStorage)
   const userSaved = localStorage.getItem('typemaster_user');
   if (userSaved) {
     try { APP.user = JSON.parse(userSaved); } catch(e) {}
   }
+  // Try Firestore first, fallback to localStorage
+  if (window._db) {
+    try {
+      const snap = await window._fbGetDoc(window._fbDoc(window._db, PLATFORM_DOC));
+      if (snap.exists()) {
+        const d = snap.data();
+        APP.exams = d.exams || DEFAULT_EXAMS.map(e=>({...e}));
+        APP.lessons = d.lessons || DEFAULT_LESSONS;
+        APP.liveTests = d.liveTests || [];
+        APP.results = d.results || [];
+        APP.adminPassword = d.adminPassword || 'TypeMaster@Admin';
+        // Also update localStorage cache
+        localStorage.setItem('typemaster_data', JSON.stringify({
+          exams: APP.exams, lessons: APP.lessons,
+          liveTests: APP.liveTests, results: APP.results,
+          adminPassword: APP.adminPassword
+        }));
+        // Start real-time listener for live updates
+        startRealtimeSync();
+        return;
+      }
+    } catch(e) { console.warn('Firestore load failed, using localStorage:', e); }
+  }
+  // Fallback: localStorage
+  const saved = localStorage.getItem('typemaster_data');
+  if (saved) {
+    try {
+      const d = JSON.parse(saved);
+      APP.exams = d.exams || DEFAULT_EXAMS.map(e=>({...e}));
+      APP.lessons = d.lessons || DEFAULT_LESSONS;
+      APP.liveTests = d.liveTests || [];
+      APP.results = d.results || [];
+      APP.adminPassword = d.adminPassword || 'TypeMaster@Admin';
+    } catch(e) { resetToDefaults(); }
+  } else {
+    resetToDefaults();
+  }
+}
+
+let _unsubscribeSync = null;
+function startRealtimeSync() {
+  if (!window._db || _unsubscribeSync) return;
+  const ref = window._fbDoc(window._db, PLATFORM_DOC);
+  _unsubscribeSync = window._fbOnSnapshot(ref, (snap) => {
+    if (!snap.exists()) return;
+    const d = snap.data();
+    APP.exams = d.exams || APP.exams;
+    APP.lessons = d.lessons || APP.lessons;
+    APP.liveTests = d.liveTests || APP.liveTests;
+    APP.results = d.results || APP.results;
+    // Refresh current page UI silently
+    if (currentPage === 'home') { renderHomeExams(); updateHeroStats(); }
+    else if (currentPage === 'exams') renderAllExams();
+    else if (currentPage === 'live-tests') renderLiveTests();
+    else if (currentPage === 'my-results') renderMyResults();
+    else if (currentPage === 'admin' && APP.adminLoggedIn) renderAdminPage();
+    checkLiveTestStatus();
+  });
+}
+
+function saveUser() {
+  localStorage.setItem('typemaster_user', JSON.stringify(APP.user));
+  // Also save user profile to Firestore so they're remembered across devices
+  if (window._db && APP.user.id) {
+    window._fbSetDoc(
+      window._fbDoc(window._db, USERS_COL, APP.user.id),
+      { name: APP.user.name, id: APP.user.id, updatedAt: window._fbServerTimestamp() },
+      { merge: true }
+    ).catch(e => console.warn('User save failed:', e));
+  }
+}
+
+// Send message to admin
+async function sendMessageToAdmin() {
+  const name = APP.user.name || document.getElementById('msg-name').value.trim();
+  const text = document.getElementById('msg-text').value.trim();
+  if (!name) { showToast('Please set your name first', 'error'); return; }
+  if (!text) { showToast('Please enter a message', 'error'); return; }
+  if (text.length < 5) { showToast('Message too short', 'error'); return; }
+
+  const btn = document.getElementById('msg-send-btn');
+  btn.disabled = true; btn.textContent = 'Sending...';
+
+  try {
+    if (window._db) {
+      await window._fbAddDoc(window._fbCollection(window._db, MESSAGES_COL), {
+        userId: APP.user.id || 'anon',
+        userName: name,
+        text,
+        sentAt: window._fbServerTimestamp(),
+        read: false
+      });
+    } else {
+      // localStorage fallback
+      const msgs = JSON.parse(localStorage.getItem('typssc_messages') || '[]');
+      msgs.push({ id: 'm_'+Date.now(), userId: APP.user.id||'anon', userName: name, text, sentAt: Date.now(), read: false });
+      localStorage.setItem('typssc_messages', JSON.stringify(msgs));
+    }
+    document.getElementById('msg-text').value = '';
+    showToast('Message sent to admin! ✓', 'success');
+  } catch(e) {
+    showToast('Failed to send message. Please try again.', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Send Message';
+}
+
+// Admin: load messages
+async function renderAdminMessages() {
+  const container = document.getElementById('admin-messages-list');
+  if (!container) return;
+  container.innerHTML = '<div class="empty-state"><span class="empty-icon">⏳</span><div>Loading messages...</div></div>';
+
+  let msgs = [];
+  if (window._db) {
+    try {
+      const q = window._fbQuery(
+        window._fbCollection(window._db, MESSAGES_COL),
+        window._fbOrderBy('sentAt', 'desc')
+      );
+      const snap = await new Promise((res, rej) => {
+        const unsub = window._fbOnSnapshot(q, s => { unsub(); res(s); }, rej);
+      });
+      msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch(e) {
+      console.warn('Messages load failed:', e);
+    }
+  } else {
+    msgs = JSON.parse(localStorage.getItem('typssc_messages') || '[]').reverse();
+  }
+
+  if (msgs.length === 0) {
+    container.innerHTML = '<div class="empty-state"><span class="empty-icon">💬</span><div>No messages yet.</div></div>';
+    return;
+  }
+  container.innerHTML = msgs.map(m => {
+    const date = m.sentAt?.toDate ? m.sentAt.toDate().toLocaleString() : (m.sentAt ? new Date(m.sentAt).toLocaleString() : '—');
+    return `<div class="admin-section" style="margin-bottom:1rem;padding:1rem 1.25rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem;flex-wrap:wrap;gap:0.5rem">
+        <div style="font-weight:700;color:var(--gold)">${escHtml(m.userName)}</div>
+        <div style="font-size:0.72rem;color:var(--text-muted)">${date}</div>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-dim);line-height:1.6">${escHtml(m.text)}</div>
+    </div>`;
+  }).join('');
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function resetToDefaults() {
@@ -1920,19 +2163,6 @@ function resetToDefaults() {
   APP.results = [];
 }
 
-function saveData() {
-  localStorage.setItem('typemaster_data', JSON.stringify({
-    exams: APP.exams,
-    lessons: APP.lessons,
-    liveTests: APP.liveTests,
-    results: APP.results,
-    adminPassword: APP.adminPassword
-  }));
-}
-
-function saveUser() {
-  localStorage.setItem('typemaster_user', JSON.stringify(APP.user));
-}
 
 // ════════════════════════════════════════════════════════════
 //  NAVIGATION
@@ -1967,6 +2197,22 @@ function navigate(page, params={}) {
 //  USER MANAGEMENT
 // ════════════════════════════════════════════════════════════
 function openUserModal() { openModal('modal-user'); document.getElementById('input-username').value = APP.user.name || ''; }
+
+function openMessageModal() {
+  // Pre-fill name if user is set
+  const nameInput = document.getElementById('msg-name');
+  if (APP.user.name) {
+    nameInput.value = APP.user.name;
+    nameInput.readOnly = true;
+    nameInput.style.opacity = '0.7';
+  } else {
+    nameInput.value = '';
+    nameInput.readOnly = false;
+    nameInput.style.opacity = '1';
+    nameInput.placeholder = 'Enter your name';
+  }
+  openModal('modal-message');
+}
 
 function saveUsername() {
   const name = document.getElementById('input-username').value.trim();
@@ -2616,7 +2862,7 @@ function checkLiveTestStatus() {
   let changed = false;
   APP.liveTests.forEach(lt => {
     const startMs = lt.scheduledAt;
-    const endMs = lt.scheduledAt + (lt.duration * 1000);
+    const endMs = lt.endAt || (lt.scheduledAt + lt.duration * 1000);
     const newStatus = now < startMs ? 'upcoming' : now < endMs ? 'live' : 'ended';
     if (lt.status !== newStatus) { lt.status = newStatus; changed = true; }
   });
@@ -2642,15 +2888,16 @@ function renderLiveTests() {
   list.innerHTML = filtered.sort((a,b)=>b.scheduledAt-a.scheduledAt).map(lt => {
     const exam = APP.exams.find(e=>e.id===lt.examId)||{name:'Unknown',rules:{metric:'WPM',requiredSpeed:0}};
     const startDate = new Date(lt.scheduledAt);
-    const endDate = new Date(lt.scheduledAt + lt.duration*1000);
+    const endMs = lt.endAt || (lt.scheduledAt + lt.duration*1000);
+    const endDate = new Date(endMs);
     const attemptsCount = APP.results.filter(r=>r.liveTestId===lt.id).length;
 
     let countdownHtml = '';
     if (lt.status === 'upcoming') {
       const rem = lt.scheduledAt - Date.now();
-      countdownHtml = `<div class="countdown-display">Starts in: ${formatDuration(rem)}</div>`;
+      countdownHtml = `<div class="countdown-display">Starts in: ${formatDuration(rem)} &nbsp;•&nbsp; Ends at: ${endDate.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;
     } else if (lt.status === 'live') {
-      const rem = (lt.scheduledAt + lt.duration*1000) - Date.now();
+      const rem = endMs - Date.now();
       countdownHtml = `<div class="countdown-display live-now">🔴 LIVE — Ends in: ${formatDuration(rem)}</div>`;
     } else {
       countdownHtml = `<div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem">Ended: ${startDate.toLocaleDateString()} • ${attemptsCount} attempts</div>`;
@@ -2984,55 +3231,129 @@ function deleteLesson(id) {
 function updateLiveDuration() {
   const examId = document.getElementById('live-exam-select').value;
   const exam = APP.exams.find(e=>e.id===examId);
-  if (exam) document.getElementById('live-duration').value = Math.round(exam.rules.duration/60);
+  if (exam) {
+    document.getElementById('live-duration').value = Math.round(exam.rules.duration/60);
+    syncEndFromDuration();
+  }
+}
+
+function syncEndFromDuration() {
+  // When duration is changed manually, update end time based on start time
+  const startVal = document.getElementById('live-start-time').value;
+  const dur = parseInt(document.getElementById('live-duration').value) || 0;
+  if (startVal && dur > 0) {
+    const endMs = new Date(startVal).getTime() + dur * 60000;
+    const endDate = new Date(endMs);
+    // Format for datetime-local input: YYYY-MM-DDTHH:mm
+    const pad = n => String(n).padStart(2,'0');
+    const endStr = `${endDate.getFullYear()}-${pad(endDate.getMonth()+1)}-${pad(endDate.getDate())}T${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
+    document.getElementById('live-end-time').value = endStr;
+  }
+  updateTimePreview();
+}
+
+function syncDurationFromTimes() {
+  // When end time is set, auto-calculate duration from start→end
+  const startVal = document.getElementById('live-start-time').value;
+  const endVal = document.getElementById('live-end-time').value;
+  if (startVal && endVal) {
+    const startMs = new Date(startVal).getTime();
+    const endMs = new Date(endVal).getTime();
+    if (endMs > startMs) {
+      const mins = Math.round((endMs - startMs) / 60000);
+      document.getElementById('live-duration').value = mins;
+    }
+  }
+  updateTimePreview();
+}
+
+function updateTimePreview() {
+  const preview = document.getElementById('live-time-preview');
+  if (!preview) return;
+  const startVal = document.getElementById('live-start-time').value;
+  const endVal = document.getElementById('live-end-time').value;
+  const dur = parseInt(document.getElementById('live-duration').value) || 0;
+  if (startVal && dur > 0) {
+    const start = new Date(startVal);
+    const opts = { dateStyle:'medium', timeStyle:'short' };
+    const endMs = endVal ? new Date(endVal).getTime() : start.getTime() + dur * 60000;
+    const end = new Date(endMs);
+    preview.innerHTML = `<span style="color:var(--green)">▶ Starts:</span> ${start.toLocaleString([],opts)}<br><span style="color:var(--red)">■ Ends:</span> ${end.toLocaleString([],opts)}<br><span style="color:var(--gold)">⏱ Duration:</span> ${dur} minute${dur!==1?'s':''}`;
+  } else {
+    preview.textContent = 'Set start & end time above to preview schedule.';
+  }
 }
 
 function toggleLiveStartNow() {
   const chk = document.getElementById('live-start-now').checked;
   document.getElementById('live-start-time').disabled = chk;
-  if (chk) document.getElementById('live-start-time').value = '';
+  document.getElementById('live-end-time').disabled = chk;
+  if (chk) {
+    document.getElementById('live-start-time').value = '';
+    document.getElementById('live-end-time').value = '';
+    const dur = parseInt(document.getElementById('live-duration').value) || 10;
+    const preview = document.getElementById('live-time-preview');
+    if (preview) preview.innerHTML = `<span style="color:var(--red)">🔴 Starting NOW</span> — Duration: <strong>${dur} min</strong>`;
+  } else {
+    updateTimePreview();
+  }
 }
 
 function scheduleLiveTest() {
   const name = document.getElementById('live-name').value.trim();
   const examId = document.getElementById('live-exam-select').value;
-  const durationMin = parseInt(document.getElementById('live-duration').value)||10;
   const content = document.getElementById('live-content').value.trim();
   const startNow = document.getElementById('live-start-now').checked;
   const startTimeVal = document.getElementById('live-start-time').value;
+  const endTimeVal = document.getElementById('live-end-time').value;
+  const durationMin = parseInt(document.getElementById('live-duration').value) || 10;
 
-  if (!name||!examId||!content) { showToast('Please fill all fields', 'error'); return; }
+  if (!name || !examId || !content) { showToast('Please fill all fields', 'error'); return; }
   if (content.length < 50) { showToast('Passage too short', 'error'); return; }
 
-  let scheduledAt;
+  let scheduledAt, endAt, duration;
+
   if (startNow) {
     scheduledAt = Date.now();
-  } else if (startTimeVal) {
+    duration = durationMin * 60;
+    endAt = scheduledAt + duration * 1000;
+  } else {
+    if (!startTimeVal) { showToast('Please set a start time or check "Start Now"', 'error'); return; }
     scheduledAt = new Date(startTimeVal).getTime();
     if (scheduledAt <= Date.now()) { showToast('Start time must be in the future', 'error'); return; }
-  } else {
-    showToast('Please set a start time or check "Start Now"', 'error'); return;
+
+    if (endTimeVal) {
+      endAt = new Date(endTimeVal).getTime();
+      if (endAt <= scheduledAt) { showToast('End time must be after start time', 'error'); return; }
+      duration = Math.round((endAt - scheduledAt) / 1000);
+    } else {
+      duration = durationMin * 60;
+      endAt = scheduledAt + duration * 1000;
+    }
   }
 
-  const exam = APP.exams.find(e=>e.id===examId);
   const lt = {
     id: 'lt_' + Date.now(),
-    name, examId,
-    content,
-    duration: durationMin * 60,
-    scheduledAt,
+    name, examId, content,
+    duration,       // seconds
+    scheduledAt,    // ms timestamp
+    endAt,          // ms timestamp (explicit end time)
     status: startNow ? 'live' : 'upcoming',
     createdAt: Date.now(),
   };
   APP.liveTests.push(lt);
   saveData();
-  document.getElementById('live-name').value='';
-  document.getElementById('live-content').value='';
-  document.getElementById('live-start-time').value='';
-  document.getElementById('live-start-now').checked=false;
-  document.getElementById('live-start-time').disabled=false;
+
+  // Clear form
+  ['live-name','live-content','live-start-time','live-end-time'].forEach(id => {
+    const el = document.getElementById(id); if (el) { el.value=''; el.disabled=false; }
+  });
+  document.getElementById('live-start-now').checked = false;
+  document.getElementById('live-duration').value = '10';
+  document.getElementById('live-time-preview').textContent = 'Set start & end time above to preview schedule.';
+
   renderAdminLiveTests();
-  showToast('Live test scheduled!', 'success');
+  showToast('Live test scheduled! ✓', 'success');
 }
 
 function renderAdminLiveTests() {
@@ -3044,17 +3365,21 @@ function renderAdminLiveTests() {
   }
   const sorted = [...APP.liveTests].sort((a,b)=>b.scheduledAt-a.scheduledAt);
   container.innerHTML = `<div class="admin-list"><table>
-    <thead><tr><th>Name</th><th>Exam</th><th>Status</th><th>Scheduled</th><th>Duration</th><th>Attempts</th><th>Actions</th></tr></thead>
+    <thead><tr><th>Name</th><th>Exam</th><th>Status</th><th>Start</th><th>End</th><th>Duration</th><th>Attempts</th><th>Actions</th></tr></thead>
     <tbody>${sorted.map(lt=>{
       const exam=APP.exams.find(e=>e.id===lt.examId)||{name:'?'};
-      const date=new Date(lt.scheduledAt);
+      const startDate=new Date(lt.scheduledAt);
+      const endMs = lt.endAt || (lt.scheduledAt + lt.duration*1000);
+      const endDate=new Date(endMs);
       const attempts=APP.results.filter(r=>r.liveTestId===lt.id).length;
       const statusBadge = lt.status==='live'?'<span class="badge-pill red">LIVE</span>':lt.status==='upcoming'?'<span class="badge-pill blue">Upcoming</span>':'<span style="color:var(--text-muted)">Ended</span>';
+      const fmtDate = d => d.toLocaleDateString()+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
       return `<tr>
         <td>${lt.name}</td>
         <td>${exam.name}</td>
         <td>${statusBadge}</td>
-        <td>${date.toLocaleDateString()} ${date.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
+        <td>${fmtDate(startDate)}</td>
+        <td>${fmtDate(endDate)}</td>
         <td>${Math.round(lt.duration/60)} min</td>
         <td>${attempts}</td>
         <td style="display:flex;gap:0.5rem">
