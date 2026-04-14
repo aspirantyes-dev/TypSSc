@@ -1684,7 +1684,8 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
 //  FIREBASE SETUP
 // ════════════════════════════════════════════════════════════
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy }
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, onSnapshot,
+         serverTimestamp, query, orderBy, deleteField }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -1701,18 +1702,24 @@ const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 
 // ── Expose DB helpers to global scope ──
-window._db = db;
-window._fbDoc = doc;
-window._fbGetDoc = getDoc;
-window._fbSetDoc = setDoc;
-window._fbCollection = collection;
-window._fbAddDoc = addDoc;
+window._db            = db;
+window._fbDoc         = doc;
+window._fbGetDoc      = getDoc;
+window._fbSetDoc      = setDoc;
+window._fbCollection  = collection;
+window._fbAddDoc      = addDoc;
 window._fbServerTimestamp = serverTimestamp;
-window._fbQuery = query;
-window._fbOrderBy = orderBy;
-window._fbOnSnapshot = onSnapshot;
+window._fbQuery       = query;
+window._fbOrderBy     = orderBy;
+window._fbOnSnapshot  = onSnapshot;
+window._fbDeleteField = deleteField;
 
-// ── Load shared platform data from Firestore once DB is ready ──
+// ── SHA-256 helper (for write-token generation) ──
+window._sha256 = async (str) => {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+};
+
 window._firebaseReady = true;
 if (typeof window._onFirebaseReady === 'function') window._onFirebaseReady();
 </script>
@@ -1952,15 +1959,15 @@ async function initApp() {
     document.body.classList.add('light-mode');
     document.getElementById('theme-label').textContent = '☀️';
   }
-  // Load user from localStorage first (instant — no delay)
-  const userSaved = localStorage.getItem('typemaster_user');
-  if (userSaved) { try { APP.user = JSON.parse(userSaved); } catch(e) {} }
-  // Load platform data from Firestore (or localStorage fallback)
+
+  // Load platform data (Firestore first, localStorage fallback)
+  // loadData also restores APP.user from localStorage internally
   await loadData();
+
   renderNavUser();
-  // Only prompt name if truly new user
+  // Only show name modal if truly no name saved anywhere
   if (!APP.user.name) {
-    setTimeout(() => openModal('modal-user'), 500);
+    setTimeout(() => openModal('modal-user'), 600);
   }
   renderHomeExams();
   updateHeroStats();
@@ -1976,68 +1983,106 @@ async function initApp() {
 //  FIREBASE DATA LAYER
 // ════════════════════════════════════════════════════════════
 const PLATFORM_DOC = 'platform/main';
-const USERS_COL = 'users';
+const USERS_COL    = 'users';
 const MESSAGES_COL = 'messages';
 
+// Generate a write token from the admin password (SHA-256 hash)
+// This is sent with every platform write — Firestore rules verify it
+async function getWriteToken() {
+  if (!window._sha256) return 'fallback';
+  // Token = SHA-256("TypSSc_write:" + adminPassword)
+  return await window._sha256('TypSSc_write:' + APP.adminPassword);
+}
+
 async function saveData() {
-  // Always save to localStorage as fallback
+  // Always cache to localStorage
   localStorage.setItem('typemaster_data', JSON.stringify({
     exams: APP.exams, lessons: APP.lessons,
     liveTests: APP.liveTests, results: APP.results,
     adminPassword: APP.adminPassword
   }));
-  // Sync to Firestore (shared across all users)
+
   if (!window._db) return;
   try {
+    const writeToken = await getWriteToken();
     await window._fbSetDoc(window._fbDoc(window._db, PLATFORM_DOC), {
       exams: APP.exams,
       lessons: APP.lessons,
       liveTests: APP.liveTests,
       results: APP.results,
-      adminPassword: APP.adminPassword,
+      // Store token hash so Firestore rules can verify it
+      writeToken,
       updatedAt: window._fbServerTimestamp()
     });
-  } catch(e) { console.warn('Firestore save failed:', e); }
+    // Never store raw adminPassword in Firestore — only the token
+  } catch(e) { console.warn('Firestore save failed:', e.message); }
 }
 
 async function loadData() {
-  // Load user profile first (localStorage)
+  // ── 1. Always restore user from localStorage first (works on any domain) ──
   const userSaved = localStorage.getItem('typemaster_user');
   if (userSaved) {
     try { APP.user = JSON.parse(userSaved); } catch(e) {}
   }
-  // Try Firestore first, fallback to localStorage
+
+  // ── 2. Try Firestore for platform data ──
   if (window._db) {
     try {
       const snap = await window._fbGetDoc(window._fbDoc(window._db, PLATFORM_DOC));
       if (snap.exists()) {
         const d = snap.data();
-        APP.exams = d.exams || DEFAULT_EXAMS.map(e=>({...e}));
-        APP.lessons = d.lessons || DEFAULT_LESSONS;
+        APP.exams     = d.exams     || DEFAULT_EXAMS.map(e=>({...e}));
+        APP.lessons   = d.lessons   || DEFAULT_LESSONS;
         APP.liveTests = d.liveTests || [];
-        APP.results = d.results || [];
-        APP.adminPassword = d.adminPassword || 'TypeMaster@Admin';
-        // Also update localStorage cache
+        APP.results   = d.results   || [];
+        // adminPassword is NEVER stored in Firestore — restore from localStorage only
+        const localCache = localStorage.getItem('typemaster_data');
+        if (localCache) {
+          try { APP.adminPassword = JSON.parse(localCache).adminPassword || 'TypeMaster@Admin'; } catch(e) {}
+        }
+        // Cache locally
         localStorage.setItem('typemaster_data', JSON.stringify({
           exams: APP.exams, lessons: APP.lessons,
           liveTests: APP.liveTests, results: APP.results,
           adminPassword: APP.adminPassword
         }));
-        // Start real-time listener for live updates
+        startRealtimeSync();
+        return;
+      } else {
+        // Firestore is empty — push local data up so all sites see it
+        const cached = localStorage.getItem('typemaster_data');
+        if (cached) {
+          try {
+            const d = JSON.parse(cached);
+            APP.exams     = d.exams     || DEFAULT_EXAMS.map(e=>({...e}));
+            APP.lessons   = d.lessons   || DEFAULT_LESSONS;
+            APP.liveTests = d.liveTests || [];
+            APP.results   = d.results   || [];
+            APP.adminPassword = d.adminPassword || 'TypeMaster@Admin';
+            // Use saveData which now includes write token
+            await saveData();
+            showToast('Local data synced to cloud ✓', 'success');
+          } catch(e2) { resetToDefaults(); }
+        } else {
+          resetToDefaults();
+        }
         startRealtimeSync();
         return;
       }
-    } catch(e) { console.warn('Firestore load failed, using localStorage:', e); }
+    } catch(e) {
+      console.warn('Firestore load failed, using localStorage:', e.message);
+    }
   }
-  // Fallback: localStorage
+
+  // ── 3. Fallback: localStorage only ──
   const saved = localStorage.getItem('typemaster_data');
   if (saved) {
     try {
       const d = JSON.parse(saved);
-      APP.exams = d.exams || DEFAULT_EXAMS.map(e=>({...e}));
-      APP.lessons = d.lessons || DEFAULT_LESSONS;
+      APP.exams     = d.exams     || DEFAULT_EXAMS.map(e=>({...e}));
+      APP.lessons   = d.lessons   || DEFAULT_LESSONS;
       APP.liveTests = d.liveTests || [];
-      APP.results = d.results || [];
+      APP.results   = d.results   || [];
       APP.adminPassword = d.adminPassword || 'TypeMaster@Admin';
     } catch(e) { resetToDefaults(); }
   } else {
@@ -2067,14 +2112,15 @@ function startRealtimeSync() {
 }
 
 function saveUser() {
+  // Save to localStorage (same-domain memory)
   localStorage.setItem('typemaster_user', JSON.stringify(APP.user));
-  // Also save user profile to Firestore so they're remembered across devices
+  // Save to Firestore by user ID (cross-domain memory)
   if (window._db && APP.user.id) {
     window._fbSetDoc(
       window._fbDoc(window._db, USERS_COL, APP.user.id),
       { name: APP.user.name, id: APP.user.id, updatedAt: window._fbServerTimestamp() },
       { merge: true }
-    ).catch(e => console.warn('User save failed:', e));
+    ).catch(e => console.warn('User Firestore save failed:', e));
   }
 }
 
@@ -3642,7 +3688,21 @@ setInterval(() => {
 // ════════════════════════════════════════════════════════════
 //  BOOT
 // ════════════════════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', initApp);
+// ════════════════════════════════════════════════════════════
+//  BOOT — wait for Firebase module, then init
+// ════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  if (window._firebaseReady) {
+    initApp();
+  } else {
+    // Firebase module is deferred — wait for it
+    window._onFirebaseReady = initApp;
+    // Safety fallback: if Firebase never loads after 4s, init anyway with localStorage
+    setTimeout(() => {
+      if (typeof currentPage === 'undefined') initApp();
+    }, 4000);
+  }
+});
 </script>
 </body>
 </html>
