@@ -8,6 +8,9 @@
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()">
 <title>TypSSc — Government Exam Typing Platform</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23d4a843'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='serif' font-weight='900' font-size='38' fill='%23000'%3ET%3C/text%3E%3C/svg%3E">
 <style>
@@ -42,7 +45,156 @@
   --shadow2: 0 2px 12px rgba(0,0,0,0.4);
 }
 
-/* ─── LIGHT MODE ─── */
+/* ─── EXAM CENTER MODE ─── */
+#exam-center-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: #f5f0e8;
+  font-family: 'Courier New', Courier, monospace;
+  color: #1a1a1a;
+  flex-direction: column;
+  overflow: hidden;
+}
+#exam-center-overlay.active { display: flex; }
+
+/* Top banner — like NIC/SSC software */
+.ec-banner {
+  background: #003580;
+  color: #fff;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.4rem 1.5rem;
+  font-size: 0.78rem; letter-spacing: 0.03em;
+  border-bottom: 3px solid #f0a500;
+  flex-shrink: 0;
+}
+.ec-banner-title {
+  font-size: 1rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.ec-banner-right { display: flex; align-items: center; gap: 1.5rem; font-size: 0.75rem; }
+.ec-banner-clock { font-family: 'Courier New', monospace; font-size: 0.9rem; font-weight: 700; color: #f0c93a; }
+
+/* Candidate info bar */
+.ec-info-bar {
+  background: #1a4c8a;
+  color: #d4e4ff;
+  padding: 0.4rem 1.5rem;
+  font-size: 0.72rem;
+  display: flex; align-items: center; gap: 2rem;
+  flex-shrink: 0;
+}
+.ec-info-bar strong { color: #fff; }
+
+/* Main area */
+.ec-main {
+  flex: 1; display: flex; flex-direction: column;
+  padding: 0.75rem 1.5rem 0.5rem;
+  overflow: hidden;
+}
+
+/* Stats row — like real exam header */
+.ec-stats-row {
+  display: flex; gap: 1rem; align-items: center;
+  background: #fff; border: 2px solid #003580;
+  border-radius: 4px; padding: 0.5rem 1rem;
+  margin-bottom: 0.6rem; flex-shrink: 0;
+}
+.ec-stat-box {
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 80px; border-right: 1px solid #ccc; padding-right: 1rem;
+}
+.ec-stat-box:last-child { border-right: none; padding-right: 0; }
+.ec-stat-val {
+  font-size: 1.3rem; font-weight: 900; font-family: 'Courier New', monospace;
+  color: #003580;
+}
+.ec-stat-val.timer { color: #c00; }
+.ec-stat-val.green { color: #1a7a1a; }
+.ec-stat-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: #555; font-weight: 600; margin-top: 1px; }
+
+/* Passage panel */
+.ec-passage-panel {
+  background: #fffef5;
+  border: 2px solid #8a7a5a;
+  border-radius: 4px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.6rem;
+  flex-shrink: 0;
+  max-height: 38vh; overflow-y: auto;
+  line-height: 1.85;
+  font-size: 1rem;
+}
+.ec-passage-label {
+  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: #7a6a3a; font-weight: 700; margin-bottom: 0.5rem;
+  border-bottom: 1px solid #c8b87a; padding-bottom: 0.25rem;
+}
+
+/* Typing area */
+.ec-typing-panel {
+  background: #fff;
+  border: 2px solid #8a7a5a;
+  border-radius: 4px;
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden;
+  min-height: 140px;
+}
+.ec-typing-label {
+  background: #003580; color: #fff;
+  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;
+  font-weight: 700; padding: 0.3rem 0.75rem;
+}
+.ec-typing-box {
+  flex: 1; resize: none; border: none; outline: none;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1rem; line-height: 1.7;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  color: #1a1a1a;
+}
+.ec-typing-box:disabled { background: #f0efe8; color: #777; }
+
+/* Bottom action bar */
+.ec-action-bar {
+  background: #e8e0d0;
+  border-top: 2px solid #8a7a5a;
+  padding: 0.5rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.ec-btn {
+  padding: 0.45rem 1.4rem; font-size: 0.82rem; font-weight: 700;
+  border-radius: 3px; cursor: pointer; border: 2px solid;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  transition: all 0.15s;
+}
+.ec-btn-submit { background: #1a7a1a; color: #fff; border-color: #155015; }
+.ec-btn-submit:hover { background: #155015; }
+.ec-btn-exit { background: #c00; color: #fff; border-color: #900; }
+.ec-btn-exit:hover { background: #900; }
+.ec-btn-disabled { background: #ccc; color: #888; border-color: #bbb; cursor: default; }
+
+.ec-notice {
+  font-size: 0.72rem; color: #c00; font-weight: 700;
+  text-align: center;
+  background: #fff3cd; border: 1px solid #f0c93a; border-radius: 3px;
+  padding: 0.3rem 0.75rem;
+}
+
+/* Correct/incorrect in passage for ec mode */
+#exam-center-overlay .char.correct { color: #1a7a1a; }
+#exam-center-overlay .char.incorrect { background: #fcc; color: #c00; border-radius: 2px; }
+#exam-center-overlay .char.current { border-bottom: 2px solid #003580; }
+#exam-center-overlay .char.untyped { color: #555; }
+
+/* EC Mode entry button in test header */
+.btn-ec-mode {
+  padding: 0.4rem 0.85rem; border-radius: var(--r); font-size: 0.78rem; font-weight: 700;
+  background: #003580; color: #fff; border: none; cursor: pointer; transition: all 0.2s;
+  letter-spacing: 0.03em;
+}
+.btn-ec-mode:hover { background: #1a4c8a; transform: translateY(-1px); }
+
+
 body.light-mode {
   --bg: #f0f4ff;
   --bg2: #e4eaf8;
@@ -414,7 +566,7 @@ nav {
 .tf-stat-val { font-family:'JetBrains Mono',monospace; font-size:1rem; font-weight:600; color:var(--text-dim); }
 
 /* ─── RESULT PAGE ─── */
-.result-body { max-width:800px; margin:0 auto; padding:3rem 2rem; }
+.result-body { max-width:960px; margin:0 auto; padding:3rem 2rem; }
 .result-header { text-align:center; margin-bottom:3rem; }
 .result-title {
   font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; margin-bottom:0.5rem;
@@ -453,6 +605,59 @@ nav {
 .breakdown-row:last-child { border-bottom:none; }
 .breakdown-row .val { font-family:'JetBrains Mono',monospace; font-weight:600; }
 .result-actions { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
+
+/* ─── RESULT PASSAGE COMPARISON ─── */
+.result-comparison {
+  background:var(--card); border:1px solid var(--border); border-radius:var(--r2);
+  padding:1.5rem; margin-bottom:2rem;
+}
+.result-comparison-title {
+  font-size:0.8rem; text-transform:uppercase; letter-spacing:0.1em;
+  color:var(--gold); margin-bottom:0.6rem; display:flex; align-items:center;
+  justify-content:space-between; flex-wrap:wrap; gap:0.5rem;
+}
+.result-comparison-legend {
+  display:flex; gap:1rem; font-size:0.72rem; text-transform:none; letter-spacing:0;
+}
+.legend-item { display:flex; align-items:center; gap:0.3rem; }
+.legend-dot {
+  width:10px; height:10px; border-radius:2px; flex-shrink:0;
+}
+.legend-dot.correct  { background:rgba(34,197,94,0.25); border:1px solid var(--green); }
+.legend-dot.half     { background:rgba(249,115,22,0.25); border:1px solid var(--orange); }
+.legend-dot.wrong    { background:rgba(239,68,68,0.25); border:1px solid var(--red); }
+.legend-dot.extra    { background:rgba(139,92,246,0.25); border:1px solid var(--purple); }
+.legend-dot.missing  { background:rgba(122,146,192,0.1); border:1px dashed var(--text-muted); }
+.cmp-panel-wrap {
+  display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:0.75rem;
+}
+@media(max-width:640px) { .cmp-panel-wrap { grid-template-columns:1fr; } }
+.cmp-panel {
+  background:var(--bg2); border:1px solid var(--border); border-radius:var(--r);
+  padding:1rem; font-family:'JetBrains Mono',monospace; font-size:0.82rem;
+  line-height:2; word-break:break-word; max-height:280px; overflow-y:auto;
+}
+.cmp-panel-label {
+  font-size:0.65rem; text-transform:uppercase; letter-spacing:0.1em;
+  color:var(--text-muted); font-weight:700; margin-bottom:0.5rem;
+  padding-bottom:0.35rem; border-bottom:1px solid var(--border);
+}
+/* word chips in comparison */
+.cw { display:inline; white-space:pre-wrap; }
+.cw.correct  { color:var(--green); }
+.cw.half     { color:var(--orange); background:rgba(249,115,22,0.12); border-radius:3px; padding:0 2px; }
+.cw.wrong    { color:var(--red);    background:rgba(239,68,68,0.15);  border-radius:3px; padding:0 2px; }
+.cw.extra    { color:#b48bf8;       background:rgba(139,92,246,0.15); border-radius:3px; padding:0 2px; text-decoration:line-through; }
+.cw.missing  { color:var(--text-muted); background:rgba(122,146,192,0.08); border-radius:3px; padding:0 2px; text-decoration:underline dotted; }
+.cw-tooltip  { position:relative; cursor:default; }
+.cw-tooltip:hover::after {
+  content:attr(data-tip);
+  position:absolute; bottom:110%; left:50%; transform:translateX(-50%);
+  background:var(--card3); border:1px solid var(--border2); color:var(--text);
+  font-size:0.7rem; white-space:nowrap; padding:0.25rem 0.5rem;
+  border-radius:4px; z-index:10; pointer-events:none;
+  font-family:'Outfit',sans-serif;
+}
 
 /* ─── LIVE TESTS PAGE ─── */
 .live-tests-body { max-width:1100px; margin:0 auto; padding:2rem; }
@@ -839,7 +1044,6 @@ footer strong { color:var(--gold); }
   .typing-box { min-height:95px; font-size:0.84rem; }
 }
 
-
 /* ─── DARK/LIGHT MODE TOGGLE ─── */
 .theme-toggle {
   width:40px; height:22px; border-radius:11px; border:none; cursor:pointer;
@@ -989,7 +1193,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
 </head>
 <body>
 
-<!-- ─── NAVBAR ─── -->
 <nav>
   <div class="nav-brand" onclick="navigate('home')">
     <div class="nav-logo">T</div>
@@ -999,6 +1202,7 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
     <div class="nav-link active" data-nav="home" onclick="navigate('home')">Home</div>
     <div class="nav-link" data-nav="exams" onclick="navigate('exams')">Exams</div>
     <div class="nav-link" data-nav="live-tests" onclick="navigate('live-tests')">🔴 Live Tests</div>
+    <div class="nav-link" data-nav="battle" onclick="navigate('battle')">⚔️ Battle</div>
     <div class="nav-link" data-nav="my-results" onclick="navigate('my-results')">My Results</div>
   </div>
   <div class="nav-right">
@@ -1015,10 +1219,115 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   </div>
 </nav>
 
-<!-- ─── TOASTS ─── -->
 <div class="toast-container" id="toast-container"></div>
 
-<!-- ─── MESSAGE ADMIN MODAL ─── -->
+<!-- ═══════════════════════════════════════════════════
+     EXAM CENTER MODE OVERLAY
+     Mimics real government typing exam software (NIC/SSC/RRB style)
+     ═══════════════════════════════════════════════════ -->
+<div id="exam-center-overlay">
+
+  <!-- Top blue banner -->
+  <div class="ec-banner">
+    <div>
+      <div class="ec-banner-title" id="ec-title">TYPING TEST — GOVERNMENT EXAM</div>
+      <div style="font-size:0.7rem;opacity:0.75;margin-top:1px" id="ec-subtitle">Staff Selection Commission / Railway Recruitment Board</div>
+    </div>
+    <div class="ec-banner-right">
+      <div>
+        <span style="opacity:0.7">Candidate:</span>
+        <strong id="ec-candidate-name">—</strong>
+      </div>
+      <div>
+        <span style="opacity:0.7">Exam:</span>
+        <strong id="ec-exam-name">—</strong>
+      </div>
+      <div class="ec-banner-clock" id="ec-clock">00:00:00</div>
+    </div>
+  </div>
+
+  <!-- Candidate info bar -->
+  <div class="ec-info-bar">
+    <span>Roll No: <strong id="ec-roll">TYP-2024-001</strong></span>
+    <span>Language: <strong id="ec-lang">English</strong></span>
+    <span>Required Speed: <strong id="ec-speed">30 WPM</strong></span>
+    <span>Test Duration: <strong id="ec-duration">10:00</strong></span>
+    <span style="margin-left:auto;color:#f0c93a;font-weight:700" id="ec-status-bar">⏳ Waiting to begin...</span>
+  </div>
+
+  <!-- Main content -->
+  <div class="ec-main">
+
+    <!-- Stats row -->
+    <div class="ec-stats-row">
+      <div class="ec-stat-box">
+        <div class="ec-stat-val timer" id="ec-timer">10:00</div>
+        <div class="ec-stat-label">Time Left</div>
+      </div>
+      <div class="ec-stat-box">
+        <div class="ec-stat-val" id="ec-wpm">0</div>
+        <div class="ec-stat-label" id="ec-speed-label">Net WPM</div>
+      </div>
+      <div class="ec-stat-box">
+        <div class="ec-stat-val green" id="ec-accuracy">100%</div>
+        <div class="ec-stat-label">Accuracy</div>
+      </div>
+      <div class="ec-stat-box">
+        <div class="ec-stat-val" id="ec-keystrokes" style="color:#5a3a9a">0</div>
+        <div class="ec-stat-label">Keystrokes</div>
+      </div>
+      <div class="ec-stat-box">
+        <div class="ec-stat-val green" id="ec-correct">0</div>
+        <div class="ec-stat-label">✓ Correct</div>
+      </div>
+      <div class="ec-stat-box">
+        <div class="ec-stat-val" id="ec-mistakes" style="color:#c00">0</div>
+        <div class="ec-stat-label">✗ Mistakes</div>
+      </div>
+      <div class="ec-stat-box" style="border-right:none">
+        <div class="ec-stat-val" id="ec-gross">0</div>
+        <div class="ec-stat-label">Gross WPM</div>
+      </div>
+      <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:0.2rem">
+        <div id="ec-rule-badge" style="font-size:0.72rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:3px;background:#fde;color:#c00;border:1px solid #f99">✗ No Backspace</div>
+        <div style="font-size:0.65rem;color:#555">Progress: <span id="ec-progress">0%</span></div>
+      </div>
+    </div>
+
+    <!-- Passage panel -->
+    <div class="ec-passage-panel">
+      <div class="ec-passage-label">📖 PASSAGE — Read carefully and type exactly as shown</div>
+      <div id="ec-passage-display" style="font-size:1rem;line-height:2;word-break:break-word;letter-spacing:0.02em"></div>
+    </div>
+
+    <!-- Typing panel -->
+    <div class="ec-typing-panel">
+      <div class="ec-typing-label">⌨ TYPE HERE — Do not close or navigate away during the test</div>
+      <textarea class="ec-typing-box" id="ec-typing-box"
+        placeholder="Click here and start typing when the test begins. Do NOT use Backspace if this is a No-Backspace exam."
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+        oninput="handleECInput(event)" onkeydown="handleECKeydown(event)"
+        disabled></textarea>
+    </div>
+
+  </div>
+
+  <!-- Bottom action bar -->
+  <div class="ec-action-bar">
+    <div style="display:flex;align-items:center;gap:1rem">
+      <button class="ec-btn ec-btn-submit" id="ec-submit-btn" onclick="ecSubmitTest()" disabled>✓ SUBMIT TEST</button>
+      <button class="ec-btn ec-btn-exit" onclick="exitExamCenterMode()">✕ EXIT EXAM CENTER</button>
+    </div>
+    <div class="ec-notice" id="ec-notice">⚠ Do not switch tabs or windows during the exam. Remain focused on the passage.</div>
+    <div style="font-size:0.7rem;color:#555;text-align:right">
+      TypSSc — Exam Center Mode<br>
+      <span id="ec-datetime" style="font-family:'Courier New',monospace"></span>
+    </div>
+  </div>
+
+</div>
+<!-- END EXAM CENTER MODE -->
+
 <div class="modal-overlay hidden" id="modal-message" onclick="if(event.target===this)closeModal('modal-message')">
   <div class="modal" style="max-width:480px">
     <button class="modal-close" onclick="closeModal('modal-message')">✕</button>
@@ -1036,7 +1345,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   </div>
 </div>
 
-<!-- ─── USER NAME MODAL ─── -->
 <div class="modal-overlay" id="modal-user" onclick="if(event.target===this&&APP.user.name)closeModal('modal-user')">
   <div class="modal">
     <button class="modal-close" onclick="if(APP.user.name)closeModal('modal-user')">✕</button>
@@ -1051,12 +1359,16 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   </div>
 </div>
 
-<!-- ─── ADMIN LOGIN MODAL ─── -->
 <div class="modal-overlay hidden" id="modal-admin-login" onclick="if(event.target===this)closeModal('modal-admin-login')">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('modal-admin-login')">✕</button>
     <h3>Admin Access</h3>
-    <p>Enter your admin password to access the control panel.</p>
+    <p>Enter your admin credentials to access the control panel.</p>
+    <div class="form-group" style="margin-bottom:1rem">
+      <label class="form-label">Admin Email / ID</label>
+      <input class="form-input" id="input-admin-id" type="email" placeholder="admin@email.com"
+             onkeydown="if(event.key==='Enter')adminLogin()">
+    </div>
     <div class="form-group" style="margin-bottom:1rem">
       <label class="form-label">Password</label>
       <input class="form-input" id="input-admin-pass" type="password" placeholder="Enter admin password"
@@ -1066,7 +1378,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   </div>
 </div>
 
-<!-- ─── TEST START OVERLAY ─── -->
 <div class="test-start-overlay hidden" id="test-start-overlay">
   <div class="test-start-card">
     <p style="color:var(--text-dim);font-size:0.85rem;text-transform:uppercase;letter-spacing:0.1em">Test Starting In</p>
@@ -1077,9 +1388,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     PAGE: HOME
-══════════════════════════════════════════════════════ -->
 <div class="page active" id="page-home">
   <div class="hero">
     <div class="hero-bg"></div>
@@ -1106,7 +1414,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
     </div>
   </div>
 
-  <!-- Exams preview on home -->
   <div class="section">
     <div class="section-label">Exam Categories</div>
     <div class="section-title">Choose Your Exam</div>
@@ -1114,7 +1421,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
     <div class="exams-grid" id="home-exams-grid"></div>
   </div>
 
-  <!-- Features -->
   <div class="section" style="border-top:1px solid var(--border)">
     <div class="section-label">Platform Features</div>
     <div class="section-title">Everything You Need</div>
@@ -1144,9 +1450,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   <footer><strong>TypSSc</strong> — Built for serious exam aspirants</footer>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     PAGE: EXAMS LIST
-══════════════════════════════════════════════════════ -->
 <div class="page" id="page-exams">
   <div class="section">
     <div class="section-label">All Exams</div>
@@ -1155,9 +1458,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     PAGE: EXAM DETAIL
-══════════════════════════════════════════════════════ -->
 <div class="page" id="page-exam-detail">
   <div class="exam-detail-hero">
     <div class="breadcrumb">
@@ -1187,9 +1487,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     PAGE: TYPING TEST
-══════════════════════════════════════════════════════ -->
 <div class="page" id="page-test">
   <div class="test-header">
     <div class="test-info">
@@ -1216,16 +1513,15 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
     </div>
     <div class="test-controls">
       <button class="highlight-toggle-btn active" id="highlight-toggle-btn" onclick="toggleHighlight()" title="Toggle word highlight">💡 Highlight</button>
+      <button class="btn-ec-mode" onclick="enterExamCenterMode()" title="Switch to real exam layout">🖥 Exam Center</button>
       <button class="btn-submit-test" onclick="confirmSubmit()">✓ Submit</button>
     </div>
   </div>
 
-  <!-- Progress bar -->
   <div class="progress-bar-wrapper" style="margin:0">
     <div class="progress-bar-fill" id="test-progress" style="width:0%"></div>
   </div>
 
-  <!-- Rule alert -->
   <div style="max-width:1400px;margin:0 auto;padding:0.75rem 2rem 0">
     <div class="rule-alert" id="test-rule-alert">
       <span class="rule-alert-icon">⚠️</span>
@@ -1233,15 +1529,12 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
     </div>
   </div>
 
-  <!-- Vertical stack: passage TOP, typing box BOTTOM -->
   <div class="test-split-body">
-    <!-- TOP: Passage display -->
     <div class="split-panel">
       <div class="split-panel-label">📖 Lesson Passage — Read & Type</div>
       <div class="passage-container-split" id="passage-display"></div>
     </div>
 
-    <!-- BOTTOM: Typing input -->
     <div class="split-panel">
       <div class="split-panel-label">⌨️ Your Typing Area</div>
       <textarea class="typing-box" id="typing-box-visible"
@@ -1252,18 +1545,17 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
         <div class="feedback-dot"></div>
         <span id="feedback-text">Start typing to see feedback...</span>
       </div>
-      <!-- Footer stats -->
       <div class="test-footer-stats" style="margin-top:0.75rem">
         <div class="tf-stat">
-          <span class="tf-stat-label">✓ Correct</span>
+          <span class="tf-stat-label">✓ Correct Words</span>
           <span class="tf-stat-val text-green" id="stat-correct">0</span>
         </div>
         <div class="tf-stat">
-          <span class="tf-stat-label">✗ Wrong</span>
+          <span class="tf-stat-label">✗ Full Mistakes</span>
           <span class="tf-stat-val text-red" id="stat-incorrect">0</span>
         </div>
         <div class="tf-stat">
-          <span class="tf-stat-label">Words</span>
+          <span class="tf-stat-label">Words Typed</span>
           <span class="tf-stat-val" id="stat-words">0</span>
         </div>
         <div class="tf-stat">
@@ -1282,14 +1574,10 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
     </div>
   </div>
 
-  <!-- Hidden input for compatibility -->
   <input class="typing-input" id="typing-input" autocomplete="off" autocorrect="off"
          autocapitalize="off" spellcheck="false" style="position:fixed;top:-9999px;opacity:0">
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     PAGE: RESULT
-══════════════════════════════════════════════════════ -->
 <div class="page" id="page-result">
   <div class="result-body">
     <div class="result-header">
@@ -1302,6 +1590,28 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
       <div class="breakdown-title">Detailed Breakdown</div>
       <div id="breakdown-rows"></div>
     </div>
+    <div class="result-comparison" id="result-comparison" style="display:none">
+      <div class="result-comparison-title">
+        <span>📄 Passage Comparison — Mistakes Highlighted</span>
+        <div class="result-comparison-legend">
+          <span class="legend-item"><span class="legend-dot correct"></span>Correct</span>
+          <span class="legend-item"><span class="legend-dot half"></span>Half mistake</span>
+          <span class="legend-item"><span class="legend-dot wrong"></span>Full mistake</span>
+          <span class="legend-item"><span class="legend-dot extra"></span>Extra word</span>
+          <span class="legend-item"><span class="legend-dot missing"></span>Missed word</span>
+        </div>
+      </div>
+      <div class="cmp-panel-wrap">
+        <div class="cmp-panel">
+          <div class="cmp-panel-label">📖 Original Passage</div>
+          <div id="cmp-passage"></div>
+        </div>
+        <div class="cmp-panel">
+          <div class="cmp-panel-label">⌨️ What You Typed</div>
+          <div id="cmp-typed"></div>
+        </div>
+      </div>
+    </div>
     <div class="result-actions">
       <button class="btn-secondary" onclick="navigate('home')">← Back to Home</button>
       <button class="btn-primary" id="result-retry-btn">↻ Try Again</button>
@@ -1309,9 +1619,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     PAGE: LIVE TESTS
-══════════════════════════════════════════════════════ -->
 <div class="page" id="page-live-tests">
   <div class="live-tests-body">
     <div class="live-tests-header">
@@ -1334,9 +1641,113 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     PAGE: RANKINGS
-══════════════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="modal-highlight-pref" onclick="">
+  <div class="modal" style="max-width:420px;text-align:center">
+    <h3>⚙️ Test Display Setting</h3>
+    <p style="margin-bottom:1.5rem">Do you want character highlights shown while typing?</p>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.5rem">
+      <button class="btn-primary" onclick="startWithHighlight(true)" style="display:flex;align-items:center;justify-content:center;gap:0.5rem">
+        💡 <strong>Highlight ON</strong> — Show correct/incorrect characters in colour
+      </button>
+      <button class="btn-secondary" onclick="startWithHighlight(false)" style="display:flex;align-items:center;justify-content:center;gap:0.5rem">
+        🚫 <strong>Highlight OFF</strong> — Plain text, no colour feedback
+      </button>
+    </div>
+    <p style="font-size:0.75rem;color:var(--text-muted)">You can change this during the test using the 💡 button.</p>
+  </div>
+</div>
+
+<div class="page" id="page-battle">
+  <div class="live-tests-body">
+    <div class="live-tests-header">
+      <div class="section-label">Challenge a Friend</div>
+      <div class="section-title">⚔️ Typing Battle</div>
+      <p class="section-desc" style="margin-top:0.5rem">Create a challenge room and share the code with a friend. Race each other in real-time!</p>
+    </div>
+
+    <div class="admin-section" style="max-width:600px;margin:1.5rem auto">
+      <h3>Create a Battle Room</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Select Exam</label>
+          <select class="form-select" id="battle-exam-select"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration (minutes)</label>
+          <input class="form-input" id="battle-duration" type="number" min="1" max="30" value="5">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label">Passage Text</label>
+        <textarea class="form-textarea" id="battle-content" style="min-height:100px"
+          placeholder="Enter the passage both players will type..."></textarea>
+      </div>
+      <button class="btn-submit" onclick="createBattleRoom()" style="width:100%">⚔️ Create Battle Room</button>
+    </div>
+
+    <div class="admin-section" style="max-width:600px;margin:0 auto 1.5rem">
+      <h3>Join a Battle Room</h3>
+      <div style="display:flex;gap:0.75rem;align-items:flex-end">
+        <div class="form-group" style="flex:1;margin:0">
+          <label class="form-label">Battle Room Code</label>
+          <input class="form-input" id="battle-join-code" placeholder="Enter 6-digit code e.g. AB12CD"
+                 maxlength="8" style="text-transform:uppercase;letter-spacing:0.15em"
+                 oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <button class="btn-submit" onclick="joinBattleRoom()" style="margin-bottom:0">Join Room →</button>
+      </div>
+    </div>
+
+    <div class="hidden" id="battle-arena" style="max-width:900px;margin:0 auto">
+      <div class="admin-section" style="text-align:center;margin-bottom:1rem">
+        <div style="font-size:0.75rem;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem">Battle Room Code</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:900;color:var(--gold);letter-spacing:0.25em" id="battle-room-code-display">——</div>
+        <div style="font-size:0.8rem;color:var(--text-dim);margin-top:0.5rem">Share this code with your friend to join</div>
+        <div style="margin-top:0.75rem;padding:0.5rem 0.75rem;background:var(--bg2);border-radius:var(--r);font-size:0.82rem" id="battle-room-status">Waiting for opponent...</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <div class="admin-section" style="text-align:center;margin:0">
+          <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.4rem">You</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--gold)" id="battle-my-name">—</div>
+          <div style="font-size:2rem;font-weight:900;color:var(--blue2);font-family:'JetBrains Mono',monospace" id="battle-my-progress">0%</div>
+          <div style="font-size:0.8rem;color:var(--text-dim)" id="battle-my-wpm">0 WPM</div>
+        </div>
+        <div class="admin-section" style="text-align:center;margin:0">
+          <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.4rem">Opponent</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--red)" id="battle-opp-name">Waiting...</div>
+          <div style="font-size:2rem;font-weight:900;color:var(--red);font-family:'JetBrains Mono',monospace" id="battle-opp-progress">0%</div>
+          <div style="font-size:0.8rem;color:var(--text-dim)" id="battle-opp-wpm">0 WPM</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:1rem">
+        <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:0.25rem"><span>Your progress</span><span id="battle-my-chars">0/0</span></div>
+        <div class="progress-bar-wrapper" style="margin-bottom:0.5rem"><div class="progress-bar-fill" id="battle-my-bar" style="width:0%;background:var(--blue2)"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:0.25rem"><span>Opponent progress</span><span id="battle-opp-chars">0/0</span></div>
+        <div class="progress-bar-wrapper"><div class="progress-bar-fill" id="battle-opp-bar" style="width:0%;background:var(--red)"></div></div>
+      </div>
+
+      <div class="split-panel" style="margin-bottom:1rem">
+        <div class="split-panel-label">📖 Battle Passage</div>
+        <div class="passage-container-split" id="battle-passage-display" style="max-height:180px"></div>
+      </div>
+      <div class="split-panel">
+        <div class="split-panel-label">⌨️ Type Here</div>
+        <textarea class="typing-box" id="battle-typing-box"
+          placeholder="Battle starts when both players are ready..."
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+          oninput="handleBattleInput(event)" onkeydown="handleBattleKeydown(event)"
+          disabled></textarea>
+      </div>
+
+      <div style="display:flex;gap:1rem;margin-top:1rem;flex-wrap:wrap">
+        <button class="btn-primary" id="battle-ready-btn" onclick="setBattleReady()" style="flex:1">✓ I'm Ready!</button>
+        <button class="btn-danger" onclick="leaveBattleRoom()" style="flex:1">Leave Room</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="page" id="page-rankings">
   <div class="rankings-body">
     <div class="rankings-header">
@@ -1371,9 +1782,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     PAGE: MY RESULTS
-══════════════════════════════════════════════════════ -->
 <div class="page" id="page-my-results">
   <div class="live-tests-body">
     <div class="live-tests-header">
@@ -1388,17 +1796,18 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     PAGE: ADMIN
-══════════════════════════════════════════════════════ -->
 <div class="page" id="page-admin">
-  <!-- Admin Login (shown when not logged in) -->
   <div id="admin-login-view">
     <div class="admin-login">
       <div class="admin-login-card">
         <div class="admin-login-icon">🔐</div>
         <h2>Admin Panel</h2>
-        <p>Restricted access. Enter your password to manage the platform.</p>
+        <p>Restricted access. Enter your credentials to manage the platform.</p>
+        <div class="form-group" style="margin-bottom:1rem;text-align:left">
+          <label class="form-label">Admin Email / ID</label>
+          <input class="form-input" id="admin-id-input" type="email" placeholder="admin@email.com"
+                 onkeydown="if(event.key==='Enter')adminLoginPage()">
+        </div>
         <div class="form-group" style="margin-bottom:1rem;text-align:left">
           <label class="form-label">Admin Password</label>
           <input class="form-input" id="admin-pass-input" type="password" placeholder="Enter password"
@@ -1410,7 +1819,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
     </div>
   </div>
 
-  <!-- Admin Panel (shown when logged in) -->
   <div class="admin-panel hidden" id="admin-panel-view">
     <div class="admin-header">
       <div>
@@ -1428,14 +1836,15 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
       <button class="admin-tab" data-tab="settings" onclick="switchAdminTab('settings',this)">⚙ Settings</button>
     </div>
 
-    <!-- ── Tab: Lessons ── -->
     <div class="admin-tab-content active" id="atab-lessons">
       <div class="admin-section">
         <h3>Add New Lesson</h3>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Select Exam</label>
-            <select class="form-select" id="lesson-exam-select" onchange="updateLessonExamInfo()"></select>
+            <select class="form-select" id="lesson-exam-select" onchange="updateLessonExamInfo()">
+              <option value="ALL">📚 All Exams at Once</option>
+            </select>
           </div>
           <div class="form-group">
             <label class="form-label">Lesson Title</label>
@@ -1454,9 +1863,9 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
         <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
           <button class="btn-submit" onclick="addLesson()">+ Add Lesson</button>
           <span style="font-size:0.8rem;color:var(--text-muted)" id="lesson-char-count">0 characters</span>
+          <span style="font-size:0.78rem;color:var(--gold);font-weight:600" id="lesson-all-note"></span>
         </div>
       </div>
-      <!-- Lessons list by exam -->
       <div class="admin-section">
         <h3>All Lessons</h3>
         <div class="form-row" style="margin-bottom:1.25rem">
@@ -1469,10 +1878,12 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
       </div>
     </div>
 
-    <!-- ── Tab: Live Tests ── -->
     <div class="admin-tab-content" id="atab-live">
       <div class="admin-section">
         <h3>Schedule New Live Test</h3>
+        <div style="background:rgba(212,168,67,0.07);border:1px solid rgba(212,168,67,0.2);border-radius:var(--r);padding:0.85rem 1rem;margin-bottom:1.25rem;font-size:0.82rem;color:var(--gold)">
+          💡 <strong>Two separate timings:</strong> <span style="color:var(--text-dim)"><strong style="color:var(--text)">Test Duration</strong> = how long each student types (e.g. 10 min timer). &nbsp;|&nbsp; <strong style="color:var(--text)">Live Period</strong> = the window during which students can enter &amp; attempt (e.g. open for 24 hours).</span>
+        </div>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Test Name</label>
@@ -1483,48 +1894,58 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
             <select class="form-select" id="live-exam-select" onchange="updateLiveDuration()"></select>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">📅 Start Date & Time</label>
-            <input class="form-input" id="live-start-time" type="datetime-local" oninput="syncEndFromDuration()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">🏁 End Date & Time</label>
-            <input class="form-input" id="live-end-time" type="datetime-local" oninput="syncDurationFromTimes()">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Duration (auto-calculated, minutes)</label>
-            <input class="form-input" id="live-duration" type="number" min="1" max="180" value="10" oninput="syncEndFromDuration()" placeholder="Or enter manually">
+
+        <div style="border:1px solid rgba(59,122,248,0.3);border-radius:var(--r);padding:1rem;margin-bottom:1rem;background:rgba(59,122,248,0.04)">
+          <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--blue2);font-weight:700;margin-bottom:0.75rem">⏱ TYPING DURATION — How long does each student type?</div>
+          <div class="form-row" style="margin:0">
+            <div class="form-group">
+              <label class="form-label">Test Duration (minutes) <span style="color:var(--blue2)">*</span></label>
+              <input class="form-input" id="live-duration" type="number" min="1" max="180" value="10" placeholder="e.g. 10">
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.3rem">This is the countdown timer the student sees while typing.</div>
+            </div>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group" style="align-self:flex-end">
-            <label class="form-label">Or — Start Immediately</label>
-            <div style="padding-top:0.5rem;display:flex;align-items:center;gap:0.5rem">
+
+        <div style="border:1px solid rgba(34,197,94,0.25);border-radius:var(--r);padding:1rem;margin-bottom:1rem;background:rgba(34,197,94,0.04)">
+          <div style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green);font-weight:700;margin-bottom:0.75rem">📅 LIVE PERIOD — When can students enter and attempt?</div>
+          <div class="form-row" style="margin:0">
+            <div class="form-group">
+              <label class="form-label">📅 Period Start</label>
+              <input class="form-input" id="live-start-time" type="datetime-local" oninput="syncEndFromWindowHours()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">🏁 Period End</label>
+              <input class="form-input" id="live-end-time" type="datetime-local" oninput="syncWindowFromTimes()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Open Window (hours)</label>
+              <input class="form-input" id="live-window-hours" type="number" min="1" max="720" value="24" oninput="syncEndFromWindowHours()" placeholder="e.g. 24">
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.3rem">How many hours is it open to attempt?</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.75rem;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:0.5rem">
               <input type="checkbox" id="live-start-now" onchange="toggleLiveStartNow()">
-              <label for="live-start-now" style="font-size:0.875rem;cursor:pointer">Start this test NOW</label>
+              <label for="live-start-now" style="font-size:0.875rem;cursor:pointer">Open for attempts NOW</label>
             </div>
-          </div>
-          <div class="form-group" id="live-time-preview-group" style="align-self:flex-end">
-            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:0.65rem 0.9rem;font-size:0.8rem;color:var(--text-dim)" id="live-time-preview">
-              Set start & end time above to preview schedule.
+            <div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:0.55rem 0.9rem;font-size:0.78rem;color:var(--text-dim)" id="live-time-preview">
+              Set start time and open window above.
             </div>
           </div>
         </div>
+
         <div class="form-group" style="margin-bottom:1rem">
           <label class="form-label">Passage Text</label>
           <textarea class="form-textarea" id="live-content" placeholder="Enter the passage for this live test..."></textarea>
         </div>
         <button class="btn-submit" onclick="scheduleLiveTest()">🔴 Schedule Live Test</button>
       </div>
-      <!-- Existing live tests -->
       <div class="admin-section">
         <h3>Scheduled & Past Live Tests</h3>
         <div id="admin-live-tests-table"></div>
       </div>
     </div>
 
-    <!-- ── Tab: Exam Config ── -->
     <div class="admin-tab-content" id="atab-exams">
       <div class="admin-section">
         <h3>Add Custom Exam</h3>
@@ -1585,7 +2006,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
       </div>
     </div>
 
-    <!-- ── Tab: All Results ── -->
     <div class="admin-tab-content" id="atab-results">
       <div class="admin-section">
         <h3>All Student Results</h3>
@@ -1609,7 +2029,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
       </div>
     </div>
 
-    <!-- ── Tab: Messages ── -->
     <div class="admin-tab-content" id="atab-messages">
       <div class="admin-section">
         <h3>User Messages & Ideas</h3>
@@ -1620,25 +2039,30 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
       </div>
     </div>
 
-    <!-- ── Tab: Settings ── -->
     <div class="admin-tab-content" id="atab-settings">
       <div class="admin-section">
-        <h3>Change Admin Password</h3>
+        <h3>Change Admin Credentials</h3>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Current Password</label>
-            <input class="form-input" id="curr-pass" type="password" placeholder="Current password">
+            <label class="form-label">New Admin Email / ID</label>
+            <input class="form-input" id="new-admin-id" type="email" placeholder="New admin email">
           </div>
           <div class="form-group">
+            <label class="form-label">Current Password (to confirm)</label>
+            <input class="form-input" id="curr-pass" type="password" placeholder="Current password">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
             <label class="form-label">New Password</label>
-            <input class="form-input" id="new-pass" type="password" placeholder="New password">
+            <input class="form-input" id="new-pass" type="password" placeholder="New password (min 8 chars)">
           </div>
           <div class="form-group">
             <label class="form-label">Confirm New Password</label>
             <input class="form-input" id="confirm-pass" type="password" placeholder="Confirm new password">
           </div>
         </div>
-        <button class="btn-submit" onclick="changePassword()">Update Password</button>
+        <button class="btn-submit" onclick="changeCredentials()">Update Credentials</button>
       </div>
       <div class="admin-section">
         <h3>Platform Stats</h3>
@@ -1656,7 +2080,6 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   </div>
 </div>
 
-<!-- Edit Lesson Modal -->
 <div class="modal-overlay hidden" id="modal-edit-lesson" onclick="if(event.target===this)closeModal('modal-edit-lesson')">
   <div class="modal" style="max-width:600px">
     <button class="modal-close" onclick="closeModal('modal-edit-lesson')">✕</button>
@@ -1726,17 +2149,27 @@ if (typeof window._onFirebaseReady === 'function') window._onFirebaseReady();
 
 <script>
 // ════════════════════════════════════════════════════════════
+// [INJECTED] SUPABASE SECURE CLOUD AUTHENTICATION
+// ════════════════════════════════════════════════════════════
+const _supabase = supabase.createClient(
+  'https://sbbqixppvmukvqfqlaqj.supabase.co', 
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNiYnFpeHBwdm11a3ZxZnFsYXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDI0NjgsImV4cCI6MjA5MTgxODQ2OH0.I1bFbcqIwz-picHME-_TTXcZe3iXnA7uFRARGtH4o4Q'
+);
+
+// ════════════════════════════════════════════════════════════
 //  APP STATE
 // ════════════════════════════════════════════════════════════
 const APP = {
   user: { id: '', name: '' },
   adminLoggedIn: false,
-  adminPassword: 'TypeMaster@Admin',
+  adminId: 'aspirantyes@gmail.com', // Leaving as fallback for local data loading
+  adminPassword: '', // Password logic completely replaced by Supabase
   exams: [],
   lessons: [],
   liveTests: [],
   results: [],
-  // Security: brute force lockout
+  battles: [],
+  // Security
   loginAttempts: 0,
   lockoutUntil: 0,
   // Test state
@@ -1759,60 +2192,70 @@ const APP = {
     examName: '',
     lessonName: '',
   },
-  // UI state
+  // UI prefs
   highlightOn: true,
   theme: 'dark',
 };
 
-// ─── DEFAULT EXAMS ───
+// ─── DEFAULT EXAMS — Official 2024-26 Rules (Verified from RRB/SSC notifications) ───
 const DEFAULT_EXAMS = [
   {
     id: 'rrb-ntpc',
     name: 'RRB NTPC',
-    fullName: 'Railway Recruitment Board — Non-Technical Popular Categories',
-    color: '#3b7af8',
-    icon: '🚂',
-    custom: false,
+    fullName: 'Railway Recruitment Board — Non-Technical Popular Categories (CBTST)',
+    color: '#3b7af8', icon: '🚂', custom: false,
     rules: {
-      backspaceAllowed: false,
-      deleteAllowed: false,
-      copyPasteAllowed: false,
+      backspaceAllowed: false, deleteAllowed: false, copyPasteAllowed: false,
       language: 'English / Hindi',
-      requiredSpeed: 30,
-      metric: 'WPM',
-      duration: 600,
+      requiredSpeed: 30, metric: 'WPM', duration: 600,
+      minWords: 300, minWordsHindi: 250,
+      errorTolerance: 5,
+      // Mistake is counted at WORD level
+      mistakeUnit: 'word',
+      fullMistakes: ['Wrong word (substitution)', 'Missing word (omission)', 'Extra word (addition)', 'Repeated word', 'Spelling error of any kind', 'Incomplete/half-typed word'],
+      halfMistakes: ['Spacing error between words', 'Paragraph without Tab key', 'Syllabification error at line end'],
+      errorFormula: 'Net WPM = (Total Words − Final Mistakes × 10) ÷ 10 min',
       notes: [
-        'Backspace / Delete keys are STRICTLY NOT allowed',
-        'Copy, Cut, Paste operations are prohibited',
-        'Minimum required speed: 30 WPM (English) / 25 WPM (Hindi)',
-        'Test duration: 10 minutes',
-        'Qualifying nature — must meet minimum speed standard',
-        'No auto-correction or spell-check permitted',
+        '🚫 Backspace, Delete & Arrow keys are STRICTLY DISABLED',
+        '🚫 Copy, Cut, Paste (Ctrl+C/V/X) are prohibited',
+        '⚡ English: Min 30 WPM | Hindi: Min 25 WPM (net speed after penalties)',
+        '⏱ Duration: 10 minutes typing (after 1 min warm-up)',
+        '📝 Must type minimum 300 words (English) or 250 words (Hindi)',
+        '⚠ 5% mistake tolerance: first 5% of total typed words are forgiven',
+        '🔢 Beyond 5%: each extra mistake deducts 10 words from total count',
+        '🔢 Formula: Net WPM = (Words Typed − Final Mistakes × 10) ÷ 10',
+        '📏 Mistake unit = WORD (e.g. one wrong word = 1 full mistake)',
+        '🔄 May retype passage from start if finished before time',
+        '✅ Qualifying in nature — does not add to merit score',
       ]
     }
   },
   {
     id: 'ssc-cgl',
     name: 'SSC CGL',
-    fullName: 'Staff Selection Commission — Combined Graduate Level (Data Entry)',
-    color: '#8b5cf6',
-    icon: '📋',
-    custom: false,
+    fullName: 'Staff Selection Commission — Combined Graduate Level (DEST)',
+    color: '#8b5cf6', icon: '📋', custom: false,
     rules: {
-      backspaceAllowed: true,
-      deleteAllowed: true,
-      copyPasteAllowed: false,
-      language: 'English',
-      requiredSpeed: 8000,
-      metric: 'KDPH',
-      duration: 900,
+      backspaceAllowed: false, deleteAllowed: false, copyPasteAllowed: false,
+      language: 'English / Hindi',
+      requiredSpeed: 8000, metric: 'KDPH', duration: 900,
+      minKeystrokes: 2000,
+      errorTolerance: 5, // UR: 5%, OBC/EWS: 5%, SC/ST: 10% (varies by year)
+      mistakeUnit: 'word',
+      fullMistakes: ['Omission of word/figure', 'Substitution of wrong word/figure', 'Addition of extra word/figure', 'Spelling error (repetition/addition/omission/substitution of letter)', 'Repetition of word', 'Incomplete/half-typed word'],
+      halfMistakes: ['No space between words (e.g. "Ihope")', 'Extra space between letters of a word', 'Wrong capitalisation', 'Punctuation error', 'Transposition of words', 'Paragraph without Tab key'],
+      errorFormula: 'Net KDPH = (Gross Keystrokes − Total Error Count) ÷ Time',
       notes: [
-        'Backspace / Delete keys ARE allowed for correction',
-        'Copy, Cut, Paste operations are prohibited',
-        'Data Entry Operator (DEO): 8000 Key Depressions Per Hour (KDPH)',
-        'Test duration: 15 minutes on printed matter',
-        'Speed assessed on Total Key Depressions (KDPH metric)',
-        'Errors are penalised — net KDPH is calculated',
+        '🚫 Backspace, Delete, Arrow keys, Undo, Redo — ALL DISABLED',
+        '🚫 Copy, Cut, Paste prohibited',
+        '⚡ Required: 8,000 KDPH (≈2,000 keystrokes in 15 min)',
+        '⏱ Duration: 15 minutes on printed matter passage',
+        '⚠ Error limit: ~5% of total keystrokes (UR/OBC) | ~10% (SC/ST/PH)',
+        '🔢 Full mistake = 1 error | Half mistake = 0.5 error',
+        '🔢 Formula: Net KDPH = (Gross hits − Total errors) ÷ time',
+        '📏 Mistake unit = WORD (wrong/missing/extra word = 1 full mistake)',
+        '📑 Tab key must be used for each new paragraph',
+        '✅ Qualifying — mandatory for Tax Assistant & CSS posts',
       ]
     }
   },
@@ -1820,24 +2263,29 @@ const DEFAULT_EXAMS = [
     id: 'ssc-chsl',
     name: 'SSC CHSL',
     fullName: 'Staff Selection Commission — Combined Higher Secondary Level',
-    color: '#ec4899',
-    icon: '📝',
-    custom: false,
+    color: '#ec4899', icon: '📝', custom: false,
     rules: {
-      backspaceAllowed: true,
-      deleteAllowed: true,
-      copyPasteAllowed: false,
+      backspaceAllowed: true, deleteAllowed: true, copyPasteAllowed: false,
       language: 'English / Hindi',
-      requiredSpeed: 35,
-      metric: 'WPM',
-      duration: 600,
+      requiredSpeed: 35, metric: 'WPM', duration: 600,
+      minKeystrokes: 1750,
+      errorTolerance: 5,
+      mistakeUnit: 'word',
+      fullMistakes: ['Omission of word/figure', 'Substitution of wrong word/figure', 'Addition of extra word/figure', 'Spelling error', 'Repeated word', 'Incomplete word'],
+      halfMistakes: ['Spacing error', 'Wrong capitalisation', 'Punctuation error', 'Transposition of words', 'No Tab key for paragraph'],
+      errorFormula: 'LDC/JSA/PA/SA: WPM | DEO: KDPH metric',
       notes: [
-        'Backspace / Delete keys ARE allowed',
-        'Copy, Cut, Paste operations are prohibited',
-        'Minimum speed: 35 WPM (English) / 30 WPM (Hindi)',
-        'Test duration: 10 minutes',
-        'LDC / JSA post: English or Hindi typing skill test',
-        'Qualifying in nature based on WPM achieved',
+        '✅ Backspace & Delete ARE allowed — use wisely to correct errors',
+        '🚫 Copy, Cut, Paste are prohibited',
+        '⚡ LDC/JSA/PA/SA: 35 WPM English | 30 WPM Hindi (1,750 keystrokes/10 min)',
+        '⚡ DEO: 8,000 KDPH in 15 min | DEO Grade-A: 15,000 KDPH in 15 min',
+        '⏱ LDC/JSA/PA/SA: 10 minutes | DEO posts: 15 minutes',
+        '📑 Tab key required for new paragraph — manual spaces = half mistake',
+        '⚠ Error limit: 5% UR | 7% OBC | 10% SC/ST/PH of total keystrokes',
+        '🔢 Full mistake = 1 error | Half mistake = 0.5 error',
+        '📏 Mistake unit = WORD level (wrong/missing/extra word = 1 full mistake)',
+        '🔄 Do NOT retype — use remaining time to correct existing errors',
+        '✅ Qualifying — mandatory after Tier-2 written exam',
       ]
     }
   },
@@ -1845,71 +2293,183 @@ const DEFAULT_EXAMS = [
     id: 'ssc-mts',
     name: 'SSC MTS',
     fullName: 'Staff Selection Commission — Multi Tasking Staff',
-    color: '#10b981',
-    icon: '🏢',
-    custom: false,
+    color: '#10b981', icon: '🏢', custom: false,
     rules: {
-      backspaceAllowed: true,
-      deleteAllowed: true,
-      copyPasteAllowed: false,
+      backspaceAllowed: true, deleteAllowed: true, copyPasteAllowed: false,
       language: 'English / Hindi',
-      requiredSpeed: 25,
-      metric: 'WPM',
-      duration: 600,
+      requiredSpeed: 25, metric: 'WPM', duration: 600,
+      errorTolerance: 10,
+      mistakeUnit: 'word',
       notes: [
-        'Backspace / Delete keys ARE allowed',
-        'Copy, Cut, Paste operations are prohibited',
-        'Minimum speed: 25 WPM (English)',
-        'Test duration: 10 minutes',
-        'Qualifying nature test for selected posts',
+        '✅ Backspace & Delete ARE allowed',
+        '🚫 Copy, Cut, Paste are prohibited',
+        '⚡ Minimum speed: 25 WPM in English | ~20 WPM in Hindi',
+        '⏱ Duration: 10 minutes',
+        '⚠ Error limit: ~10% of total words typed',
+        '📏 Mistake unit = WORD (one wrong/missing word = 1 full mistake)',
+        '✅ Qualifying in nature — conducted for select posts only',
+        'ℹ Not all MTS posts require typing — check post-specific notification',
+      ]
+    }
+  },
+  {
+    id: 'ssc-cpo',
+    name: 'SSC CPO',
+    fullName: 'Staff Selection Commission — Central Police Organisation',
+    color: '#f97316', icon: '👮', custom: false,
+    rules: {
+      backspaceAllowed: true, deleteAllowed: true, copyPasteAllowed: false,
+      language: 'English / Hindi',
+      requiredSpeed: 35, metric: 'WPM', duration: 600,
+      errorTolerance: 5,
+      mistakeUnit: 'word',
+      notes: [
+        '✅ Backspace & Delete ARE allowed',
+        '🚫 Copy, Cut, Paste are prohibited',
+        '⚡ Minimum speed: 35 WPM English | 30 WPM Hindi',
+        '⏱ Duration: 10 minutes',
+        '⚠ Error limit: 5% UR | 7% OBC | 10% SC/ST/PH',
+        '📏 Mistake unit = WORD level',
+        '✅ Qualifying in nature for Sub-Inspector (CISF/CPO) posts',
       ]
     }
   },
   {
     id: 'ibps-clerk',
     name: 'IBPS Clerk',
-    fullName: 'Institute of Banking Personnel Selection — Clerk (Data Entry)',
-    color: '#f59e0b',
-    icon: '🏦',
-    custom: false,
+    fullName: 'Institute of Banking Personnel Selection — Clerk (Computer Proficiency)',
+    color: '#f59e0b', icon: '🏦', custom: false,
     rules: {
-      backspaceAllowed: true,
-      deleteAllowed: true,
-      copyPasteAllowed: false,
-      language: 'English',
-      requiredSpeed: 8000,
-      metric: 'KDPH',
-      duration: 600,
+      backspaceAllowed: true, deleteAllowed: true, copyPasteAllowed: false,
+      language: 'English / Hindi',
+      requiredSpeed: 8000, metric: 'KDPH', duration: 600,
+      errorTolerance: 5,
+      mistakeUnit: 'word',
       notes: [
-        'Backspace / Delete keys ARE allowed for corrections',
-        'Copy, Cut, Paste operations are prohibited',
-        'Required speed: 8000 KDPH (Key Depressions Per Hour)',
-        'Test duration: 10 minutes',
-        'Computer Proficiency Test — Data Entry component',
+        '✅ Backspace & Delete ARE allowed for corrections',
+        '🚫 Copy, Cut, Paste are prohibited',
+        '⚡ Required: 8,000 KDPH (Key Depressions Per Hour) ≈ 27 WPM',
+        '⏱ Duration: 10 minutes (Computer Proficiency Test)',
+        '⚠ Accuracy critical — errors reduce net KDPH score',
+        '📏 Mistake unit = WORD level',
+        '🏦 Mandatory CPT — must qualify for Clerk post finalisation',
+        '✅ Qualifying in nature — minimum KDPH must be met',
       ]
     }
   },
   {
-    id: 'ssc-steno',
-    name: 'SSC Steno',
-    fullName: 'Staff Selection Commission — Stenographer Grade C & D',
-    color: '#06b6d4',
-    icon: '✍️',
-    custom: false,
+    id: 'ibps-po',
+    name: 'IBPS PO',
+    fullName: 'Institute of Banking Personnel Selection — Probationary Officer',
+    color: '#84cc16', icon: '🏦', custom: false,
     rules: {
-      backspaceAllowed: true,
-      deleteAllowed: true,
-      copyPasteAllowed: false,
-      language: 'English / Hindi',
-      requiredSpeed: 80,
-      metric: 'WPM',
-      duration: 2700,
+      backspaceAllowed: true, deleteAllowed: true, copyPasteAllowed: false,
+      language: 'English',
+      requiredSpeed: 30, metric: 'WPM', duration: 600,
+      errorTolerance: 5,
+      mistakeUnit: 'word',
       notes: [
-        'Backspace / Delete keys ARE allowed in transcription',
-        'Stenography dictation at 100 WPM (Grade C) / 80 WPM (Grade D)',
-        'Transcription time: 50 min (Grade C English) / 65 min (Grade D English)',
-        'Both English and Hindi medium available',
-        'Test includes dictation + transcription phases',
+        '✅ Backspace & Delete ARE allowed',
+        '🚫 Copy, Cut, Paste are prohibited',
+        '⚡ Recommended speed: 30+ WPM for comfortable performance',
+        '⏱ Duration: 10 minutes',
+        '⚠ Accuracy matters — errors reduce effective WPM',
+        '📏 Mistake unit = WORD level',
+        '✅ Qualifying test — part of Computer Proficiency Test round',
+      ]
+    }
+  },
+  {
+    id: 'ssc-steno-d',
+    name: 'SSC Steno D',
+    fullName: 'SSC Stenographer Grade D — Transcription Typing Test',
+    color: '#06b6d4', icon: '✍️', custom: false,
+    rules: {
+      backspaceAllowed: true, deleteAllowed: true, copyPasteAllowed: false,
+      language: 'English / Hindi',
+      requiredSpeed: 40, metric: 'WPM', duration: 3000,
+      errorTolerance: 7,
+      mistakeUnit: 'word',
+      fullMistakes: ['Omission of word/figure', 'Wrong word substitution', 'Extra word addition', 'Repetition of word', 'Spelling error', 'Incomplete word'],
+      halfMistakes: ['Spacing error', 'Wrong capitalisation', 'Punctuation error', 'Transposition of words', 'Wrong paragraph spacing (no Tab)'],
+      notes: [
+        '✅ Backspace, Delete & corrections ARE allowed during transcription',
+        '🎙 Dictation: 80 WPM shorthand for 10 minutes (Grade D)',
+        '⏱ Transcription time: 50 min (English) | 65 min (Hindi)',
+        '⚡ Need ~40 WPM typing speed to comfortably finish transcription',
+        '⚠ Max 7% total mistakes (UR) | 10% (OBC) | 12% (SC/ST)',
+        '🔢 Full mistake = 1 error | Half mistake = 0.5 error',
+        '📏 Mistake unit = WORD (one wrong/missing word = 1 full mistake)',
+        '🔢 Group of words omitted together = only 1 mistake (not per word)',
+        '✅ Qualifying — shorthand speed determines initial selection',
+      ]
+    }
+  },
+  {
+    id: 'ssc-steno-c',
+    name: 'SSC Steno C',
+    fullName: 'SSC Stenographer Grade C — Transcription Typing Test',
+    color: '#a855f7', icon: '🖊️', custom: false,
+    rules: {
+      backspaceAllowed: true, deleteAllowed: true, copyPasteAllowed: false,
+      language: 'English / Hindi',
+      requiredSpeed: 50, metric: 'WPM', duration: 2400,
+      errorTolerance: 7,
+      mistakeUnit: 'word',
+      notes: [
+        '✅ Backspace, Delete & corrections ARE allowed during transcription',
+        '🎙 Dictation: 100 WPM shorthand for 10 minutes (Grade C)',
+        '⏱ Transcription time: 40 min (English) | 55 min (Hindi)',
+        '⚡ Need ~50 WPM typing speed to comfortably finish transcription',
+        '⚠ Max 7% total mistakes (UR) | 10% (OBC) | 12% (SC/ST)',
+        '🔢 Full mistake = 1 error | Half mistake = 0.5 error',
+        '📏 Mistake unit = WORD (one wrong/missing word = 1 full mistake)',
+        '✅ Qualifying — both shorthand + transcription accuracy determine result',
+      ]
+    }
+  },
+  {
+    id: 'rrb-group-d',
+    name: 'RRB Group D',
+    fullName: 'Railway Recruitment Board — Group D (Level 1)',
+    color: '#64748b', icon: '🚆', custom: false,
+    rules: {
+      backspaceAllowed: false, deleteAllowed: false, copyPasteAllowed: false,
+      language: 'English / Hindi',
+      requiredSpeed: 25, metric: 'WPM', duration: 600,
+      errorTolerance: 5,
+      mistakeUnit: 'word',
+      notes: [
+        '🚫 Backspace & Delete DISABLED (same as RRB NTPC pattern)',
+        '🚫 Copy, Cut, Paste are prohibited',
+        '⚡ Minimum speed: 25 WPM English | 20 WPM Hindi',
+        '⏱ Duration: 10 minutes',
+        '⚠ 5% mistake tolerance — beyond 5% incurs word deduction penalty',
+        '📏 Mistake unit = WORD level',
+        '✅ Qualifying in nature for specific Group D posts',
+        'ℹ Not all Group D posts require typing — verify with official notification',
+      ]
+    }
+  },
+  {
+    id: 'upsc-steno',
+    name: 'UPSC Steno',
+    fullName: 'Union Public Service Commission — Stenographer (Grade B/C)',
+    color: '#dc2626', icon: '🏛️', custom: false,
+    rules: {
+      backspaceAllowed: true, deleteAllowed: true, copyPasteAllowed: false,
+      language: 'English / Hindi',
+      requiredSpeed: 100, metric: 'WPM', duration: 2400,
+      errorTolerance: 5,
+      mistakeUnit: 'word',
+      notes: [
+        '✅ Backspace & Delete ARE allowed during transcription',
+        '🎙 Dictation: 100 WPM (Grade B/C) for 7 minutes',
+        '⏱ Transcription time: 40 min (English) | 55 min (Hindi)',
+        '⚡ Typing speed of 50+ WPM recommended for comfortable finish',
+        '⚠ Max 5% mistakes allowed; errors beyond = disqualification',
+        '📏 Mistake unit = WORD level (same SSC error classification)',
+        '✅ Qualifying in nature — part of final selection for steno posts',
       ]
     }
   },
@@ -1952,7 +2512,7 @@ const DEFAULT_LESSONS = [
 //  INIT
 // ════════════════════════════════════════════════════════════
 async function initApp() {
-  // Apply saved theme immediately
+  // Apply saved theme
   const savedTheme = localStorage.getItem('typssc_theme') || 'dark';
   APP.theme = savedTheme;
   if (savedTheme === 'light') {
@@ -1960,27 +2520,38 @@ async function initApp() {
     document.getElementById('theme-label').textContent = '☀️';
   }
 
-  // Load platform data (Firestore first, localStorage fallback)
-  // loadData also restores APP.user from localStorage internally
+  // Restore user IMMEDIATELY from localStorage before any async work
+  // This is the key fix — user is always remembered across refreshes
+  const userSaved = localStorage.getItem('typemaster_user');
+  if (userSaved) {
+    try {
+      const u = JSON.parse(userSaved);
+      if (u && u.name) APP.user = u; // only restore if has a valid name
+    } catch(e) {}
+  }
+
+  // Load platform data (Firestore → localStorage fallback)
   await loadData();
 
   renderNavUser();
-  // Only show name modal if truly no name saved anywhere
+  // ONLY show name modal if user truly has no saved name
   if (!APP.user.name) {
-    setTimeout(() => openModal('modal-user'), 600);
+    setTimeout(() => openModal('modal-user'), 700);
   }
   renderHomeExams();
   updateHeroStats();
   populateExamSelects();
   setInterval(checkLiveTestStatus, 10000);
-  document.getElementById('lesson-content').addEventListener('input', function() {
-    document.getElementById('lesson-char-count').textContent = this.value.length + ' characters';
+  const lcEl = document.getElementById('lesson-content');
+  if (lcEl) lcEl.addEventListener('input', function() {
+    const cc = document.getElementById('lesson-char-count');
+    if (cc) cc.textContent = this.value.length + ' characters';
   });
   navigate('home');
 }
 
 // ════════════════════════════════════════════════════════════
-//  FIREBASE DATA LAYER
+//  FIREBASE DATA LAYER (Original logic unmodified)
 // ════════════════════════════════════════════════════════════
 const PLATFORM_DOC = 'platform/main';
 const USERS_COL    = 'users';
@@ -2209,7 +2780,6 @@ function resetToDefaults() {
   APP.results = [];
 }
 
-
 // ════════════════════════════════════════════════════════════
 //  NAVIGATION
 // ════════════════════════════════════════════════════════════
@@ -2237,6 +2807,7 @@ function navigate(page, params={}) {
   if (page === 'rankings' && params.liveTestId) renderRankings(params.liveTestId);
   if (page === 'my-results') renderMyResults();
   if (page === 'admin') renderAdminPage();
+  if (page === 'battle') renderBattlePage();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -2428,10 +2999,25 @@ function initiateTest(lessonId, examId, liveTestId) {
     lessonName,
   };
 
-  // Show rules in start overlay
+  // Store pending exam ref for after highlight modal
+  APP._pendingTestExam = exam;
+
   navigate('test');
   setupTestUI(exam, lessonName);
-  showStartCountdown(exam);
+
+  // Show highlight preference modal BEFORE countdown
+  openModal('modal-highlight-pref');
+}
+
+function startWithHighlight(on) {
+  APP.highlightOn = on;
+  const btn = document.getElementById('highlight-toggle-btn');
+  if (btn) {
+    btn.classList.toggle('active', on);
+    btn.textContent = on ? '💡 Highlight' : '💡 Highlight Off';
+  }
+  closeModal('modal-highlight-pref');
+  showStartCountdown(APP._pendingTestExam);
 }
 
 function setupTestUI(exam, lessonName) {
@@ -2486,6 +3072,14 @@ function startTest() {
   // Clear and focus the visible typing box
   const box = document.getElementById('typing-box-visible');
   if (box) { box.value = ''; box.focus(); box.disabled = false; }
+
+  // If Exam Center Mode is open, activate its box too
+  if (_ecActive) {
+    const ecBox = document.getElementById('ec-typing-box');
+    if (ecBox) { ecBox.value = ''; ecBox.disabled = false; ecBox.focus(); }
+    document.getElementById('ec-submit-btn').disabled = false;
+    document.getElementById('ec-status-bar').textContent = '🔴 TEST IN PROGRESS';
+  }
 
   // Timer
   APP.test.timerInterval = setInterval(updateTimer, 250);
@@ -2559,6 +3153,16 @@ function updateTypingFeedback(typed) {
   const bar = document.getElementById('typing-feedback');
   const txt = document.getElementById('feedback-text');
   if (!bar || !txt) return;
+
+  // When highlight is OFF — clear all feedback and box coloring completely
+  if (!APP.highlightOn) {
+    bar.className = 'typing-feedback-bar idle';
+    txt.textContent = 'Highlight is off — letter tracking disabled.';
+    const box = document.getElementById('typing-box-visible');
+    if (box) { box.classList.remove('incorrect-char', 'correct-streak'); }
+    return;
+  }
+
   if (typed.length === 0) {
     bar.className = 'typing-feedback-bar idle';
     txt.textContent = 'Start typing to see feedback...';
@@ -2566,7 +3170,6 @@ function updateTypingFeedback(typed) {
   }
   const passage = APP.test.passage;
   const lastIdx = typed.length - 1;
-  const isCorrect = typed[lastIdx] === passage[lastIdx];
 
   // Count recent errors in last 5 chars
   let recentErrors = 0;
@@ -2598,6 +3201,13 @@ function toggleHighlight() {
   } else {
     btn.classList.remove('active');
     btn.textContent = '💡 Highlight Off';
+    // Immediately clear feedback and box coloring
+    const box = document.getElementById('typing-box-visible');
+    if (box) { box.classList.remove('incorrect-char', 'correct-streak'); }
+    const bar = document.getElementById('typing-feedback');
+    const txt = document.getElementById('feedback-text');
+    if (bar) bar.className = 'typing-feedback-bar idle';
+    if (txt) txt.textContent = 'Highlight is off — letter tracking disabled.';
   }
   renderPassage();
 }
@@ -2669,9 +3279,10 @@ function updateLiveStats() {
   document.getElementById('stat-wpm').textContent = speedVal;
   document.getElementById('stat-accuracy').textContent = res.accuracy + '%';
   document.getElementById('stat-keystrokes').textContent = APP.test.totalKeystrokes;
-  document.getElementById('stat-correct').textContent = res.correctChars;
-  document.getElementById('stat-incorrect').textContent = res.incorrectChars;
-  document.getElementById('stat-words').textContent = Math.floor(res.correctChars / 5);
+  // Word-level display
+  document.getElementById('stat-correct').textContent = res.correctWords;
+  document.getElementById('stat-incorrect').textContent = res.fullMistakes + (res.halfMistakes > 0 ? ` +${res.halfMistakes}½` : '');
+  document.getElementById('stat-words').textContent = res.totalTypedWords;
   document.getElementById('stat-gross-wpm').textContent = res.grossWPM;
   document.getElementById('stat-kdph').textContent = res.grossKdph;
 }
@@ -2702,47 +3313,152 @@ function flashNoBackspace() {
 }
 
 // ════════════════════════════════════════════════════════════
-//  CALCULATE RESULTS — Precise algorithm
+//  CALCULATE RESULTS — Smart word-diff (like Monkeytype/TypeLit)
+//  Uses LCS-based alignment so an extra space / extra word does
+//  NOT cascade the entire remaining passage as incorrect.
 // ════════════════════════════════════════════════════════════
+
+/**
+ * Align typed words against passage words using LCS so that
+ * inserted/deleted words don't shift all subsequent comparisons.
+ * Returns an array of {passWord, typedWord, status} pairs where
+ * status is 'correct' | 'half' | 'full' | 'missing' | 'extra'.
+ */
+function alignWords(passageWords, typedWords) {
+  const P = passageWords.length;
+  const T = typedWords.length;
+
+  // Build LCS table (match only if words are equal, case-insensitive)
+  const dp = Array.from({length: P + 1}, () => new Int16Array(T + 1));
+  for (let i = 1; i <= P; i++) {
+    for (let j = 1; j <= T; j++) {
+      if (passageWords[i-1].toLowerCase() === typedWords[j-1].toLowerCase()) {
+        dp[i][j] = dp[i-1][j-1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+      }
+    }
+  }
+
+  // Backtrack to get the alignment
+  const aligned = [];
+  let i = P, j = T;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && passageWords[i-1].toLowerCase() === typedWords[j-1].toLowerCase()) {
+      aligned.push({ passWord: passageWords[i-1], typedWord: typedWords[j-1], source: 'match' });
+      i--; j--;
+    } else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) {
+      aligned.push({ passWord: null, typedWord: typedWords[j-1], source: 'extra' });
+      j--;
+    } else {
+      aligned.push({ passWord: passageWords[i-1], typedWord: null, source: 'missing' });
+      i--;
+    }
+  }
+  aligned.reverse();
+
+  // Now classify each pair
+  return aligned.map(pair => {
+    if (pair.source === 'extra') {
+      return { passWord: null, typedWord: pair.typedWord, status: 'extra' };
+    }
+    if (pair.source === 'missing') {
+      return { passWord: pair.passWord, typedWord: null, status: 'missing' };
+    }
+    // source === 'match' means same lowercase — check exact case
+    if (pair.typedWord === pair.passWord) {
+      return { passWord: pair.passWord, typedWord: pair.typedWord, status: 'correct' };
+    }
+    // Same when lowercased = half mistake (capitalisation)
+    return { passWord: pair.passWord, typedWord: pair.typedWord, status: 'half' };
+  });
+}
+
 function calculateResults(typedText, passage, timeElapsedSec, totalKeystrokes, metric) {
-  const timeMin = Math.max(timeElapsedSec / 60, 0.001);
+  const timeMin   = Math.max(timeElapsedSec / 60,   0.001);
   const timeHours = Math.max(timeElapsedSec / 3600, 0.0001);
 
-  let correctChars = 0;
-  let incorrectChars = 0;
-  const cmpLen = Math.min(typedText.length, passage.length);
+  const passageWords = passage.trim().split(/\s+/);
+  const typedWords   = typedText.trim() === '' ? [] : typedText.trim().split(/\s+/);
 
-  for (let i = 0; i < cmpLen; i++) {
+  // ── Smart alignment ──
+  const alignment = alignWords(passageWords, typedWords);
+
+  let fullMistakes = 0;
+  let halfMistakes = 0;
+  let correctWords = 0;
+
+  // Word-level scoring table (SSC standard)
+  for (const pair of alignment) {
+    switch (pair.status) {
+      case 'correct': correctWords++; break;
+      case 'half':    halfMistakes++; break;
+      case 'missing': fullMistakes++; break; // omitted word = full mistake
+      case 'extra':   fullMistakes++; break; // extra word  = full mistake
+      default: {
+        // Shouldn't happen but treat remaining typed vs passage pairs
+        if (pair.passWord && pair.typedWord) {
+          if (pair.typedWord === pair.passWord) { correctWords++; break; }
+          if (pair.typedWord.toLowerCase() === pair.passWord.toLowerCase()) { halfMistakes++; break; }
+          if (isSpellingVariant(pair.typedWord, pair.passWord)) { fullMistakes++; break; }
+          fullMistakes++;
+        }
+      }
+    }
+  }
+
+  const totalTypedWords  = typedWords.length;
+  const totalMistakes    = fullMistakes + halfMistakes * 0.5;
+  const toleranceWords   = Math.floor(totalTypedWords * 0.05);
+  const finalMistakeCount = Math.max(0, totalMistakes - toleranceWords);
+
+  const grossWPM = Math.round(totalTypedWords / timeMin);
+  const netWPM   = Math.max(0, Math.round((totalTypedWords - finalMistakeCount * 10) / timeMin));
+
+  const grossKdph = Math.round(totalKeystrokes / timeHours);
+  const netKdph   = Math.max(0, Math.round((totalKeystrokes - finalMistakeCount * 10) / timeHours));
+
+  let correctChars = 0, incorrectChars = 0;
+  const cmpCharLen = Math.min(typedText.length, passage.length);
+  for (let i = 0; i < cmpCharLen; i++) {
     if (typedText[i] === passage[i]) correctChars++;
     else incorrectChars++;
   }
-  // Characters not typed = untouched (don't count against accuracy if time ran out)
-  // Extra chars typed beyond passage = error
-  const extraChars = Math.max(0, typedText.length - passage.length);
-  incorrectChars += extraChars;
 
-  const totalTyped = typedText.length;
+  const accuracy = totalTypedWords > 0
+    ? Math.round((correctWords / Math.max(totalTypedWords, passageWords.length)) * 1000) / 10
+    : 100;
 
-  // WPM calculations (1 word = 5 chars standard)
-  const grossWPM = Math.round(totalTyped / 5 / timeMin);
-  const netWPM = Math.max(0, Math.round(correctChars / 5 / timeMin));
-
-  // KDPH — gross keystrokes per hour (all typed chars + backspaces)
-  const grossKdph = Math.round(totalKeystrokes / timeHours);
-  // Net KDPH — penalised for errors: each error = 10 key penalty (standard SSC formula)
-  const netKdph = Math.max(0, Math.round((totalKeystrokes - (incorrectChars * 10)) / timeHours));
-
-  // Accuracy: correct / total typed
-  const accuracy = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 1000) / 10 : 100;
-
-  // Passage completion %
-  const completionPct = passage.length > 0 ? Math.round(typedText.length / passage.length * 100) : 0;
+  const completionPct = passage.length > 0
+    ? Math.min(100, Math.round(typedText.length / passage.length * 100))
+    : 0;
 
   return {
-    correctChars, incorrectChars, extraChars, totalTyped,
+    correctChars, incorrectChars,
+    correctWords, fullMistakes, halfMistakes, totalMistakes,
+    toleranceWords, finalMistakeCount,
+    totalTypedWords,
     grossWPM, netWPM, grossKdph, netKdph,
-    accuracy, completionPct, timeElapsedSec
+    accuracy, completionPct, timeElapsedSec,
+    totalTyped: typedText.length, extraChars: 0,
+    alignment   // expose alignment for the result view
   };
+}
+
+function isSpellingVariant(typed, expected) {
+  if (!typed || !expected) return false;
+  if (typed.toLowerCase() === expected.toLowerCase()) return true;
+  if (typed[0]?.toLowerCase() !== expected[0]?.toLowerCase()) return false;
+  return levenshtein(typed.toLowerCase(), expected.toLowerCase()) <= 2;
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length: m+1}, (_, i) => Array.from({length: n+1}, (_, j) => i === 0 ? j : j === 0 ? i : 0));
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[m][n];
 }
 
 function endTest(quit=false) {
@@ -2752,7 +3468,17 @@ function endTest(quit=false) {
   clearInterval(APP.test.timerInterval);
   clearInterval(APP.test.statsInterval);
 
-  // Disable visible typing box
+  // Exit Exam Center Mode if it was open
+  if (_ecActive) {
+    const ecBox = document.getElementById('ec-typing-box');
+    const mainBox = document.getElementById('typing-box-visible');
+    if (ecBox && mainBox) { mainBox.value = ecBox.value; APP.test.typedText = ecBox.value; }
+    _ecActive = false;
+    if (_ecInterval) { clearInterval(_ecInterval); _ecInterval = null; }
+    if (_ecClockInterval) { clearInterval(_ecClockInterval); _ecClockInterval = null; }
+    document.getElementById('exam-center-overlay').classList.remove('active');
+  }
+
   const box = document.getElementById('typing-box-visible');
   if (box) { box.disabled = true; box.classList.remove('incorrect-char','correct-streak'); }
 
@@ -2767,7 +3493,6 @@ function endTest(quit=false) {
   const speedVal = APP.test.metric === 'KDPH' ? res.netKdph : res.netWPM;
   const passed = speedVal >= APP.test.requiredSpeed;
 
-  // Save result
   const resultRecord = {
     id: 'r_' + Date.now(),
     userId: APP.user.id,
@@ -2789,9 +3514,15 @@ function endTest(quit=false) {
     timeElapsed: elapsed,
     passed,
     completedAt: Date.now(),
+    // ── For result comparison view ──
+    passage: APP.test.passage,
+    typedText: APP.test.typedText,
   };
   APP.results.push(resultRecord);
   saveData();
+  
+  // ─── [INJECTED] CLOUD SYNC FOR SUPABASE ───
+  syncResultToCloud(resultRecord);
 
   showResult(resultRecord, res);
 }
@@ -2810,13 +3541,98 @@ function confirmSubmit() {
 }
 
 // ════════════════════════════════════════════════════════════
+// [INJECTED] SUPABASE AUTHENTICATION FOR ADMIN
+// ════════════════════════════════════════════════════════════
+async function adminLogin() {
+  const now = Date.now();
+  if (APP.lockoutUntil > now) {
+    const rem = Math.ceil((APP.lockoutUntil - now) / 60000);
+    showToast(`Too many attempts. Try again in ${rem} minute(s).`, 'error');
+    return;
+  }
+  const email = (document.getElementById('input-admin-id').value || '').trim();
+  const pass = document.getElementById('input-admin-pass').value;
+
+  const { data, error } = await _supabase.auth.signInWithPassword({
+    email: email,
+    password: pass
+  });
+
+  if (!error) {
+    APP.adminLoggedIn = true;
+    APP.loginAttempts = 0;
+    document.getElementById('input-admin-id').value = '';
+    document.getElementById('input-admin-pass').value = '';
+    closeModal('modal-admin-login');
+    navigate('admin');
+    showToast('Admin Access Granted via Supabase!', 'success');
+  } else {
+    APP.loginAttempts++;
+    document.getElementById('input-admin-pass').value = '';
+    if (APP.loginAttempts >= 5) {
+      APP.lockoutUntil = now + 15 * 60 * 1000;
+      APP.loginAttempts = 0;
+      showToast('Too many failed attempts. Locked for 15 minutes.', 'error');
+    } else {
+      showToast(`Invalid Cloud Credentials. ${5 - APP.loginAttempts} attempts remaining.`, 'error');
+    }
+  }
+}
+
+async function adminLoginPage() {
+  const now = Date.now();
+  if (APP.lockoutUntil > now) {
+    const rem = Math.ceil((APP.lockoutUntil - now) / 60000);
+    showToast(`Too many attempts. Try again in ${rem} minute(s).`, 'error');
+    return;
+  }
+  const email = (document.getElementById('admin-id-input').value || '').trim();
+  const pass = document.getElementById('admin-pass-input').value;
+
+  const { data, error } = await _supabase.auth.signInWithPassword({
+    email: email,
+    password: pass
+  });
+
+  if (!error) {
+    APP.adminLoggedIn = true;
+    APP.loginAttempts = 0;
+    document.getElementById('admin-id-input').value = '';
+    document.getElementById('admin-pass-input').value = '';
+    renderAdminPage();
+    showToast('Admin Access Granted via Supabase!', 'success');
+  } else {
+    APP.loginAttempts++;
+    document.getElementById('admin-pass-input').value = '';
+    if (APP.loginAttempts >= 5) {
+      APP.lockoutUntil = now + 15 * 60 * 1000;
+      APP.loginAttempts = 0;
+      showToast('Too many failed attempts. Locked for 15 minutes.', 'error');
+    } else {
+      showToast(`Invalid Cloud Credentials. ${5 - APP.loginAttempts} attempts remaining.`, 'error');
+    }
+  }
+}
+
+async function syncResultToCloud(r) {
+  const { error } = await _supabase
+    .from('results')
+    .insert([{
+      student_name: r.userName,
+      wpm: r.metric === 'KDPH' ? r.netKdph : r.netWPM,
+      accuracy: r.accuracy
+    }]);
+  if (error) console.error("Cloud Sync failed:", error);
+}
+
+// ════════════════════════════════════════════════════════════
 //  RESULT PAGE
 // ════════════════════════════════════════════════════════════
 function showResult(r, res) {
   navigate('result');
   const speedLabel = r.metric === 'KDPH' ? 'KDPH' : 'WPM';
-  const speedVal = r.metric === 'KDPH' ? r.netKdph : r.netWPM;
-  const grossVal = r.metric === 'KDPH' ? r.grossKdph : r.grossWPM;
+  const speedVal   = r.metric === 'KDPH' ? r.netKdph : r.netWPM;
+  const grossVal   = r.metric === 'KDPH' ? r.grossKdph : r.grossWPM;
   const grossLabel = r.metric === 'KDPH' ? 'Gross KDPH' : 'Gross WPM';
 
   document.getElementById('result-title').textContent = r.passed ? '🎉 Test Passed!' : 'Test Complete';
@@ -2825,13 +3641,19 @@ function showResult(r, res) {
   const verdict = document.getElementById('result-verdict');
   if (r.passed) {
     verdict.className = 'result-verdict pass';
-    verdict.innerHTML = `✓ You PASSED! Your speed of <strong>${speedVal} ${speedLabel}</strong> meets the required ${APP.test.requiredSpeed} ${speedLabel}.`;
+    verdict.innerHTML = `✓ You PASSED! Your net speed of <strong>${speedVal} ${speedLabel}</strong> meets the required ${APP.test.requiredSpeed} ${speedLabel}.`;
   } else {
     verdict.className = 'result-verdict fail';
-    verdict.innerHTML = `✗ Not Passed. Your speed of <strong>${speedVal} ${speedLabel}</strong> is below the required ${APP.test.requiredSpeed} ${speedLabel}. Keep practicing!`;
+    verdict.innerHTML = `✗ Not Passed. Your net speed of <strong>${speedVal} ${speedLabel}</strong> is below the required ${APP.test.requiredSpeed} ${speedLabel}. Keep practicing!`;
   }
 
-  // Stats grid
+  const fm = res.fullMistakes ?? 0;
+  const hm = res.halfMistakes ?? 0;
+  const cw = res.correctWords ?? 0;
+  const tw = res.totalTypedWords ?? 0;
+  const tol = res.toleranceWords ?? 0;
+  const fin = res.finalMistakeCount ?? 0;
+
   document.getElementById('result-stats-grid').innerHTML = `
     <div class="result-stat-card highlight">
       <div class="result-stat-num" style="color:var(--blue2)">${speedVal}</div>
@@ -2841,7 +3663,7 @@ function showResult(r, res) {
     <div class="result-stat-card">
       <div class="result-stat-num" style="color:var(--green)">${r.accuracy}%</div>
       <div class="result-stat-unit">accuracy</div>
-      <div class="result-stat-label">Accuracy</div>
+      <div class="result-stat-label">Word Accuracy</div>
     </div>
     <div class="result-stat-card">
       <div class="result-stat-num" style="color:var(--gold)">${grossVal}</div>
@@ -2849,39 +3671,42 @@ function showResult(r, res) {
       <div class="result-stat-label">${grossLabel}</div>
     </div>
     <div class="result-stat-card">
-      <div class="result-stat-num" style="color:var(--purple)">${r.totalKeystrokes}</div>
-      <div class="result-stat-unit">keys</div>
-      <div class="result-stat-label">Total Keystrokes</div>
+      <div class="result-stat-num" style="color:var(--green)">${cw}</div>
+      <div class="result-stat-unit">words</div>
+      <div class="result-stat-label">Correct Words</div>
     </div>
     <div class="result-stat-card">
-      <div class="result-stat-num" style="color:var(--green)">${r.correctChars}</div>
-      <div class="result-stat-unit">chars</div>
-      <div class="result-stat-label">Correct</div>
+      <div class="result-stat-num" style="color:var(--red)">${fm}</div>
+      <div class="result-stat-unit">words</div>
+      <div class="result-stat-label">Full Mistakes</div>
     </div>
     <div class="result-stat-card">
-      <div class="result-stat-num" style="color:var(--red)">${r.incorrectChars}</div>
-      <div class="result-stat-unit">chars</div>
-      <div class="result-stat-label">Incorrect</div>
+      <div class="result-stat-num" style="color:var(--orange)">${hm}</div>
+      <div class="result-stat-unit">words</div>
+      <div class="result-stat-label">Half Mistakes</div>
     </div>
   `;
 
-  // Breakdown
   document.getElementById('breakdown-rows').innerHTML = `
+    <div class="breakdown-row"><span>Total Words Typed</span><span class="val">${tw}</span></div>
+    <div class="breakdown-row"><span>Correct Words</span><span class="val" style="color:var(--green)">${cw}</span></div>
+    <div class="breakdown-row"><span>Full Mistakes (× 1)</span><span class="val" style="color:var(--red)">${fm}</span></div>
+    <div class="breakdown-row"><span>Half Mistakes (× 0.5)</span><span class="val" style="color:var(--orange)">${hm} = ${(hm*0.5).toFixed(1)}</span></div>
+    <div class="breakdown-row"><span>Total Mistake Count</span><span class="val" style="color:var(--red)">${(fm + hm*0.5).toFixed(1)}</span></div>
+    <div class="breakdown-row"><span>5% Tolerance (forgiven)</span><span class="val" style="color:var(--green)">−${tol}</span></div>
+    <div class="breakdown-row"><span>Final Mistakes (penalised)</span><span class="val" style="color:var(--red)">${fin.toFixed(1)}</span></div>
+    <div class="breakdown-row" style="background:var(--card3);border-radius:var(--r)"><span><strong>Net WPM Formula</strong></span><span class="val" style="color:var(--blue2);font-size:0.78rem">(${tw} − ${fin.toFixed(1)}×10) ÷ ${(r.timeElapsed/60).toFixed(1)} min</span></div>
     <div class="breakdown-row"><span>Net WPM</span><span class="val" style="color:var(--blue2)">${r.netWPM}</span></div>
     <div class="breakdown-row"><span>Gross WPM</span><span class="val">${r.grossWPM}</span></div>
     <div class="breakdown-row"><span>Net KDPH</span><span class="val" style="color:var(--purple)">${r.netKdph}</span></div>
     <div class="breakdown-row"><span>Gross KDPH</span><span class="val">${r.grossKdph}</span></div>
-    <div class="breakdown-row"><span>Accuracy</span><span class="val" style="color:var(--green)">${r.accuracy}%</span></div>
-    <div class="breakdown-row"><span>Correct Characters</span><span class="val" style="color:var(--green)">${r.correctChars}</span></div>
-    <div class="breakdown-row"><span>Incorrect Characters</span><span class="val" style="color:var(--red)">${r.incorrectChars}</span></div>
     <div class="breakdown-row"><span>Total Keystrokes</span><span class="val">${r.totalKeystrokes}</span></div>
     <div class="breakdown-row"><span>Time Taken</span><span class="val">${formatTime(r.timeElapsed)}</span></div>
     <div class="breakdown-row"><span>Passage Completed</span><span class="val">${res.completionPct}%</span></div>
     <div class="breakdown-row"><span>Required Speed</span><span class="val">${APP.test.requiredSpeed} ${r.metric}</span></div>
-    <div class="breakdown-row"><span>Result</span><span class="val ${r.passed?'text-green':'text-red'}">${r.passed?'PASS':'FAIL'}</span></div>
+    <div class="breakdown-row"><span>Result</span><span class="val ${r.passed?'text-green':'text-red'}">${r.passed?'✓ PASS':'✗ FAIL'}</span></div>
   `;
 
-  // Retry button
   const retryBtn = document.getElementById('result-retry-btn');
   if (r.lessonId) {
     retryBtn.onclick = () => initiateTest(r.lessonId, r.examId, null);
@@ -2889,6 +3714,84 @@ function showResult(r, res) {
   } else {
     retryBtn.style.display = 'none';
   }
+
+  // ── Passage comparison panel ──
+  renderResultComparison(r, res);
+}
+
+// ════════════════════════════════════════════════════════════
+//  RESULT COMPARISON PANEL
+// ════════════════════════════════════════════════════════════
+function renderResultComparison(r, res) {
+  const section = document.getElementById('result-comparison');
+  const passageEl = document.getElementById('cmp-passage');
+  const typedEl   = document.getElementById('cmp-typed');
+  if (!section || !passageEl || !typedEl) return;
+
+  // We need both the original passage and what the user typed
+  const passage   = r.passage   || APP.test.passage   || '';
+  const typedText = r.typedText || APP.test.typedText || '';
+
+  if (!passage) { section.style.display = 'none'; return; }
+  section.style.display = '';
+
+  // Get alignment (re-compute if not already in res)
+  const alignment = res.alignment || alignWords(
+    passage.trim().split(/\s+/),
+    typedText.trim() === '' ? [] : typedText.trim().split(/\s+/)
+  );
+
+  // ── Build passage side (original words, coloured by mistake type) ──
+  let passHtml = '';
+  for (const pair of alignment) {
+    if (pair.status === 'extra') continue; // extra words don't appear in passage
+    const word = escHtml(pair.passWord || '');
+    if (pair.status === 'correct') {
+      passHtml += `<span class="cw correct">${word}</span> `;
+    } else if (pair.status === 'half') {
+      const tip = pair.typedWord ? `You typed: "${escHtml(pair.typedWord)}"` : '';
+      passHtml += `<span class="cw half cw-tooltip" data-tip="${tip}">${word}</span> `;
+    } else if (pair.status === 'missing') {
+      passHtml += `<span class="cw missing cw-tooltip" data-tip="Word was skipped">${word}</span> `;
+    } else {
+      // full mistake — typed something different
+      const tip = pair.typedWord ? `You typed: "${escHtml(pair.typedWord)}"` : 'Not typed';
+      passHtml += `<span class="cw wrong cw-tooltip" data-tip="${tip}">${word}</span> `;
+    }
+  }
+
+  // ── Build typed side (what user typed, coloured by mistake type) ──
+  let typedHtml = '';
+  for (const pair of alignment) {
+    if (pair.status === 'missing') {
+      // Show a placeholder dash for missed words
+      passHtml; // already handled above
+      typedHtml += `<span class="cw missing cw-tooltip" data-tip="Missing: &quot;${escHtml(pair.passWord || '')}&quot;">___</span> `;
+      continue;
+    }
+    if (pair.status === 'extra') {
+      typedHtml += `<span class="cw extra cw-tooltip" data-tip="Extra word — not in passage">${escHtml(pair.typedWord || '')}</span> `;
+      continue;
+    }
+    const word = escHtml(pair.typedWord || '');
+    if (pair.status === 'correct') {
+      typedHtml += `<span class="cw correct">${word}</span> `;
+    } else if (pair.status === 'half') {
+      const tip = `Expected: "${escHtml(pair.passWord || '')}"`;
+      typedHtml += `<span class="cw half cw-tooltip" data-tip="${tip}">${word}</span> `;
+    } else {
+      const tip = `Expected: "${escHtml(pair.passWord || '')}"`;
+      typedHtml += `<span class="cw wrong cw-tooltip" data-tip="${tip}">${word}</span> `;
+    }
+  }
+
+  // If user didn't type the rest of the passage, append grayed-out missing words
+  if (typedText.trim().split(/\s+/).length < passage.trim().split(/\s+/).length) {
+    // already handled via alignment 'missing' entries
+  }
+
+  passageEl.innerHTML = passHtml || '<span style="color:var(--text-muted)">—</span>';
+  typedEl.innerHTML   = typedHtml || '<span style="color:var(--text-muted)">Nothing typed</span>';
 }
 
 // ════════════════════════════════════════════════════════════
@@ -2921,7 +3824,6 @@ function renderLiveTests() {
   const filtered = APP.liveTests.filter(lt => lt.status === currentLiveTab);
   const all = APP.liveTests;
 
-  // Update counts
   document.getElementById('count-live').textContent = all.filter(t=>t.status==='live').length;
   document.getElementById('count-upcoming').textContent = all.filter(t=>t.status==='upcoming').length;
   document.getElementById('count-ended').textContent = all.filter(t=>t.status==='ended').length;
@@ -2937,6 +3839,7 @@ function renderLiveTests() {
     const endMs = lt.endAt || (lt.scheduledAt + lt.duration*1000);
     const endDate = new Date(endMs);
     const attemptsCount = APP.results.filter(r=>r.liveTestId===lt.id).length;
+    const liveWindowLabel = lt.liveWindowHrs ? (lt.liveWindowHrs >= 1 ? lt.liveWindowHrs + ' hr(s)' : Math.round(lt.liveWindowHrs*60)+' min') : Math.round((endMs-lt.scheduledAt)/3600000) + ' hr(s)';
 
     let countdownHtml = '';
     if (lt.status === 'upcoming') {
@@ -2966,7 +3869,8 @@ function renderLiveTests() {
       <div class="live-test-name">${lt.name}</div>
       <div class="live-test-meta">
         <span>📋 ${exam.name}</span>
-        <span>⏱ ${Math.round(lt.duration/60)} minutes</span>
+        <span>⏱ <strong>${Math.round(lt.duration/60)} min</strong> typing timer</span>
+        <span>📅 Open for <strong>${liveWindowLabel}</strong></span>
         <span>🎯 ${exam.rules.requiredSpeed} ${exam.rules.metric}</span>
         <span>🗓 ${startDate.toLocaleDateString()} ${startDate.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>
         <span>👥 ${attemptsCount} attempts</span>
@@ -2976,7 +3880,6 @@ function renderLiveTests() {
     </div>`;
   }).join('');
 
-  // Start live countdowns auto-refresh
   setTimeout(() => { if (currentPage==='live-tests') renderLiveTests(); }, 5000);
 }
 
@@ -2994,9 +3897,7 @@ function renderRankings(liveTestId) {
     lt.status === 'ended' ? 'Final results • ' + APP.results.filter(r=>r.liveTestId===liveTestId).length + ' participants'
     : '🔴 Live — updating in real time';
 
-  // Get results for this test
   let results = APP.results.filter(r => r.liveTestId === liveTestId);
-  // Sort by speed desc, then accuracy desc
   results.sort((a,b) => {
     const aSpeed = a.metric==='KDPH' ? a.netKdph : a.netWPM;
     const bSpeed = b.metric==='KDPH' ? b.netKdph : b.netWPM;
@@ -3004,7 +3905,6 @@ function renderRankings(liveTestId) {
     return b.accuracy - a.accuracy;
   });
 
-  // Podium (top 3)
   const podium = document.getElementById('rankings-podium');
   if (results.length >= 1) {
     const positions = results.length >= 3 ? [results[1],results[0],results[2]] : results.length === 2 ? [null,results[0],results[1]] : [null,results[0],null];
@@ -3021,7 +3921,6 @@ function renderRankings(liveTestId) {
     }).join('');
   } else { podium.innerHTML = ''; }
 
-  // Table
   const tbody = document.getElementById('rankings-tbody');
   const empty = document.getElementById('ranking-empty');
   if (results.length === 0) {
@@ -3087,62 +3986,6 @@ function renderMyResults() {
 // ════════════════════════════════════════════════════════════
 //  ADMIN
 // ════════════════════════════════════════════════════════════
-function adminLogin() {
-  // Brute force lockout
-  const now = Date.now();
-  if (APP.lockoutUntil > now) {
-    const rem = Math.ceil((APP.lockoutUntil - now) / 60000);
-    showToast(`Too many attempts. Try again in ${rem} minute(s).`, 'error');
-    return;
-  }
-  const pass = document.getElementById('input-admin-pass').value;
-  if (pass === APP.adminPassword) {
-    APP.adminLoggedIn = true;
-    APP.loginAttempts = 0;
-    document.getElementById('input-admin-pass').value = '';
-    closeModal('modal-admin-login');
-    navigate('admin');
-    showToast('Welcome back, Admin!', 'success');
-  } else {
-    APP.loginAttempts++;
-    document.getElementById('input-admin-pass').value = '';
-    if (APP.loginAttempts >= 5) {
-      APP.lockoutUntil = now + 15 * 60 * 1000;
-      APP.loginAttempts = 0;
-      showToast('Too many failed attempts. Locked for 15 minutes.', 'error');
-    } else {
-      showToast(`Incorrect password. ${5 - APP.loginAttempts} attempts remaining.`, 'error');
-    }
-  }
-}
-
-function adminLoginPage() {
-  const now = Date.now();
-  if (APP.lockoutUntil > now) {
-    const rem = Math.ceil((APP.lockoutUntil - now) / 60000);
-    showToast(`Too many attempts. Try again in ${rem} minute(s).`, 'error');
-    return;
-  }
-  const pass = document.getElementById('admin-pass-input').value;
-  if (pass === APP.adminPassword) {
-    APP.adminLoggedIn = true;
-    APP.loginAttempts = 0;
-    document.getElementById('admin-pass-input').value = '';
-    renderAdminPage();
-    showToast('Admin access granted', 'success');
-  } else {
-    APP.loginAttempts++;
-    document.getElementById('admin-pass-input').value = '';
-    if (APP.loginAttempts >= 5) {
-      APP.lockoutUntil = now + 15 * 60 * 1000;
-      APP.loginAttempts = 0;
-      showToast('Too many failed attempts. Locked for 15 minutes.', 'error');
-    } else {
-      showToast(`Incorrect password. ${5 - APP.loginAttempts} attempts remaining.`, 'error');
-    }
-  }
-}
-
 function adminLogout() {
   APP.adminLoggedIn = false;
   renderAdminPage();
@@ -3174,8 +4017,24 @@ function switchAdminTab(tab, el) {
 }
 
 function populateExamSelects() {
-  const selects = ['lesson-exam-select','live-exam-select','filter-exam-lessons','filter-results-exam'];
-  selects.forEach(id => {
+  const lessonEl = document.getElementById('lesson-exam-select');
+  if (lessonEl) {
+    const cur = lessonEl.value;
+    lessonEl.innerHTML = '<option value="ALL">📚 All Exams at Once</option>' +
+      APP.exams.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+    if (cur) lessonEl.value = cur;
+    lessonEl.addEventListener('change', () => {
+      const note = document.getElementById('lesson-all-note');
+      if (note) note.textContent = lessonEl.value === 'ALL' ? '⚡ This lesson will be added to ALL exams' : '';
+    });
+  }
+
+  const battleEl = document.getElementById('battle-exam-select');
+  if (battleEl) {
+    battleEl.innerHTML = APP.exams.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+  }
+
+  ['live-exam-select','filter-exam-lessons','filter-results-exam'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const isFilter = id.startsWith('filter');
@@ -3186,7 +4045,6 @@ function populateExamSelects() {
   });
 }
 
-// ── ADD LESSON ──
 function addLesson() {
   const examId = document.getElementById('lesson-exam-select').value;
   const title = document.getElementById('lesson-title').value.trim();
@@ -3194,6 +4052,27 @@ function addLesson() {
   const durVal = document.getElementById('lesson-duration').value.trim();
   if (!examId || !title || !content) { showToast('Please fill all required fields', 'error'); return; }
   if (content.length < 50) { showToast('Passage too short. Min 50 characters', 'error'); return; }
+
+  if (examId === 'ALL') {
+    const base = Date.now();
+    APP.exams.forEach((exam, i) => {
+      APP.lessons.push({
+        id: 'l_' + (base + i),
+        examId: exam.id, title, content,
+        duration: durVal ? parseInt(durVal) : null,
+        createdAt: base
+      });
+    });
+    saveData();
+    document.getElementById('lesson-title').value = '';
+    document.getElementById('lesson-content').value = '';
+    document.getElementById('lesson-duration').value = '';
+    document.getElementById('lesson-char-count').textContent = '0 characters';
+    renderAdminLessons();
+    showToast(`Lesson added to all ${APP.exams.length} exams! ✓`, 'success');
+    return;
+  }
+
   const lesson = {
     id: 'l_' + Date.now(),
     examId, title, content,
@@ -3273,7 +4152,6 @@ function deleteLesson(id) {
   showToast('Lesson deleted', 'info');
 }
 
-// ── LIVE TEST SCHEDULING ──
 function updateLiveDuration() {
   const examId = document.getElementById('live-exam-select').value;
   const exam = APP.exams.find(e=>e.id===examId);
@@ -3283,14 +4161,14 @@ function updateLiveDuration() {
   }
 }
 
-function syncEndFromDuration() {
-  // When duration is changed manually, update end time based on start time
+function syncEndFromDuration() { syncEndFromWindowHours(); } // legacy alias
+
+function syncEndFromWindowHours() {
   const startVal = document.getElementById('live-start-time').value;
-  const dur = parseInt(document.getElementById('live-duration').value) || 0;
-  if (startVal && dur > 0) {
-    const endMs = new Date(startVal).getTime() + dur * 60000;
+  const windowHrs = parseFloat(document.getElementById('live-window-hours').value) || 0;
+  if (startVal && windowHrs > 0) {
+    const endMs = new Date(startVal).getTime() + windowHrs * 3600000;
     const endDate = new Date(endMs);
-    // Format for datetime-local input: YYYY-MM-DDTHH:mm
     const pad = n => String(n).padStart(2,'0');
     const endStr = `${endDate.getFullYear()}-${pad(endDate.getMonth()+1)}-${pad(endDate.getDate())}T${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
     document.getElementById('live-end-time').value = endStr;
@@ -3298,16 +4176,17 @@ function syncEndFromDuration() {
   updateTimePreview();
 }
 
-function syncDurationFromTimes() {
-  // When end time is set, auto-calculate duration from start→end
+function syncDurationFromTimes() { syncWindowFromTimes(); } // legacy alias
+
+function syncWindowFromTimes() {
   const startVal = document.getElementById('live-start-time').value;
   const endVal = document.getElementById('live-end-time').value;
   if (startVal && endVal) {
     const startMs = new Date(startVal).getTime();
     const endMs = new Date(endVal).getTime();
     if (endMs > startMs) {
-      const mins = Math.round((endMs - startMs) / 60000);
-      document.getElementById('live-duration').value = mins;
+      const hrs = ((endMs - startMs) / 3600000).toFixed(1);
+      document.getElementById('live-window-hours').value = hrs;
     }
   }
   updateTimePreview();
@@ -3318,15 +4197,17 @@ function updateTimePreview() {
   if (!preview) return;
   const startVal = document.getElementById('live-start-time').value;
   const endVal = document.getElementById('live-end-time').value;
-  const dur = parseInt(document.getElementById('live-duration').value) || 0;
-  if (startVal && dur > 0) {
+  const testDur = parseInt(document.getElementById('live-duration').value) || 0;
+  const windowHrs = parseFloat(document.getElementById('live-window-hours').value) || 0;
+  if (startVal) {
     const start = new Date(startVal);
     const opts = { dateStyle:'medium', timeStyle:'short' };
-    const endMs = endVal ? new Date(endVal).getTime() : start.getTime() + dur * 60000;
+    const endMs = endVal ? new Date(endVal).getTime() : start.getTime() + windowHrs * 3600000;
     const end = new Date(endMs);
-    preview.innerHTML = `<span style="color:var(--green)">▶ Starts:</span> ${start.toLocaleString([],opts)}<br><span style="color:var(--red)">■ Ends:</span> ${end.toLocaleString([],opts)}<br><span style="color:var(--gold)">⏱ Duration:</span> ${dur} minute${dur!==1?'s':''}`;
+    const winLabel = windowHrs >= 1 ? (Number.isInteger(windowHrs) ? windowHrs + ' hr' + (windowHrs!==1?'s':'') : windowHrs + ' hrs') : Math.round(windowHrs*60) + ' min';
+    preview.innerHTML = `<span style="color:var(--green)">▶ Opens:</span> ${start.toLocaleString([],opts)} &nbsp;|&nbsp; <span style="color:var(--red)">■ Closes:</span> ${end.toLocaleString([],opts)}<br><span style="color:var(--blue2)">🖊 Typing timer:</span> <strong>${testDur} min</strong> &nbsp;|&nbsp; <span style="color:var(--gold)">📅 Open window:</span> <strong>${winLabel}</strong>`;
   } else {
-    preview.textContent = 'Set start & end time above to preview schedule.';
+    preview.textContent = 'Set start time and open window above.';
   }
 }
 
@@ -3334,12 +4215,14 @@ function toggleLiveStartNow() {
   const chk = document.getElementById('live-start-now').checked;
   document.getElementById('live-start-time').disabled = chk;
   document.getElementById('live-end-time').disabled = chk;
+  document.getElementById('live-window-hours').disabled = chk;
   if (chk) {
     document.getElementById('live-start-time').value = '';
     document.getElementById('live-end-time').value = '';
-    const dur = parseInt(document.getElementById('live-duration').value) || 10;
+    const testDur = parseInt(document.getElementById('live-duration').value) || 10;
+    const windowHrs = parseFloat(document.getElementById('live-window-hours').value) || 24;
     const preview = document.getElementById('live-time-preview');
-    if (preview) preview.innerHTML = `<span style="color:var(--red)">🔴 Starting NOW</span> — Duration: <strong>${dur} min</strong>`;
+    if (preview) preview.innerHTML = `<span style="color:var(--red)">🔴 Opening NOW</span> — Typing timer: <strong>${testDur} min</strong> &nbsp;|&nbsp; Open for: <strong>${windowHrs} hr(s)</strong>`;
   } else {
     updateTimePreview();
   }
@@ -3352,51 +4235,51 @@ function scheduleLiveTest() {
   const startNow = document.getElementById('live-start-now').checked;
   const startTimeVal = document.getElementById('live-start-time').value;
   const endTimeVal = document.getElementById('live-end-time').value;
-  const durationMin = parseInt(document.getElementById('live-duration').value) || 10;
+  const durationMin = parseInt(document.getElementById('live-duration').value) || 10;    // typing timer
+  const windowHrs = parseFloat(document.getElementById('live-window-hours').value) || 24; // live period
 
   if (!name || !examId || !content) { showToast('Please fill all fields', 'error'); return; }
   if (content.length < 50) { showToast('Passage too short', 'error'); return; }
 
-  let scheduledAt, endAt, duration;
+  let scheduledAt, endAt;
 
   if (startNow) {
     scheduledAt = Date.now();
-    duration = durationMin * 60;
-    endAt = scheduledAt + duration * 1000;
+    endAt = scheduledAt + windowHrs * 3600000;
   } else {
-    if (!startTimeVal) { showToast('Please set a start time or check "Start Now"', 'error'); return; }
+    if (!startTimeVal) { showToast('Please set a start time or check "Open for attempts NOW"', 'error'); return; }
     scheduledAt = new Date(startTimeVal).getTime();
     if (scheduledAt <= Date.now()) { showToast('Start time must be in the future', 'error'); return; }
 
     if (endTimeVal) {
       endAt = new Date(endTimeVal).getTime();
       if (endAt <= scheduledAt) { showToast('End time must be after start time', 'error'); return; }
-      duration = Math.round((endAt - scheduledAt) / 1000);
     } else {
-      duration = durationMin * 60;
-      endAt = scheduledAt + duration * 1000;
+      endAt = scheduledAt + windowHrs * 3600000;
     }
   }
 
   const lt = {
     id: 'lt_' + Date.now(),
     name, examId, content,
-    duration,       // seconds
-    scheduledAt,    // ms timestamp
-    endAt,          // ms timestamp (explicit end time)
+    duration: durationMin * 60,   // typing timer in seconds (per student)
+    liveWindowHrs: windowHrs,     // how long the test is open
+    scheduledAt,
+    endAt,
     status: startNow ? 'live' : 'upcoming',
     createdAt: Date.now(),
   };
   APP.liveTests.push(lt);
   saveData();
 
-  // Clear form
   ['live-name','live-content','live-start-time','live-end-time'].forEach(id => {
     const el = document.getElementById(id); if (el) { el.value=''; el.disabled=false; }
   });
+  const wh = document.getElementById('live-window-hours');
+  if (wh) { wh.value='24'; wh.disabled=false; }
   document.getElementById('live-start-now').checked = false;
   document.getElementById('live-duration').value = '10';
-  document.getElementById('live-time-preview').textContent = 'Set start & end time above to preview schedule.';
+  document.getElementById('live-time-preview').textContent = 'Set start time and open window above.';
 
   renderAdminLiveTests();
   showToast('Live test scheduled! ✓', 'success');
@@ -3411,7 +4294,7 @@ function renderAdminLiveTests() {
   }
   const sorted = [...APP.liveTests].sort((a,b)=>b.scheduledAt-a.scheduledAt);
   container.innerHTML = `<div class="admin-list"><table>
-    <thead><tr><th>Name</th><th>Exam</th><th>Status</th><th>Start</th><th>End</th><th>Duration</th><th>Attempts</th><th>Actions</th></tr></thead>
+    <thead><tr><th>Name</th><th>Exam</th><th>Status</th><th>Opens</th><th>Closes</th><th>Typing Timer</th><th>Open Window</th><th>Attempts</th><th>Actions</th></tr></thead>
     <tbody>${sorted.map(lt=>{
       const exam=APP.exams.find(e=>e.id===lt.examId)||{name:'?'};
       const startDate=new Date(lt.scheduledAt);
@@ -3420,13 +4303,15 @@ function renderAdminLiveTests() {
       const attempts=APP.results.filter(r=>r.liveTestId===lt.id).length;
       const statusBadge = lt.status==='live'?'<span class="badge-pill red">LIVE</span>':lt.status==='upcoming'?'<span class="badge-pill blue">Upcoming</span>':'<span style="color:var(--text-muted)">Ended</span>';
       const fmtDate = d => d.toLocaleDateString()+' '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      const liveWindowLabel = lt.liveWindowHrs ? (lt.liveWindowHrs >= 1 ? lt.liveWindowHrs + ' hr(s)' : Math.round(lt.liveWindowHrs*60)+' min') : (Math.round((endMs-lt.scheduledAt)/3600000)) + ' hr(s)';
       return `<tr>
         <td>${lt.name}</td>
         <td>${exam.name}</td>
         <td>${statusBadge}</td>
         <td>${fmtDate(startDate)}</td>
         <td>${fmtDate(endDate)}</td>
-        <td>${Math.round(lt.duration/60)} min</td>
+        <td style="color:var(--blue2);font-weight:600">${Math.round(lt.duration/60)} min</td>
+        <td style="color:var(--gold)">${liveWindowLabel}</td>
         <td>${attempts}</td>
         <td style="display:flex;gap:0.5rem">
           <button class="btn-sm edit" onclick="navigate('rankings',{liveTestId:'${lt.id}'})">Rankings</button>
@@ -3446,7 +4331,6 @@ function deleteLiveTest(id) {
   showToast('Live test deleted', 'info');
 }
 
-// ── CUSTOM EXAM ──
 function addCustomExam() {
   const name = document.getElementById('new-exam-name').value.trim();
   const fullName = document.getElementById('new-exam-fullname').value.trim();
@@ -3508,7 +4392,6 @@ function deleteExam(id) {
   showToast('Exam deleted', 'info');
 }
 
-// ── ADMIN RESULTS ──
 function renderAdminResults() {
   const filterExam = document.getElementById('filter-results-exam').value||'all';
   const sortBy = document.getElementById('sort-results').value||'date';
@@ -3518,7 +4401,6 @@ function renderAdminResults() {
   else results.sort((a,b)=>b.completedAt-a.completedAt);
 
   const el = document.getElementById('admin-results-table');
-  // Populate filter
   const fe = document.getElementById('filter-results-exam');
   if (fe.options.length <= 1) {
     APP.exams.forEach(e=>{ const o=document.createElement('option'); o.value=e.id; o.textContent=e.name; fe.appendChild(o); });
@@ -3546,19 +4428,15 @@ function renderAdminResults() {
   </table></div>`;
 }
 
-// ── SETTINGS ──
-function changePassword() {
+function changeCredentials() {
+  const newId = document.getElementById('new-admin-id').value.trim();
   const curr = document.getElementById('curr-pass').value;
   const newp = document.getElementById('new-pass').value;
   const conf = document.getElementById('confirm-pass').value;
-  if (curr !== APP.adminPassword) { showToast('Current password is wrong', 'error'); return; }
-  if (newp.length < 6) { showToast('New password must be at least 6 characters', 'error'); return; }
-  if (newp !== conf) { showToast('Passwords do not match', 'error'); return; }
-  APP.adminPassword = newp;
-  saveData();
-  ['curr-pass','new-pass','confirm-pass'].forEach(id=>document.getElementById(id).value='');
-  showToast('Password changed!', 'success');
+
+  showToast('Notice: Passwords must now be updated inside the Supabase Auth dashboard', 'info');
 }
+function changePassword() { changeCredentials(); }
 
 function renderPlatformStats() {
   const uniqueUsers = [...new Set(APP.results.map(r=>r.userId))].length;
@@ -3657,8 +4535,229 @@ function formatDuration(ms) {
   return s+'s';
 }
 
-// Handle pending user callback after name set
 const _origSaveUsername = saveUsername;
+
+// ════════════════════════════════════════════════════════════
+//  EXAM CENTER MODE
+//  Mimics real NIC/SSC/RRB exam software layout
+// ════════════════════════════════════════════════════════════
+let _ecInterval = null;
+let _ecClockInterval = null;
+let _ecActive = false;
+
+function enterExamCenterMode() {
+  if (!APP.test.active && !APP.test.passage) {
+    showToast('Start a test first, then switch to Exam Center Mode', 'error');
+    return;
+  }
+
+  const overlay = document.getElementById('exam-center-overlay');
+  overlay.classList.add('active');
+  _ecActive = true;
+
+  // Populate header info
+  const exam = APP.exams.find(e => e.id === APP.test.examId) || { name: APP.test.examName, rules: { metric: 'WPM', requiredSpeed: 30, language: 'English', backspaceAllowed: true } };
+  document.getElementById('ec-title').textContent = 'TYPING TEST — ' + (exam.name || 'GOVERNMENT EXAM');
+  document.getElementById('ec-subtitle').textContent = exam.fullName || 'Official Exam Practice Mode';
+  document.getElementById('ec-candidate-name').textContent = APP.user.name || 'Candidate';
+  document.getElementById('ec-exam-name').textContent = exam.name || '—';
+  document.getElementById('ec-lang').textContent = exam.rules.language || 'English';
+  document.getElementById('ec-speed').textContent = exam.rules.requiredSpeed + ' ' + exam.rules.metric;
+  document.getElementById('ec-speed-label').textContent = exam.rules.metric === 'KDPH' ? 'Net KDPH' : 'Net WPM';
+  // Roll number — use user ID suffix for realism
+  const rollSuffix = APP.user.id ? APP.user.id.slice(-6).toUpperCase() : Math.random().toString(36).slice(2,8).toUpperCase();
+  document.getElementById('ec-roll').textContent = 'TYP-2024-' + rollSuffix;
+
+  // Rule badge
+  const ruleBadge = document.getElementById('ec-rule-badge');
+  if (!exam.rules.backspaceAllowed) {
+    ruleBadge.style.cssText = 'font-size:0.72rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:3px;background:#fde;color:#c00;border:1px solid #f99';
+    ruleBadge.textContent = '✗ Backspace DISABLED';
+  } else {
+    ruleBadge.style.cssText = 'font-size:0.72rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:3px;background:#dfd;color:#1a7a1a;border:1px solid #9d9';
+    ruleBadge.textContent = '✓ Backspace Allowed';
+  }
+
+  // Sync timer from main test
+  const remaining = APP.test.active ? Math.max(0, APP.test.duration - (Date.now() - APP.test.startTime) / 1000) : APP.test.duration;
+  document.getElementById('ec-timer').textContent = formatTime(remaining);
+  document.getElementById('ec-duration').textContent = formatTime(APP.test.duration);
+
+  // Sync passage
+  ecRenderPassage();
+
+  // Sync typing box value from main test
+  const mainBox = document.getElementById('typing-box-visible');
+  const ecBox = document.getElementById('ec-typing-box');
+  ecBox.value = mainBox ? mainBox.value : '';
+  ecBox.disabled = !APP.test.active;
+
+  if (APP.test.active) {
+    document.getElementById('ec-submit-btn').disabled = false;
+    document.getElementById('ec-status-bar').textContent = '🔴 TEST IN PROGRESS';
+    document.getElementById('ec-status-bar').style.color = '#f0c93a';
+    ecBox.focus();
+  } else {
+    document.getElementById('ec-status-bar').textContent = '⏳ Test has not started yet';
+  }
+
+  // Start real-time clock
+  _ecClockInterval = setInterval(() => {
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('ec-clock').textContent = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+    document.getElementById('ec-datetime').textContent = now.toLocaleDateString('en-IN', {weekday:'short',day:'2-digit',month:'short',year:'numeric'}) + ' ' + now.toLocaleTimeString('en-IN');
+  }, 1000);
+
+  // Start stats sync interval
+  _ecInterval = setInterval(() => {
+    if (!_ecActive) return;
+    ecSyncStats();
+    ecRenderPassage();
+    // Sync timer
+    if (APP.test.active) {
+      const rem = Math.max(0, APP.test.duration - (Date.now() - APP.test.startTime) / 1000);
+      const timerEl = document.getElementById('ec-timer');
+      timerEl.textContent = formatTime(rem);
+      timerEl.style.color = rem < 60 ? '#c00' : rem < 180 ? '#c77a00' : '#c00';
+      if (rem <= 0) {
+        document.getElementById('ec-typing-box').disabled = true;
+        document.getElementById('ec-submit-btn').disabled = true;
+        document.getElementById('ec-status-bar').textContent = '⏱ TIME UP — Test auto-submitted';
+      }
+    } else {
+      document.getElementById('ec-submit-btn').disabled = true;
+      document.getElementById('ec-typing-box').disabled = true;
+    }
+  }, 800);
+
+  // Prevent ESC from closing
+  document.getElementById('ec-notice').textContent = '⚠ Exam Center Mode active. Click "EXIT EXAM CENTER" to return to normal view.';
+}
+
+function exitExamCenterMode() {
+  _ecActive = false;
+  if (_ecInterval) { clearInterval(_ecInterval); _ecInterval = null; }
+  if (_ecClockInterval) { clearInterval(_ecClockInterval); _ecClockInterval = null; }
+
+  // Sync typed text BACK to main test box before exiting
+  const ecBox = document.getElementById('ec-typing-box');
+  const mainBox = document.getElementById('typing-box-visible');
+  if (ecBox && mainBox && APP.test.active) {
+    mainBox.value = ecBox.value;
+    // Trigger input handler to keep state in sync
+    mainBox.dispatchEvent(new Event('input'));
+  }
+
+  document.getElementById('exam-center-overlay').classList.remove('active');
+  showToast('Returned to normal view. Your progress is saved.', 'info');
+}
+
+function ecSyncStats() {
+  if (!APP.test.passage) return;
+  const ecBox = document.getElementById('ec-typing-box');
+  const typed = ecBox ? ecBox.value : '';
+
+  // Also keep main test state in sync
+  APP.test.typedText = typed;
+
+  const elapsed = APP.test.active ? Math.max(0.01, (Date.now() - APP.test.startTime) / 1000) : 0.01;
+  const res = calculateResults(typed, APP.test.passage, elapsed, APP.test.totalKeystrokes, APP.test.metric);
+
+  const speedVal = APP.test.metric === 'KDPH' ? res.netKdph : res.netWPM;
+  document.getElementById('ec-wpm').textContent = speedVal;
+  document.getElementById('ec-accuracy').textContent = res.accuracy + '%';
+  document.getElementById('ec-keystrokes').textContent = APP.test.totalKeystrokes;
+  document.getElementById('ec-correct').textContent = res.correctWords;
+  document.getElementById('ec-mistakes').textContent = res.fullMistakes + (res.halfMistakes > 0 ? '+' + res.halfMistakes + '½' : '');
+  document.getElementById('ec-gross').textContent = APP.test.metric === 'KDPH' ? res.grossKdph : res.grossWPM;
+  document.getElementById('ec-progress').textContent = res.completionPct + '%';
+}
+
+function ecRenderPassage() {
+  const el = document.getElementById('ec-passage-display');
+  if (!el || !APP.test.passage) return;
+  const typed = document.getElementById('ec-typing-box')?.value || APP.test.typedText || '';
+  const passage = APP.test.passage;
+  const highlight = APP.highlightOn;
+  let html = '';
+  for (let i = 0; i < passage.length; i++) {
+    const ch = passage[i] === ' ' ? '&nbsp;' : escHtml(passage[i]);
+    if (!highlight) {
+      html += `<span class="char untyped">${ch}</span>`;
+    } else if (i < typed.length) {
+      html += typed[i] === passage[i]
+        ? `<span class="char correct">${ch}</span>`
+        : `<span class="char incorrect">${ch}</span>`;
+    } else if (i === typed.length) {
+      html += `<span class="char current">${ch}</span>`;
+    } else {
+      html += `<span class="char untyped">${ch}</span>`;
+    }
+  }
+  el.innerHTML = html;
+  if (highlight) {
+    const cursorEl = el.querySelector('.char.current');
+    if (cursorEl) cursorEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+}
+
+function handleECInput(e) {
+  if (!APP.test.active) return;
+  const ecBox = document.getElementById('ec-typing-box');
+  const typed = ecBox.value;
+  APP.test.typedText = typed;
+  APP.test.totalKeystrokes++;
+
+  // Sync to main box too
+  const mainBox = document.getElementById('typing-box-visible');
+  if (mainBox) mainBox.value = typed;
+
+  ecRenderPassage();
+  ecSyncStats();
+
+  // Update progress bar in main test view too
+  const pct = APP.test.passage ? Math.min(100, Math.round(typed.length / APP.test.passage.length * 100)) : 0;
+  const pb = document.getElementById('test-progress');
+  if (pb) pb.style.width = pct + '%';
+  const pc = document.getElementById('stat-progress-chars');
+  if (pc) pc.textContent = typed.length + '/' + APP.test.passage.length;
+}
+
+function handleECKeydown(e) {
+  if ((e.ctrlKey || e.metaKey) && ['c','v','x','a'].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+    showToast('Copy/Paste not allowed in exam mode', 'error');
+    return;
+  }
+  // Block backspace if exam rule says so
+  if ((e.key === 'Backspace' || e.key === 'Delete') && APP.test.active && !APP.test.backspaceAllowed) {
+    e.preventDefault();
+    // Flash the rule badge
+    const badge = document.getElementById('ec-rule-badge');
+    badge.style.background = '#f99';
+    setTimeout(() => { badge.style.background = '#fde'; }, 300);
+    return;
+  }
+  // Count keystrokes
+  if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1) {
+    APP.test.totalKeystrokes++;
+  }
+}
+
+function ecSubmitTest() {
+  if (!APP.test.active) return;
+  if (!confirm('Are you sure you want to submit your test? This cannot be undone.')) return;
+  // Sync typed text back to main test before submitting
+  const ecBox = document.getElementById('ec-typing-box');
+  const mainBox = document.getElementById('typing-box-visible');
+  if (ecBox && mainBox) {
+    mainBox.value = ecBox.value;
+    APP.test.typedText = ecBox.value;
+  }
+  exitExamCenterMode();
+  endTest(false);
+}
 
 // ════════════════════════════════════════════════════════════
 //  KEYBOARD SHORTCUTS
@@ -3666,7 +4765,6 @@ const _origSaveUsername = saveUsername;
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m => {
-      // Don't close if user hasn't set name
       if (m.id === 'modal-user' && !APP.user.name) return;
       m.classList.add('hidden');
     });
@@ -3678,26 +4776,261 @@ document.addEventListener('keydown', (e) => {
 // ════════════════════════════════════════════════════════════
 setInterval(() => {
   if (currentPage === 'live-tests') {
-    // Update countdowns in DOM without full re-render
-    document.querySelectorAll('.countdown-display').forEach(el => {
-      // handled by renderLiveTests refresh
-    });
   }
 }, 1000);
 
 // ════════════════════════════════════════════════════════════
+//  TYPING BATTLE
+// ════════════════════════════════════════════════════════════
+const BATTLES_COL = 'battles';
+let _battleUnsub = null;
+let _currentBattleId = null;
+let _battleInterval = null;
+
+function renderBattlePage() {
+  const battleEl = document.getElementById('battle-exam-select');
+  if (battleEl && battleEl.options.length === 0) {
+    battleEl.innerHTML = APP.exams.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+  }
+}
+
+async function createBattleRoom() {
+  if (!requireUser(() => createBattleRoom())) return;
+  const examId = document.getElementById('battle-exam-select').value;
+  const dur = parseInt(document.getElementById('battle-duration').value) || 5;
+  const content = document.getElementById('battle-content').value.trim();
+  if (!content || content.length < 30) { showToast('Please enter a passage (min 30 chars)', 'error'); return; }
+
+  const code = generateBattleCode();
+  const battle = {
+    code, examId,
+    content,
+    duration: dur * 60,
+    createdAt: Date.now(),
+    status: 'waiting',
+    players: {
+      [APP.user.id]: { name: APP.user.name, progress: 0, wpm: 0, ready: false, typed: '' }
+    }
+  };
+
+  try {
+    if (window._db) {
+      await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), battle);
+    } else {
+      localStorage.setItem('typssc_battle_' + code, JSON.stringify(battle));
+    }
+    _currentBattleId = code;
+    showBattleArena(battle, code);
+    subscribeToBattle(code);
+    showToast('Battle room created! Share code: ' + code, 'success');
+  } catch(e) {
+    showToast('Failed to create battle room', 'error');
+  }
+}
+
+async function joinBattleRoom() {
+  if (!requireUser(() => joinBattleRoom())) return;
+  const code = document.getElementById('battle-join-code').value.trim().toUpperCase();
+  if (!code || code.length < 4) { showToast('Enter a valid room code', 'error'); return; }
+
+  try {
+    let battle;
+    if (window._db) {
+      const snap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, code));
+      if (!snap.exists()) { showToast('Room not found. Check the code.', 'error'); return; }
+      battle = snap.data();
+    } else {
+      const b = localStorage.getItem('typssc_battle_' + code);
+      if (!b) { showToast('Room not found.', 'error'); return; }
+      battle = JSON.parse(b);
+    }
+
+    if (battle.status === 'ended') { showToast('This battle has already ended.', 'error'); return; }
+    if (Object.keys(battle.players).length >= 2 && !battle.players[APP.user.id]) {
+      showToast('Room is full (max 2 players)', 'error'); return;
+    }
+
+    battle.players[APP.user.id] = { name: APP.user.name, progress: 0, wpm: 0, ready: false, typed: '' };
+    if (window._db) {
+      await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), battle, { merge: true });
+    } else {
+      localStorage.setItem('typssc_battle_' + code, JSON.stringify(battle));
+    }
+    _currentBattleId = code;
+    showBattleArena(battle, code);
+    subscribeToBattle(code);
+    showToast('Joined battle room!', 'success');
+  } catch(e) {
+    showToast('Failed to join room: ' + e.message, 'error');
+  }
+}
+
+function generateBattleCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+function showBattleArena(battle, code) {
+  document.getElementById('battle-arena').classList.remove('hidden');
+  document.getElementById('battle-room-code-display').textContent = code;
+  document.getElementById('battle-my-name').textContent = APP.user.name;
+
+  const passDisplay = document.getElementById('battle-passage-display');
+  if (passDisplay) passDisplay.textContent = battle.content;
+}
+
+function subscribeToBattle(code) {
+  if (_battleUnsub) _battleUnsub();
+  if (!window._db) return;
+  const ref = window._fbDoc(window._db, BATTLES_COL, code);
+  _battleUnsub = window._fbOnSnapshot(ref, (snap) => {
+    if (!snap.exists()) return;
+    const battle = snap.data();
+    updateBattleUI(battle);
+  });
+}
+
+function updateBattleUI(battle) {
+  const players = battle.players || {};
+  const myData = players[APP.user.id];
+  const oppData = Object.entries(players).find(([id]) => id !== APP.user.id);
+
+  const statusEl = document.getElementById('battle-room-status');
+  const playerCount = Object.keys(players).length;
+  if (battle.status === 'waiting') {
+    statusEl.textContent = playerCount === 1 ? '⏳ Waiting for opponent to join...' : '✓ Opponent joined! Click "I\'m Ready" when ready.';
+  } else if (battle.status === 'live') {
+    statusEl.innerHTML = '<span style="color:var(--red)">🔴 BATTLE IN PROGRESS</span>';
+    document.getElementById('battle-ready-btn').style.display = 'none';
+    const box = document.getElementById('battle-typing-box');
+    if (box && box.disabled) { box.disabled = false; box.focus(); }
+    if (!_battleInterval) startBattleTracking(battle);
+  } else if (battle.status === 'ended') {
+    statusEl.innerHTML = '<span style="color:var(--gold)">🏆 Battle Ended!</span>';
+    if (_battleInterval) { clearInterval(_battleInterval); _battleInterval = null; }
+    document.getElementById('battle-typing-box').disabled = true;
+  }
+
+  if (myData) {
+    const myPct = Math.round(myData.progress || 0);
+    document.getElementById('battle-my-progress').textContent = myPct + '%';
+    document.getElementById('battle-my-wpm').textContent = (myData.wpm || 0) + ' WPM';
+    document.getElementById('battle-my-bar').style.width = myPct + '%';
+    document.getElementById('battle-my-chars').textContent = (myData.typed || '').length + '/' + (battle.content || '').length;
+  }
+
+  if (oppData) {
+    const [, opp] = oppData;
+    const oppPct = Math.round(opp.progress || 0);
+    document.getElementById('battle-opp-name').textContent = opp.name || 'Opponent';
+    document.getElementById('battle-opp-progress').textContent = oppPct + '%';
+    document.getElementById('battle-opp-wpm').textContent = (opp.wpm || 0) + ' WPM';
+    document.getElementById('battle-opp-bar').style.width = oppPct + '%';
+    document.getElementById('battle-opp-chars').textContent = (opp.typed || '').length + '/' + (battle.content || '').length;
+  } else {
+    document.getElementById('battle-opp-name').textContent = 'Waiting...';
+  }
+}
+
+let _battleStartTime = null;
+function startBattleTracking(battle) {
+  _battleStartTime = Date.now();
+  _battleInterval = setInterval(async () => {
+    const typed = document.getElementById('battle-typing-box').value;
+    const elapsed = Math.max(0.01, (Date.now() - _battleStartTime) / 1000);
+    const wpm = Math.round((typed.length / 5) / (elapsed / 60));
+    const progress = battle.content ? Math.min(100, Math.round(typed.length / battle.content.length * 100)) : 0;
+
+    renderBattlePassage(typed, battle.content);
+
+    if (window._db && _currentBattleId) {
+      const update = {};
+      update[`players.${APP.user.id}.typed`] = typed;
+      update[`players.${APP.user.id}.wpm`] = wpm;
+      update[`players.${APP.user.id}.progress`] = progress;
+      try {
+        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, _currentBattleId), update, { merge: true });
+      } catch(e) {}
+    }
+
+    if (typed.length >= (battle.content || '').length) {
+      clearInterval(_battleInterval); _battleInterval = null;
+      showToast('🏆 You finished the passage!', 'success');
+    }
+  }, 1000);
+}
+
+function renderBattlePassage(typed, passage) {
+  const el = document.getElementById('battle-passage-display');
+  if (!el || !passage) return;
+  let html = '';
+  for (let i = 0; i < passage.length; i++) {
+    const ch = passage[i] === ' ' ? '&nbsp;' : passage[i];
+    if (i < typed.length) {
+      html += typed[i] === passage[i]
+        ? `<span class="char correct">${ch}</span>`
+        : `<span class="char incorrect">${ch}</span>`;
+    } else if (i === typed.length) {
+      html += `<span class="char current">${ch}</span>`;
+    } else {
+      html += `<span class="char untyped">${ch}</span>`;
+    }
+  }
+  el.innerHTML = html;
+}
+
+function handleBattleInput(e) {}
+
+function handleBattleKeydown(e) {
+  if ((e.ctrlKey || e.metaKey) && ['c','v','x','a'].includes(e.key.toLowerCase())) {
+    e.preventDefault();
+  }
+}
+
+async function setBattleReady() {
+  if (!_currentBattleId) return;
+  const code = _currentBattleId;
+  if (window._db) {
+    const update = {};
+    update[`players.${APP.user.id}.ready`] = true;
+    await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), update, { merge: true });
+    const snap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, code));
+    if (snap.exists()) {
+      const battle = snap.data();
+      const allReady = Object.values(battle.players).every(p => p.ready);
+      if (allReady && Object.keys(battle.players).length >= 2) {
+        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), { status: 'live' }, { merge: true });
+        showToast('Both players ready — Battle started! 🔴', 'success');
+      } else {
+        showToast('You\'re ready! Waiting for opponent...', 'info');
+      }
+    }
+  }
+  document.getElementById('battle-ready-btn').textContent = '✓ Ready! Waiting...';
+  document.getElementById('battle-ready-btn').disabled = true;
+}
+
+async function leaveBattleRoom() {
+  if (_battleUnsub) { _battleUnsub(); _battleUnsub = null; }
+  if (_battleInterval) { clearInterval(_battleInterval); _battleInterval = null; }
+  _currentBattleId = null;
+  document.getElementById('battle-arena').classList.add('hidden');
+  document.getElementById('battle-join-code').value = '';
+  document.getElementById('battle-typing-box').value = '';
+  document.getElementById('battle-typing-box').disabled = true;
+  document.getElementById('battle-ready-btn').textContent = '✓ I\'m Ready!';
+  document.getElementById('battle-ready-btn').disabled = false;
+  showToast('Left battle room', 'info');
+}
+
+// ════════════════════════════════════════════════════════════
 //  BOOT
-// ════════════════════════════════════════════════════════════
-// ════════════════════════════════════════════════════════════
-//  BOOT — wait for Firebase module, then init
 // ════════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
   if (window._firebaseReady) {
     initApp();
   } else {
-    // Firebase module is deferred — wait for it
     window._onFirebaseReady = initApp;
-    // Safety fallback: if Firebase never loads after 4s, init anyway with localStorage
     setTimeout(() => {
       if (typeof currentPage === 'undefined') initApp();
     }, 4000);
