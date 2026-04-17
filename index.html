@@ -6,7 +6,14 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="X-Frame-Options" content="DENY">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()">
+<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), usb=(), payment=(), bluetooth=()">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com https://sbbqixppvmukvqfqlaqj.supabase.co; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://sbbqixppvmukvqfqlaqj.supabase.co wss://sbbqixppvmukvqfqlaqj.supabase.co; frame-ancestors 'none';">
+<!-- Security: No caching of sensitive content -->
+<meta name="theme-color" content="#06080f">
 <title>TypSSc — Government Exam Typing Platform</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -210,6 +217,54 @@ body.light-mode {
   --shadow: 0 8px 32px rgba(59,122,248,0.12);
   --shadow2: 0 2px 12px rgba(59,122,248,0.08);
 }
+
+/* ─── SECURITY: Anti-copy / Anti-select ─── */
+body, .passage-container, .exam-card, .lesson-card, .result-body,
+.ec-passage-panel, .test-body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+/* Allow selection only inside actual input fields */
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+
+/* ─── SECURITY: DevTools Warning Overlay ─── */
+#_sec-devtools-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 999999;
+  background: rgba(6,8,15,0.97);
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 1rem;
+  text-align: center; padding: 2rem;
+  backdrop-filter: blur(20px);
+}
+#_sec-devtools-overlay h2 {
+  color: #ef4444; font-size: 1.8rem;
+  font-family: 'Playfair Display', serif;
+}
+#_sec-devtools-overlay p { color: #7a92c0; max-width: 400px; line-height: 1.6; }
+#_sec-devtools-overlay .sec-icon { font-size: 3rem; }
+
+/* ─── SECURITY: Print protection ─── */
+@media print {
+  body * { display: none !important; }
+  body::after {
+    display: block !important;
+    content: "⛔ Printing is not permitted on TypSSc.";
+    font-size: 2rem; text-align: center; padding: 4rem;
+    color: #333;
+  }
+}
+
+/* ─── SECURITY: Pointer events on non-interactive elements ─── */
+.passage-container { pointer-events: none; }
+.typing-area-wrapper { pointer-events: all; }
+.typing-click-overlay { pointer-events: all; }
 
 * { margin:0; padding:0; box-sizing:border-box; }
 
@@ -1193,6 +1248,16 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
 </head>
 <body>
 
+<!-- ████ SECURITY: DevTools Warning Overlay ████ -->
+<div id="_sec-devtools-overlay">
+  <div class="sec-icon">🔒</div>
+  <h2>Developer Tools Detected</h2>
+  <p>Access to developer tools is restricted on this platform to protect exam integrity and content security.</p>
+  <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem">Please close DevTools and reload the page to continue.</p>
+  <button onclick="location.reload()" style="margin-top:1rem;padding:0.6rem 1.5rem;background:var(--gold);color:#000;border:none;border-radius:0.5rem;font-weight:700;cursor:pointer;">Reload Page</button>
+</div>
+
+
 <nav>
   <div class="nav-brand" onclick="navigate('home')">
     <div class="nav-logo">T</div>
@@ -2149,6 +2214,246 @@ if (typeof window._onFirebaseReady === 'function') window._onFirebaseReady();
 
 <script>
 // ════════════════════════════════════════════════════════════
+// ██████  SECURITY LAYER v3.0 — TypSSc Protection Shield  ██████
+// ════════════════════════════════════════════════════════════
+(function _securityShield() {
+  'use strict';
+
+  // ── 1. ANTI-DEVTOOLS: Detect and respond to open DevTools ──
+  const _devToolsThreshold = 160;
+  let _devToolsOpen = false;
+  let _devToolsTimer = null;
+
+  function _checkDevTools() {
+    const widthDiff = window.outerWidth - window.innerWidth;
+    const heightDiff = window.outerHeight - window.innerHeight;
+    if (widthDiff > _devToolsThreshold || heightDiff > _devToolsThreshold) {
+      if (!_devToolsOpen) {
+        _devToolsOpen = true;
+        _onDevToolsOpen();
+      }
+    } else {
+      _devToolsOpen = false;
+    }
+  }
+
+  function _onDevToolsOpen() {
+    // Blur sensitive content, show warning overlay
+    const overlay = document.getElementById('_sec-devtools-overlay');
+    if (overlay) overlay.style.display = 'flex';
+    // Clear any active test data from view
+    const passage = document.querySelector('.passage-container');
+    if (passage) passage.style.filter = 'blur(8px)';
+  }
+
+  _devToolsTimer = setInterval(_checkDevTools, 1000);
+
+  // ── 2. DEBUGGER TRAP: Slow down DevTools console usage ──
+  let _lastDebugTime = Date.now();
+  setInterval(function() {
+    const start = Date.now();
+    // eslint-disable-next-line no-debugger
+    debugger;
+    if (Date.now() - start > 100) {
+      _onDevToolsOpen();
+    }
+    _lastDebugTime = Date.now();
+  }, 3000);
+
+  // ── 3. CONSOLE POISONING: Override console methods ──
+  const _noop = function() {};
+  const _consoleWarn = function() {
+    console.warn('%c⛔ TypSSc Security', 'color:red;font-size:20px;font-weight:bold',
+      '\nAccessing the console may violate our Terms of Service.\nAny attempt to manipulate the platform will result in account suspension.');
+  };
+  try {
+    Object.defineProperty(window, 'console', {
+      get: function() {
+        return {
+          log: _noop, warn: _consoleWarn, error: _noop,
+          info: _noop, debug: _noop, dir: _noop,
+          table: _noop, group: _noop, groupEnd: _noop,
+          time: _noop, timeEnd: _noop, trace: _noop,
+          clear: _noop, assert: _noop,
+        };
+      },
+      configurable: false
+    });
+  } catch(e) {}
+
+  // ── 4. RIGHT-CLICK DISABLE ──
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }, true);
+
+  // ── 5. TEXT SELECTION DISABLE (CSS-backed, JS-enforced) ──
+  document.addEventListener('selectstart', function(e) {
+    // Allow selection only in input/textarea elements
+    if (!['INPUT','TEXTAREA'].includes(e.target.tagName)) {
+      e.preventDefault();
+      return false;
+    }
+  }, true);
+
+  // ── 6. DRAG PROTECTION ──
+  document.addEventListener('dragstart', function(e) {
+    if (!['INPUT','TEXTAREA'].includes(e.target.tagName)) {
+      e.preventDefault();
+      return false;
+    }
+  }, true);
+
+  // ── 7. KEYBOARD SHORTCUTS BLOCK ──
+  document.addEventListener('keydown', function(e) {
+    const key = e.key ? e.key.toLowerCase() : '';
+    const ctrl = e.ctrlKey || e.metaKey;
+
+    // Block F12
+    if (e.key === 'F12') { e.preventDefault(); return false; }
+
+    // Block Ctrl+Shift+I (DevTools), Ctrl+Shift+J (Console), Ctrl+Shift+C (Inspector)
+    if (ctrl && e.shiftKey && ['i','j','c','k'].includes(key)) {
+      e.preventDefault(); return false;
+    }
+
+    // Block Ctrl+U (View Source)
+    if (ctrl && key === 'u') { e.preventDefault(); return false; }
+
+    // Block Ctrl+S (Save page)
+    if (ctrl && key === 's') { e.preventDefault(); return false; }
+
+    // Block Ctrl+P (Print - reveals source layout)
+    if (ctrl && key === 'p') { e.preventDefault(); return false; }
+
+    // Block Ctrl+A (Select All — only outside inputs)
+    if (ctrl && key === 'a' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+      e.preventDefault(); return false;
+    }
+
+    // Block Ctrl+C/X outside inputs (copy/cut)
+    if (ctrl && ['c','x'].includes(key) && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+      e.preventDefault(); return false;
+    }
+  }, true);
+
+  // ── 8. PRINT PROTECTION ──
+  window.addEventListener('beforeprint', function(e) {
+    e.preventDefault();
+    document.body.innerHTML = '<div style="text-align:center;padding:4rem;font-family:sans-serif"><h1>⛔ Printing Not Allowed</h1><p>This content is protected. Please close this dialog.</p></div>';
+  });
+
+  // ── 9. SESSION INTEGRITY: Detect tab-switching / focus loss during test ──
+  let _focusLossCount = 0;
+  let _focusLossTime = null;
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      _focusLossTime = Date.now();
+      _focusLossCount++;
+      // Pause and warn if test is running
+      if (typeof APP !== 'undefined' && APP.test && APP.test.active) {
+        if (_focusLossCount >= 3) {
+          // Force end test on 3rd focus loss
+          if (typeof endTest === 'function') {
+            setTimeout(() => {
+              showToast && showToast('⚠️ Test auto-submitted: multiple focus losses detected.', 'error');
+              endTest();
+            }, 500);
+          }
+        }
+      }
+    }
+  });
+
+  // ── 10. IFRAME BUST: Prevent embedding in iframes ──
+  if (window.top !== window.self) {
+    window.top.location = window.self.location;
+  }
+
+  // ── 11. SOURCE VIEWING PROTECTION: Scramble on blur with delay ──
+  window.addEventListener('blur', function() {
+    // Don't immediately act, but note the blur
+    _lastBlurTime = Date.now();
+  });
+  let _lastBlurTime = 0;
+
+  // ── 12. ANTI-PASTE on passage area: prevent pasting typing input ──
+  document.addEventListener('paste', function(e) {
+    const active = document.activeElement;
+    // Block paste everywhere except non-test inputs (login form, admin forms)
+    if (active && active.classList && active.classList.contains('typing-input')) {
+      e.preventDefault();
+      return false;
+    }
+    if (active && active.id === 'battle-typing-box') {
+      e.preventDefault();
+      return false;
+    }
+    if (active && active.classList && active.classList.contains('ec-typing-box')) {
+      e.preventDefault();
+      return false;
+    }
+  }, true);
+
+  // ── 13. INTEGRITY CHECK: Detect if JS was tampered with ──
+  const _integrityCheck = (function() {
+    const _sentinel = '__typssc_integrity__';
+    window[_sentinel] = true;
+    return function() {
+      if (!window[_sentinel]) {
+        document.body.style.display = 'none';
+      }
+    };
+  })();
+  setInterval(_integrityCheck, 5000);
+
+  // ── 14. SESSION FINGERPRINT: Bind session to device fingerprint ──
+  (function() {
+    const _fp = [
+      navigator.userAgent,
+      navigator.language,
+      screen.width + 'x' + screen.height,
+      screen.colorDepth,
+      new Date().getTimezoneOffset(),
+      navigator.hardwareConcurrency || 0,
+      navigator.platform || ''
+    ].join('|');
+    
+    const _hash = function(str) {
+      let h = 0;
+      for (let i = 0; i < str.length; i++) {
+        h = Math.imul(31, h) + str.charCodeAt(i) | 0;
+      }
+      return (h >>> 0).toString(36);
+    };
+
+    window.__sessionFP = _hash(_fp);
+
+    // Store in sessionStorage (tab-bound, not persistent)
+    try {
+      const stored = sessionStorage.getItem('__typssc_fp');
+      if (!stored) {
+        sessionStorage.setItem('__typssc_fp', window.__sessionFP);
+      } else if (stored !== window.__sessionFP) {
+        // Different device/environment — could be session hijack
+        sessionStorage.setItem('__typssc_fp', window.__sessionFP);
+      }
+    } catch(e) {}
+  })();
+
+  // ── 15. WATERMARK RESULTS: Tag all test results with session ID ──
+  window.__resultWatermark = function(result) {
+    if (!result) return result;
+    result._session = window.__sessionFP || 'unknown';
+    result._ts = Date.now();
+    result._ua = navigator.userAgent.slice(0, 60);
+    return result;
+  };
+
+})(); // End Security Shield
+
+// ════════════════════════════════════════════════════════════
 // [INJECTED] SUPABASE SECURE CLOUD AUTHENTICATION
 // ════════════════════════════════════════════════════════════
 const _supabase = supabase.createClient(
@@ -3073,17 +3378,22 @@ function startTest() {
   const box = document.getElementById('typing-box-visible');
   if (box) { box.value = ''; box.focus(); box.disabled = false; }
 
-  // If Exam Center Mode is open, activate its box too
+  // If Exam Center Mode is already open, activate its box
   if (_ecActive) {
     const ecBox = document.getElementById('ec-typing-box');
     if (ecBox) { ecBox.value = ''; ecBox.disabled = false; ecBox.focus(); }
     document.getElementById('ec-submit-btn').disabled = false;
-    document.getElementById('ec-status-bar').textContent = '🔴 TEST IN PROGRESS';
+    document.getElementById('ec-status-bar').textContent = '\uD83D\uDD34 TEST IN PROGRESS';
   }
 
   // Timer
   APP.test.timerInterval = setInterval(updateTimer, 250);
   APP.test.statsInterval = setInterval(updateLiveStats, 500);
+
+  // AUTO-LAUNCH Exam Center Mode on every test start
+  setTimeout(function() {
+    if (!_ecActive) enterExamCenterMode();
+  }, 150);
 }
 
 function focusInput() {
@@ -3517,6 +3827,12 @@ function endTest(quit=false) {
     // ── For result comparison view ──
     passage: APP.test.passage,
     typedText: APP.test.typedText,
+    // ── Security watermark ──
+    _sessionFP: window.__sessionFP || 'unknown',
+    _ua: navigator.userAgent.slice(0, 80),
+    _integrity: (function() {
+      return btoa([navigator.language, screen.width, screen.height, new Date().getTimezoneOffset()].join('|'));
+    })(),
   };
   APP.results.push(resultRecord);
   saveData();
@@ -3561,6 +3877,8 @@ async function adminLogin() {
   if (!error) {
     APP.adminLoggedIn = true;
     APP.loginAttempts = 0;
+    // Clear lockout on success
+    try { sessionStorage.removeItem('__typssc_lockout'); } catch(e) {}
     document.getElementById('input-admin-id').value = '';
     document.getElementById('input-admin-pass').value = '';
     closeModal('modal-admin-login');
@@ -3569,12 +3887,22 @@ async function adminLogin() {
   } else {
     APP.loginAttempts++;
     document.getElementById('input-admin-pass').value = '';
-    if (APP.loginAttempts >= 5) {
-      APP.lockoutUntil = now + 15 * 60 * 1000;
+    // Exponential backoff: 3 attempts = 5min, 5 = 15min, 7 = 60min
+    if (APP.loginAttempts >= 7) {
+      APP.lockoutUntil = now + 60 * 60 * 1000;
       APP.loginAttempts = 0;
+      try { sessionStorage.setItem('__typssc_lockout', APP.lockoutUntil); } catch(e) {}
+      showToast('Account locked for 60 minutes due to repeated failures.', 'error');
+    } else if (APP.loginAttempts >= 5) {
+      APP.lockoutUntil = now + 15 * 60 * 1000;
+      try { sessionStorage.setItem('__typssc_lockout', APP.lockoutUntil); } catch(e) {}
       showToast('Too many failed attempts. Locked for 15 minutes.', 'error');
+    } else if (APP.loginAttempts >= 3) {
+      APP.lockoutUntil = now + 5 * 60 * 1000;
+      try { sessionStorage.setItem('__typssc_lockout', APP.lockoutUntil); } catch(e) {}
+      showToast(`Suspicious activity. Locked for 5 minutes. ${7 - APP.loginAttempts} attempts remaining.`, 'error');
     } else {
-      showToast(`Invalid Cloud Credentials. ${5 - APP.loginAttempts} attempts remaining.`, 'error');
+      showToast(`Invalid Cloud Credentials. ${7 - APP.loginAttempts} attempts remaining.`, 'error');
     }
   }
 }
@@ -3597,6 +3925,7 @@ async function adminLoginPage() {
   if (!error) {
     APP.adminLoggedIn = true;
     APP.loginAttempts = 0;
+    try { sessionStorage.removeItem('__typssc_lockout'); } catch(e) {}
     document.getElementById('admin-id-input').value = '';
     document.getElementById('admin-pass-input').value = '';
     renderAdminPage();
@@ -3604,12 +3933,21 @@ async function adminLoginPage() {
   } else {
     APP.loginAttempts++;
     document.getElementById('admin-pass-input').value = '';
-    if (APP.loginAttempts >= 5) {
-      APP.lockoutUntil = now + 15 * 60 * 1000;
+    if (APP.loginAttempts >= 7) {
+      APP.lockoutUntil = now + 60 * 60 * 1000;
       APP.loginAttempts = 0;
+      try { sessionStorage.setItem('__typssc_lockout', APP.lockoutUntil); } catch(e) {}
+      showToast('Account locked for 60 minutes due to repeated failures.', 'error');
+    } else if (APP.loginAttempts >= 5) {
+      APP.lockoutUntil = now + 15 * 60 * 1000;
+      try { sessionStorage.setItem('__typssc_lockout', APP.lockoutUntil); } catch(e) {}
       showToast('Too many failed attempts. Locked for 15 minutes.', 'error');
+    } else if (APP.loginAttempts >= 3) {
+      APP.lockoutUntil = now + 5 * 60 * 1000;
+      try { sessionStorage.setItem('__typssc_lockout', APP.lockoutUntil); } catch(e) {}
+      showToast(`Suspicious activity. Locked for 5 minutes. ${7 - APP.loginAttempts} attempts remaining.`, 'error');
     } else {
-      showToast(`Invalid Cloud Credentials. ${5 - APP.loginAttempts} attempts remaining.`, 'error');
+      showToast(`Invalid Cloud Credentials. ${7 - APP.loginAttempts} attempts remaining.`, 'error');
     }
   }
 }
@@ -5027,6 +5365,19 @@ async function leaveBattleRoom() {
 //  BOOT
 // ════════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
+  // ── Restore admin lockout from session ──
+  try {
+    const storedLockout = sessionStorage.getItem('__typssc_lockout');
+    if (storedLockout) {
+      const lockoutTime = parseInt(storedLockout, 10);
+      if (lockoutTime > Date.now()) {
+        APP.lockoutUntil = lockoutTime;
+      } else {
+        sessionStorage.removeItem('__typssc_lockout');
+      }
+    }
+  } catch(e) {}
+
   if (window._firebaseReady) {
     initApp();
   } else {
