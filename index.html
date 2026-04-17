@@ -11,7 +11,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
 <meta name="googlebot" content="noindex, nofollow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com https://sbbqixppvmukvqfqlaqj.supabase.co; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://sbbqixppvmukvqfqlaqj.supabase.co wss://sbbqixppvmukvqfqlaqj.supabase.co; frame-ancestors 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com https://www.gstatic.com https://sbbqixppvmukvqfqlaqj.supabase.co; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://sbbqixppvmukvqfqlaqj.supabase.co wss://sbbqixppvmukvqfqlaqj.supabase.co https://firestore.googleapis.com wss://firestore.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com; frame-ancestors 'none';">
 <!-- Security: No caching of sensitive content -->
 <meta name="theme-color" content="#06080f">
 <title>TypSSc — Government Exam Typing Platform</title>
@@ -1707,18 +1707,42 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
 </div>
 
 <div class="modal-overlay hidden" id="modal-highlight-pref" onclick="">
-  <div class="modal" style="max-width:420px;text-align:center">
-    <h3>⚙️ Test Display Setting</h3>
-    <p style="margin-bottom:1.5rem">Do you want character highlights shown while typing?</p>
-    <div style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.5rem">
-      <button class="btn-primary" onclick="startWithHighlight(true)" style="display:flex;align-items:center;justify-content:center;gap:0.5rem">
-        💡 <strong>Highlight ON</strong> — Show correct/incorrect characters in colour
-      </button>
-      <button class="btn-secondary" onclick="startWithHighlight(false)" style="display:flex;align-items:center;justify-content:center;gap:0.5rem">
-        🚫 <strong>Highlight OFF</strong> — Plain text, no colour feedback
-      </button>
+  <div class="modal" style="max-width:460px;text-align:center">
+    <h3>⚙️ Test Settings</h3>
+    <p style="margin-bottom:1.25rem;color:var(--text-dim)">Choose your display preferences before the test starts.</p>
+
+    <!-- Highlight option -->
+    <div style="text-align:left;margin-bottom:1.25rem">
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);font-weight:700;margin-bottom:0.6rem">💡 Character Highlights</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem">
+        <label style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.9rem;border-radius:var(--r);border:1px solid var(--border);cursor:pointer;transition:all 0.2s" id="hl-on-label">
+          <input type="radio" name="highlight" value="on" checked onchange="document.getElementById('hl-on-label').style.borderColor='var(--gold)';document.getElementById('hl-off-label').style.borderColor='var(--border)'">
+          <span><strong>Highlight ON</strong> — Show correct/incorrect characters in colour</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.9rem;border-radius:var(--r);border:1px solid var(--border);cursor:pointer;transition:all 0.2s" id="hl-off-label">
+          <input type="radio" name="highlight" value="off" onchange="document.getElementById('hl-off-label').style.borderColor='var(--gold)';document.getElementById('hl-on-label').style.borderColor='var(--border)'">
+          <span><strong>Highlight OFF</strong> — Plain text, no colour feedback</span>
+        </label>
+      </div>
     </div>
-    <p style="font-size:0.75rem;color:var(--text-muted)">You can change this during the test using the 💡 button.</p>
+
+    <!-- Exam Center option -->
+    <div style="text-align:left;margin-bottom:1.5rem">
+      <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);font-weight:700;margin-bottom:0.6rem">🖥 Exam Center Mode</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem">
+        <label style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.9rem;border-radius:var(--r);border:1px solid var(--border);cursor:pointer;transition:all 0.2s" id="ec-off-label">
+          <input type="radio" name="examcenter" value="off" checked onchange="document.getElementById('ec-off-label').style.borderColor='var(--gold)';document.getElementById('ec-on-label').style.borderColor='var(--border)'">
+          <span><strong>Normal View</strong> — Standard typing interface</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:0.75rem;padding:0.65rem 0.9rem;border-radius:var(--r);border:1px solid var(--border);cursor:pointer;transition:all 0.2s" id="ec-on-label">
+          <input type="radio" name="examcenter" value="on" onchange="document.getElementById('ec-on-label').style.borderColor='var(--gold)';document.getElementById('ec-off-label').style.borderColor='var(--border)'">
+          <span><strong>Exam Center Mode</strong> — Simulates real govt. exam software (NIC/SSC/RRB)</span>
+        </label>
+      </div>
+    </div>
+
+    <button class="btn-primary" style="width:100%" onclick="var hl=document.querySelector('input[name=highlight]:checked').value==='on';var ec=document.querySelector('input[name=examcenter]:checked').value==='on';startWithHighlight(hl,ec)">Start Test →</button>
+    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.75rem">You can toggle highlights and Exam Center during the test too.</p>
   </div>
 </div>
 
@@ -3310,18 +3334,25 @@ function initiateTest(lessonId, examId, liveTestId) {
   navigate('test');
   setupTestUI(exam, lessonName);
 
-  // Show highlight preference modal BEFORE countdown
+  // Show test settings modal BEFORE countdown — reset radios to defaults each time
+  document.querySelectorAll('input[name=highlight]').forEach(r => r.checked = r.value === 'on');
+  document.querySelectorAll('input[name=examcenter]').forEach(r => r.checked = r.value === 'off');
+  document.getElementById('hl-on-label').style.borderColor = 'var(--gold)';
+  document.getElementById('hl-off-label').style.borderColor = 'var(--border)';
+  document.getElementById('ec-off-label').style.borderColor = 'var(--gold)';
+  document.getElementById('ec-on-label').style.borderColor = 'var(--border)';
   openModal('modal-highlight-pref');
 }
 
-function startWithHighlight(on) {
-  APP.highlightOn = on;
-  const btn = document.getElementById('highlight-toggle-btn');
+function startWithHighlight(highlightOn, examCenterOn) {
+  APP.highlightOn = highlightOn;
+  APP._pendingExamCenterMode = !!examCenterOn;
+  const btn = document.getElementById("highlight-toggle-btn");
   if (btn) {
-    btn.classList.toggle('active', on);
-    btn.textContent = on ? '💡 Highlight' : '💡 Highlight Off';
+    btn.classList.toggle("active", highlightOn);
+    btn.textContent = highlightOn ? "💡 Highlight" : "💡 Highlight Off";
   }
-  closeModal('modal-highlight-pref');
+  closeModal("modal-highlight-pref");
   showStartCountdown(APP._pendingTestExam);
 }
 
@@ -3390,10 +3421,13 @@ function startTest() {
   APP.test.timerInterval = setInterval(updateTimer, 250);
   APP.test.statsInterval = setInterval(updateLiveStats, 500);
 
-  // AUTO-LAUNCH Exam Center Mode on every test start
-  setTimeout(function() {
-    if (!_ecActive) enterExamCenterMode();
-  }, 150);
+  // Enter Exam Center Mode only if user chose it in the pre-test modal
+  if (APP._pendingExamCenterMode) {
+    APP._pendingExamCenterMode = false;
+    setTimeout(function() {
+      if (!_ecActive) enterExamCenterMode();
+    }, 150);
+  }
 }
 
 function focusInput() {
@@ -5383,7 +5417,7 @@ window.addEventListener('DOMContentLoaded', () => {
   } else {
     window._onFirebaseReady = initApp;
     setTimeout(() => {
-      if (typeof currentPage === 'undefined') initApp();
+      if (!window._firebaseReady) initApp();
     }, 4000);
   }
 });
