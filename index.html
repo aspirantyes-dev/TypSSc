@@ -2238,235 +2238,215 @@ if (typeof window._onFirebaseReady === 'function') window._onFirebaseReady();
 
 <script>
 // ════════════════════════════════════════════════════════════
-// ██████  SECURITY LAYER v3.0 — TypSSc Protection Shield  ██████
+// ██████  SECURITY LAYER v4.0 — TypSSc Protection Shield  ██████
 // ════════════════════════════════════════════════════════════
 (function _securityShield() {
   'use strict';
 
-  // ── 1. ANTI-DEVTOOLS: Detect and respond to open DevTools ──
-  const _devToolsThreshold = 160;
+  // ── 1. ANTI-DEVTOOLS: Multi-vector detection ──
+  // Threshold must be large enough to avoid false positives from browser UI chrome
+  // 400px avoids false triggers from mobile virtual keyboard (which can shrink innerHeight by 300-400px)
+  const _devToolsThreshold = 400;
   let _devToolsOpen = false;
-  let _devToolsTimer = null;
+  let _devToolsDebounce = null;
 
-  function _checkDevTools() {
-    const widthDiff = window.outerWidth - window.innerWidth;
-    const heightDiff = window.outerHeight - window.innerHeight;
-    if (widthDiff > _devToolsThreshold || heightDiff > _devToolsThreshold) {
-      if (!_devToolsOpen) {
-        _devToolsOpen = true;
-        _onDevToolsOpen();
+  function _onDevToolsOpen() {
+    const overlay = document.getElementById('_sec-devtools-overlay');
+    if (overlay) overlay.style.display = 'flex';
+    // Blur ALL sensitive content panels
+    document.querySelectorAll(
+      '.passage-container, .ec-passage-panel, .passage-container-split, .result-body'
+    ).forEach(el => { el.style.filter = 'blur(12px)'; el.style.pointerEvents = 'none'; });
+    // Wipe passage spans from DOM temporarily
+    const spans = document.querySelectorAll('.passage-container .char, .passage-container-split .char, #ec-passage-display .char');
+    spans.forEach(s => s.setAttribute('data-ch', s.textContent) && (s.textContent = '•'));
+  }
+
+  // Method A: window size delta — debounced to avoid false positives during resize
+  // On mobile, the virtual keyboard dramatically shrinks innerHeight (300-400px),
+  // so we skip the height check on touch devices to prevent false DevTools detection.
+  function _checkSizeDelta() {
+    const isTouchDevice = navigator.maxTouchPoints > 0;
+    const w = window.outerWidth - window.innerWidth;
+    const h = window.outerHeight - window.innerHeight;
+    // On touch devices only use width delta (keyboard doesn't affect outerWidth)
+    const triggered = isTouchDevice ? (w > _devToolsThreshold) : (w > _devToolsThreshold || h > _devToolsThreshold);
+    if (triggered) {
+      if (!_devToolsDebounce) {
+        _devToolsDebounce = setTimeout(function() {
+          // Re-check after 600ms — if still open, it's real DevTools
+          const w2 = window.outerWidth - window.innerWidth;
+          const h2 = window.outerHeight - window.innerHeight;
+          const triggered2 = isTouchDevice ? (w2 > _devToolsThreshold) : (w2 > _devToolsThreshold || h2 > _devToolsThreshold);
+          if (triggered2) {
+            if (!_devToolsOpen) { _devToolsOpen = true; _onDevToolsOpen(); }
+          }
+          _devToolsDebounce = null;
+        }, 600);
       }
     } else {
       _devToolsOpen = false;
+      if (_devToolsDebounce) { clearTimeout(_devToolsDebounce); _devToolsDebounce = null; }
     }
   }
+  setInterval(_checkSizeDelta, 1000);
 
-  function _onDevToolsOpen() {
-    // Blur sensitive content, show warning overlay
-    const overlay = document.getElementById('_sec-devtools-overlay');
-    if (overlay) overlay.style.display = 'flex';
-    // Clear any active test data from view
-    const passage = document.querySelector('.passage-container');
-    if (passage) passage.style.filter = 'blur(8px)';
-  }
-
-  _devToolsTimer = setInterval(_checkDevTools, 1000);
-
-  // ── 2. DEBUGGER TRAP: Slow down DevTools console usage ──
-  let _lastDebugTime = Date.now();
+  // Method B: debugger timing trap (only fires when DevTools is actively paused)
   setInterval(function() {
-    const start = Date.now();
+    const t = performance.now();
     // eslint-disable-next-line no-debugger
     debugger;
-    if (Date.now() - start > 100) {
-      _onDevToolsOpen();
-    }
-    _lastDebugTime = Date.now();
-  }, 3000);
+    if (performance.now() - t > 200) _onDevToolsOpen();
+  }, 5000);
 
-  // ── 3. CONSOLE POISONING: Override console methods ──
-  const _noop = function() {};
-  const _consoleWarn = function() {
-    console.warn('%c⛔ TypSSc Security', 'color:red;font-size:20px;font-weight:bold',
-      '\nAccessing the console may violate our Terms of Service.\nAny attempt to manipulate the platform will result in account suspension.');
-  };
+  // ── 2. CONSOLE PROTECTION: Show a deterrent warning without breaking Firebase ──
+  // IMPORTANT: Do NOT override console with noops — Firebase/Supabase SDK
+  // use console.error/warn internally and will silently break if they're nooped.
+  // Instead, just print a visible deterrent message once on load.
   try {
-    Object.defineProperty(window, 'console', {
-      get: function() {
-        return {
-          log: _noop, warn: _consoleWarn, error: _noop,
-          info: _noop, debug: _noop, dir: _noop,
-          table: _noop, group: _noop, groupEnd: _noop,
-          time: _noop, timeEnd: _noop, trace: _noop,
-          clear: _noop, assert: _noop,
-        };
-      },
-      configurable: false
-    });
+    setTimeout(function() {
+      const _realConsole = window.console;
+      if (_realConsole && _realConsole.log) {
+        _realConsole.log(
+          '%c⛔ TypSSc Security Notice',
+          'color:#ef4444;font-size:18px;font-weight:900;background:#0f1729;padding:6px 12px;border-radius:6px',
+          '\n\nAccessing the developer console may violate our Terms of Service.\nAny attempt to manipulate scores or data will result in account suspension.\n\n'
+        );
+      }
+    }, 2000);
   } catch(e) {}
 
-  // ── 4. RIGHT-CLICK DISABLE ──
+  // ── 3. RIGHT-CLICK DISABLE ──
   document.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); e.stopPropagation(); return false;
+  }, true);
+
+  // ── 4. TEXT SELECTION DISABLE (JS-enforced) ──
+  document.addEventListener('selectstart', function(e) {
+    if (!['INPUT','TEXTAREA'].includes(e.target.tagName)) { e.preventDefault(); return false; }
+  }, true);
+
+  // ── 5. DRAG PROTECTION ──
+  document.addEventListener('dragstart', function(e) {
+    if (!['INPUT','TEXTAREA'].includes(e.target.tagName)) { e.preventDefault(); return false; }
+  }, true);
+
+  // ── 6. KEYBOARD SHORTCUT BLOCK ──
+  document.addEventListener('keydown', function(e) {
+    const key = (e.key || '').toLowerCase();
+    const ctrl = e.ctrlKey || e.metaKey;
+    // DevTools / inspector shortcuts
+    if (e.key === 'F12') { e.preventDefault(); return false; }
+    if (ctrl && e.shiftKey && ['i','j','c','k','m','e'].includes(key)) { e.preventDefault(); return false; }
+    // Source & save
+    if (ctrl && ['u','s'].includes(key)) { e.preventDefault(); return false; }
+    // Print
+    if (ctrl && key === 'p') { e.preventDefault(); return false; }
+    // Find (reveals DOM structure in some browsers)
+    if (ctrl && key === 'f' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) { e.preventDefault(); return false; }
+    // Select All outside inputs
+    if (ctrl && key === 'a' && !['INPUT','TEXTAREA'].includes((document.activeElement||{}).tagName)) { e.preventDefault(); return false; }
+    // Copy / Cut outside inputs
+    if (ctrl && ['c','x'].includes(key) && !['INPUT','TEXTAREA'].includes((document.activeElement||{}).tagName)) { e.preventDefault(); return false; }
+    // Reload during active test
+    if ((e.key === 'F5' || (ctrl && key === 'r')) && typeof APP !== 'undefined' && APP.test && APP.test.active) {
+      e.preventDefault();
+      if (typeof showToast === 'function') showToast('⚠️ Cannot reload during an active test.', 'error');
+      return false;
+    }
+  }, true);
+
+  // ── 7. CLIPBOARD POISONING: Intercept copy events ──
+  document.addEventListener('copy', function(e) {
+    const active = document.activeElement;
+    // Allow copy inside admin form inputs only
+    if (active && ['INPUT','TEXTAREA'].includes(active.tagName) && !active.classList.contains('typing-input') && active.id !== 'battle-typing-box') return;
     e.preventDefault();
-    e.stopPropagation();
+    try {
+      const poison = '⛔ Content is protected by TypSSc — https://typssc.com | Unauthorized copying is prohibited.';
+      e.clipboardData && e.clipboardData.setData('text/plain', poison);
+      e.clipboardData && e.clipboardData.setData('text/html', '<span style="color:red">' + poison + '</span>');
+    } catch(_) {}
     return false;
   }, true);
 
-  // ── 5. TEXT SELECTION DISABLE (CSS-backed, JS-enforced) ──
-  document.addEventListener('selectstart', function(e) {
-    // Allow selection only in input/textarea elements
-    if (!['INPUT','TEXTAREA'].includes(e.target.tagName)) {
-      e.preventDefault();
-      return false;
-    }
+  // ── 8. CUT INTERCEPT ──
+  document.addEventListener('cut', function(e) {
+    const active = document.activeElement;
+    if (active && ['INPUT','TEXTAREA'].includes(active.tagName) && !active.classList.contains('typing-input')) return;
+    e.preventDefault(); return false;
   }, true);
 
-  // ── 6. DRAG PROTECTION ──
-  document.addEventListener('dragstart', function(e) {
-    if (!['INPUT','TEXTAREA'].includes(e.target.tagName)) {
-      e.preventDefault();
-      return false;
-    }
-  }, true);
-
-  // ── 7. KEYBOARD SHORTCUTS BLOCK ──
-  document.addEventListener('keydown', function(e) {
-    const key = e.key ? e.key.toLowerCase() : '';
-    const ctrl = e.ctrlKey || e.metaKey;
-
-    // Block F12
-    if (e.key === 'F12') { e.preventDefault(); return false; }
-
-    // Block Ctrl+Shift+I (DevTools), Ctrl+Shift+J (Console), Ctrl+Shift+C (Inspector)
-    if (ctrl && e.shiftKey && ['i','j','c','k'].includes(key)) {
-      e.preventDefault(); return false;
-    }
-
-    // Block Ctrl+U (View Source)
-    if (ctrl && key === 'u') { e.preventDefault(); return false; }
-
-    // Block Ctrl+S (Save page)
-    if (ctrl && key === 's') { e.preventDefault(); return false; }
-
-    // Block Ctrl+P (Print - reveals source layout)
-    if (ctrl && key === 'p') { e.preventDefault(); return false; }
-
-    // Block Ctrl+A (Select All — only outside inputs)
-    if (ctrl && key === 'a' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
-      e.preventDefault(); return false;
-    }
-
-    // Block Ctrl+C/X outside inputs (copy/cut)
-    if (ctrl && ['c','x'].includes(key) && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
-      e.preventDefault(); return false;
-    }
-  }, true);
-
-  // ── 8. PRINT PROTECTION ──
-  window.addEventListener('beforeprint', function(e) {
-    e.preventDefault();
-    document.body.innerHTML = '<div style="text-align:center;padding:4rem;font-family:sans-serif"><h1>⛔ Printing Not Allowed</h1><p>This content is protected. Please close this dialog.</p></div>';
+  // ── 9. PRINT PROTECTION ──
+  window.addEventListener('beforeprint', function() {
+    document.querySelectorAll('.passage-container, .passage-container-split, #ec-passage-display').forEach(el => {
+      el.setAttribute('data-backup', el.innerHTML);
+      el.innerHTML = '<span style="font-size:1.5rem;color:#c00">⛔ Printing is blocked on TypSSc.</span>';
+    });
+  });
+  window.addEventListener('afterprint', function() {
+    document.querySelectorAll('.passage-container, .passage-container-split, #ec-passage-display').forEach(el => {
+      const backup = el.getAttribute('data-backup');
+      if (backup) { el.innerHTML = backup; el.removeAttribute('data-backup'); }
+    });
   });
 
-  // ── 9. SESSION INTEGRITY: Detect tab-switching / focus loss during test ──
+  // ── 10. TAB VISIBILITY & FOCUS LOSS ──
   let _focusLossCount = 0;
-  let _focusLossTime = null;
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
-      _focusLossTime = Date.now();
       _focusLossCount++;
-      // Pause and warn if test is running
       if (typeof APP !== 'undefined' && APP.test && APP.test.active) {
         if (_focusLossCount >= 3) {
-          // Force end test on 3rd focus loss
-          if (typeof endTest === 'function') {
-            setTimeout(() => {
-              showToast && showToast('⚠️ Test auto-submitted: multiple focus losses detected.', 'error');
-              endTest();
-            }, 500);
-          }
+          setTimeout(function() {
+            if (typeof showToast === 'function') showToast('⚠️ Test auto-submitted: multiple tab switches detected.', 'error');
+            if (typeof endTest === 'function') endTest();
+          }, 400);
+        } else {
+          setTimeout(function() {
+            if (typeof showToast === 'function') showToast('⚠️ Tab switch detected (' + _focusLossCount + '/3). Test will auto-submit on 3rd switch.', 'error');
+          }, 400);
         }
       }
     }
   });
 
-  // ── 10. IFRAME BUST: Prevent embedding in iframes ──
-  if (window.top !== window.self) {
-    window.top.location = window.self.location;
-  }
+  // ── 11. IFRAME BUST ──
+  try { if (window.top !== window.self) window.top.location = window.self.location; } catch(e) {}
 
-  // ── 11. SOURCE VIEWING PROTECTION: Scramble on blur with delay ──
-  window.addEventListener('blur', function() {
-    // Don't immediately act, but note the blur
-    _lastBlurTime = Date.now();
-  });
-  let _lastBlurTime = 0;
-
-  // ── 12. ANTI-PASTE on passage area: prevent pasting typing input ──
+  // ── 12. ANTI-PASTE in typing boxes ──
   document.addEventListener('paste', function(e) {
     const active = document.activeElement;
-    // Block paste everywhere except non-test inputs (login form, admin forms)
-    if (active && active.classList && active.classList.contains('typing-input')) {
-      e.preventDefault();
-      return false;
-    }
-    if (active && active.id === 'battle-typing-box') {
-      e.preventDefault();
-      return false;
-    }
-    if (active && active.classList && active.classList.contains('ec-typing-box')) {
-      e.preventDefault();
-      return false;
+    if (!active) return;
+    const blockIds = ['battle-typing-box'];
+    const blockClasses = ['typing-input', 'ec-typing-box'];
+    if (blockIds.includes(active.id) || blockClasses.some(c => active.classList.contains(c))) {
+      e.preventDefault(); return false;
     }
   }, true);
 
-  // ── 13. INTEGRITY CHECK: Detect if JS was tampered with ──
-  const _integrityCheck = (function() {
-    const _sentinel = '__typssc_integrity__';
-    window[_sentinel] = true;
-    return function() {
-      if (!window[_sentinel]) {
-        document.body.style.display = 'none';
-      }
-    };
-  })();
-  setInterval(_integrityCheck, 5000);
+  // ── 13. INTEGRITY SENTINEL ──
+  const _sentinel = '__typssc_v4_ok__';
+  window[_sentinel] = true;
+  setInterval(function() {
+    if (!window[_sentinel]) { document.body.style.display = 'none'; }
+  }, 4000);
 
-  // ── 14. SESSION FINGERPRINT: Bind session to device fingerprint ──
+  // ── 14. SESSION FINGERPRINT ──
   (function() {
-    const _fp = [
-      navigator.userAgent,
-      navigator.language,
-      screen.width + 'x' + screen.height,
-      screen.colorDepth,
-      new Date().getTimezoneOffset(),
-      navigator.hardwareConcurrency || 0,
-      navigator.platform || ''
-    ].join('|');
-    
-    const _hash = function(str) {
-      let h = 0;
-      for (let i = 0; i < str.length; i++) {
-        h = Math.imul(31, h) + str.charCodeAt(i) | 0;
-      }
-      return (h >>> 0).toString(36);
-    };
-
-    window.__sessionFP = _hash(_fp);
-
-    // Store in sessionStorage (tab-bound, not persistent)
+    const _fp = [navigator.userAgent, navigator.language,
+      screen.width + 'x' + screen.height, screen.colorDepth,
+      new Date().getTimezoneOffset(), navigator.hardwareConcurrency || 0,
+      navigator.platform || ''].join('|');
+    let h = 0;
+    for (let i = 0; i < _fp.length; i++) h = Math.imul(31, h) + _fp.charCodeAt(i) | 0;
+    window.__sessionFP = (h >>> 0).toString(36);
     try {
-      const stored = sessionStorage.getItem('__typssc_fp');
-      if (!stored) {
-        sessionStorage.setItem('__typssc_fp', window.__sessionFP);
-      } else if (stored !== window.__sessionFP) {
-        // Different device/environment — could be session hijack
-        sessionStorage.setItem('__typssc_fp', window.__sessionFP);
-      }
+      if (!sessionStorage.getItem('__typssc_fp')) sessionStorage.setItem('__typssc_fp', window.__sessionFP);
     } catch(e) {}
   })();
 
-  // ── 15. WATERMARK RESULTS: Tag all test results with session ID ──
+  // ── 15. RESULT WATERMARKING ──
   window.__resultWatermark = function(result) {
     if (!result) return result;
     result._session = window.__sessionFP || 'unknown';
@@ -2475,7 +2455,100 @@ if (typeof window._onFirebaseReady === 'function') window._onFirebaseReady();
     return result;
   };
 
-})(); // End Security Shield
+  // ── 16. SELECTION AUTO-CLEAR: Periodically wipe any text selection outside inputs ──
+  setInterval(function() {
+    const active = document.activeElement;
+    if (active && ['INPUT','TEXTAREA'].includes(active.tagName)) return;
+    const sel = window.getSelection();
+    if (sel && sel.toString().length > 0) sel.removeAllRanges();
+  }, 1500);
+
+  // ── 17. DOM SCRAPE GUARD: MutationObserver on passage containers ──
+  // Detect if someone programmatically reads/modifies passage DOM
+  (function() {
+    function _guardPassage() {
+      const targets = document.querySelectorAll(
+        '.passage-container, .passage-container-split, #ec-passage-display'
+      );
+      targets.forEach(function(el) {
+        if (el.__secGuarded) return;
+        el.__secGuarded = true;
+        const obs = new MutationObserver(function(mutations) {
+          mutations.forEach(function(m) {
+            // If subtree is being modified externally (not by our own render fn), log and blur
+            // __typssc_rendering: set during passage char rendering
+            // __typssc_typing: set during input handler updates
+            if (m.addedNodes.length > 0 && !window.__typssc_rendering && !window.__typssc_typing) {
+              el.style.filter = 'blur(4px)';
+              setTimeout(function() { el.style.filter = ''; }, 2000);
+            }
+          });
+        });
+        obs.observe(el, { childList: true, subtree: false });
+      });
+    }
+    // Run after DOM is ready and whenever a test starts
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', _guardPassage);
+    } else {
+      setTimeout(_guardPassage, 1000);
+    }
+    window.__secGuardPassage = _guardPassage; // expose for re-call after test start
+  })();
+
+  // ── 18. INVISIBLE CANVAS WATERMARK on passage panels ──
+  window.__applyWatermark = function(userName) {
+    try {
+      document.querySelectorAll('.passage-container, .passage-container-split').forEach(function(el) {
+        // Remove old watermark canvas if any
+        const old = el.querySelector('.__sec-watermark');
+        if (old) old.remove();
+        const canvas = document.createElement('canvas');
+        canvas.className = '__sec-watermark';
+        canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:0.045;user-select:none;';
+        el.style.position = 'relative';
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width  = el.offsetWidth  * dpr;
+        canvas.height = el.offsetHeight * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        ctx.font = '11px monospace';
+        ctx.fillStyle = '#d4a843';
+        ctx.rotate(-Math.PI / 8);
+        const label = '© TypSSc  ' + (userName || 'Student') + '  ' + new Date().toLocaleDateString('en-IN');
+        for (let y = -100; y < el.offsetHeight + 200; y += 60) {
+          for (let x = -100; x < el.offsetWidth + 200; x += 220) {
+            ctx.fillText(label, x, y);
+          }
+        }
+        el.appendChild(canvas);
+      });
+    } catch(e) {}
+  };
+
+  // ── 19. ANTI-SCREENSHOT CSS TRICK: force GPU layer isolation on passage ──
+  // Adds a transparent overlay to passage that disrupts screen-capture APIs
+  (function() {
+    const style = document.createElement('style');
+    style.textContent = [
+      // Override ::selection to make copied text invisible / poisoned
+      '.passage-container ::selection, .passage-container-split ::selection,',
+      '#ec-passage-display ::selection { background: transparent; color: transparent; }',
+      // Passages get a stacking context that can interfere with naive screenshot tools
+      '.passage-container, .passage-container-split { isolation: isolate; }',
+      // Tiny invisible overlay on all char spans in passage (defeats drag-select scraping)
+      '.passage-container .char::after, .passage-container-split .char::after,',
+      '#ec-passage-display .char::after {',
+      '  content:""; position:absolute; inset:0; z-index:2;',
+      '  background:transparent; pointer-events:none;',
+      '}',
+      '.passage-container .char, .passage-container-split .char,',
+      '#ec-passage-display .char { position:relative; }',
+    ].join('\n');
+    document.head.appendChild(style);
+  })();
+
+})(); // End Security Shield v4.0
 
 // ════════════════════════════════════════════════════════════
 // [INJECTED] SUPABASE SECURE CLOUD AUTHENTICATION
@@ -3584,9 +3657,11 @@ function renderPassage() {
       html += `<span class="char untyped">${ch}</span>`;
     }
   }
+  window.__typssc_rendering = true;
+  window.__typssc_typing = true;
   display.innerHTML = html;
-
-  // Scroll current char into view
+  // Reset flags after MutationObserver microtask has fired (setTimeout is a macrotask, runs after)
+  setTimeout(function() { window.__typssc_rendering = false; window.__typssc_typing = false; }, 0);
   const curEl = display.querySelector('.char.current');
   if (curEl) curEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 
@@ -4909,6 +4984,24 @@ function formatDuration(ms) {
 
 const _origSaveUsername = saveUsername;
 
+// ── Apply watermark whenever navigation happens (test start, etc.) ──
+(function _hookWatermark() {
+  const _origNav = typeof navigate === 'function' ? navigate : null;
+  if (_origNav) {
+    window.navigate = function(page, params) {       // accept both args
+      _origNav(page, params);                        // pass both through — was dropping params!
+      try {
+        if (typeof window.__applyWatermark === 'function' && typeof APP !== 'undefined' && APP.user && APP.user.name) {
+          setTimeout(function() { window.__applyWatermark(APP.user.name); }, 300);
+        }
+        if (typeof window.__secGuardPassage === 'function') {
+          setTimeout(function() { window.__secGuardPassage(); }, 400);
+        }
+      } catch(e) {}
+    };
+  }
+})();
+
 // ════════════════════════════════════════════════════════════
 //  EXAM CENTER MODE
 //  Mimics real NIC/SSC/RRB exam software layout
@@ -5067,7 +5160,9 @@ function ecRenderPassage() {
       html += `<span class="char untyped">${ch}</span>`;
     }
   }
+  window.__typssc_rendering = true;
   el.innerHTML = html;
+  setTimeout(function() { window.__typssc_rendering = false; }, 0);
   if (highlight) {
     const cursorEl = el.querySelector('.char.current');
     if (cursorEl) cursorEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -5187,7 +5282,13 @@ async function createBattleRoom() {
 
   try {
     if (window._db) {
-      await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), battle);
+      try {
+        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), battle);
+      } catch(fbErr) {
+        // Firestore write failed — fall back to localStorage (single-device battle)
+        localStorage.setItem('typssc_battle_' + code, JSON.stringify(battle));
+        showToast('⚠ Cloud unavailable — battle saved locally (same-device only)', 'info');
+      }
     } else {
       localStorage.setItem('typssc_battle_' + code, JSON.stringify(battle));
     }
@@ -5196,7 +5297,7 @@ async function createBattleRoom() {
     subscribeToBattle(code);
     showToast('Battle room created! Share code: ' + code, 'success');
   } catch(e) {
-    showToast('Failed to create battle room', 'error');
+    showToast('Failed to create battle room: ' + (e.message || e), 'error');
   }
 }
 
@@ -5208,9 +5309,22 @@ async function joinBattleRoom() {
   try {
     let battle;
     if (window._db) {
-      const snap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, code));
-      if (!snap.exists()) { showToast('Room not found. Check the code.', 'error'); return; }
-      battle = snap.data();
+      try {
+        const snap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, code));
+        if (snap.exists()) {
+          battle = snap.data();
+        } else {
+          // Firestore didn't find it — try localStorage fallback
+          const b = localStorage.getItem('typssc_battle_' + code);
+          if (!b) { showToast('Room not found. Check the code.', 'error'); return; }
+          battle = JSON.parse(b);
+        }
+      } catch(fbErr) {
+        // Firestore read failed — try localStorage
+        const b = localStorage.getItem('typssc_battle_' + code);
+        if (!b) { showToast('Room not found (cloud unavailable). Check the code.', 'error'); return; }
+        battle = JSON.parse(b);
+      }
     } else {
       const b = localStorage.getItem('typssc_battle_' + code);
       if (!b) { showToast('Room not found.', 'error'); return; }
@@ -5224,7 +5338,11 @@ async function joinBattleRoom() {
 
     battle.players[APP.user.id] = { name: APP.user.name, progress: 0, wpm: 0, ready: false, typed: '' };
     if (window._db) {
-      await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), battle, { merge: true });
+      try {
+        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), battle, { merge: true });
+      } catch(fbErr) {
+        localStorage.setItem('typssc_battle_' + code, JSON.stringify(battle));
+      }
     } else {
       localStorage.setItem('typssc_battle_' + code, JSON.stringify(battle));
     }
@@ -5335,6 +5453,7 @@ function startBattleTracking(battle) {
 function renderBattlePassage(typed, passage) {
   const el = document.getElementById('battle-passage-display');
   if (!el || !passage) return;
+  window.__typssc_rendering = true;
   let html = '';
   for (let i = 0; i < passage.length; i++) {
     const ch = passage[i] === ' ' ? '&nbsp;' : passage[i];
@@ -5349,6 +5468,7 @@ function renderBattlePassage(typed, passage) {
     }
   }
   el.innerHTML = html;
+  window.__typssc_rendering = false;
 }
 
 function handleBattleInput(e) {}
