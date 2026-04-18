@@ -1746,94 +1746,299 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   </div>
 </div>
 
+<style>
+/* ─── BATTLE PAGE ─── */
+.battle-lobby { max-width: 860px; margin: 0 auto; padding: 2rem; }
+.battle-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1.5rem 0 2rem; }
+.battle-mode-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--r2);
+  padding: 1.75rem 1.5rem; cursor: pointer; transition: all 0.25s; text-align: center; position: relative; overflow: hidden;
+}
+.battle-mode-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: var(--card-accent, var(--gold)); }
+.battle-mode-card:hover { border-color: var(--border2); transform: translateY(-3px); box-shadow: var(--shadow); }
+.battle-mode-card.quick { --card-accent: var(--green); }
+.battle-mode-card.private { --card-accent: var(--blue2); }
+.battle-mode-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.battle-mode-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; margin-bottom: 0.4rem; }
+.battle-mode-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
+.battle-mode-tag {
+  display: inline-block; margin-top: 0.75rem;
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.2rem 0.6rem; border-radius: 2rem;
+}
+.tag-green { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.25); }
+.tag-blue  { background: rgba(91,148,255,0.12); color: var(--blue2); border: 1px solid rgba(91,148,255,0.25); }
+
+/* Matchmaking spinner */
+.matchmaking-box {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--r2);
+  padding: 2.5rem 2rem; text-align: center; display: none;
+}
+.matchmaking-box.active { display: block; }
+.mm-spinner {
+  width: 56px; height: 56px; border-radius: 50%;
+  border: 4px solid var(--border2); border-top-color: var(--green);
+  animation: spin 0.9s linear infinite; margin: 0 auto 1.25rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.mm-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+.mm-sub { font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1.25rem; }
+.mm-players-waiting { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem; }
+
+/* Private room panel */
+.private-room-box {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--r2);
+  padding: 1.75rem 1.5rem; display: none;
+}
+.private-room-box.active { display: block; }
+
+/* Battle arena */
+#battle-arena { display: none; }
+#battle-arena.active { display: block; }
+
+.battle-header-bar {
+  background: var(--card2); border: 1px solid var(--border); border-radius: var(--r2);
+  padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;
+}
+.battle-code-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 900;
+  color: var(--gold); letter-spacing: 0.2em; cursor: pointer;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.battle-code-badge:hover { opacity: 0.75; }
+.battle-status-pill {
+  padding: 0.35rem 1rem; border-radius: 2rem; font-size: 0.78rem; font-weight: 700;
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.pill-waiting { background: rgba(212,168,67,0.12); color: var(--gold); border: 1px solid rgba(212,168,67,0.3); }
+.pill-countdown { background: rgba(249,115,22,0.12); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+.pill-live { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.pill-ended { background: rgba(212,168,67,0.12); color: var(--gold); border: 1px solid rgba(212,168,67,0.3); }
+
+/* Players race track */
+.battle-players-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.battle-player-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.25rem;
+  position: relative; overflow: hidden; transition: border-color 0.3s;
+}
+.battle-player-card.winner { border-color: var(--gold); }
+.battle-player-card.me { border-top: 3px solid var(--blue2); }
+.battle-player-card.opp { border-top: 3px solid var(--red); }
+.bpc-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.3rem; }
+.bpc-name { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; }
+.bpc-wpm { font-family: 'JetBrains Mono', monospace; font-size: 1.75rem; font-weight: 900; color: var(--blue2); }
+.opp .bpc-wpm { color: var(--red); }
+.bpc-acc { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.15rem; }
+.bpc-progress-track { height: 8px; background: var(--bg2); border-radius: 4px; margin-top: 0.75rem; overflow: hidden; }
+.bpc-progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.me .bpc-progress-fill { background: linear-gradient(90deg, var(--blue), var(--blue2)); }
+.opp .bpc-progress-fill { background: linear-gradient(90deg, #c00, var(--red)); }
+.bpc-pct { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.3rem; text-align: right; }
+.winner-crown { position: absolute; top: 0.75rem; right: 0.75rem; font-size: 1.4rem; animation: bounce 0.6s ease infinite alternate; }
+@keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-4px); } }
+
+/* Countdown overlay */
+.battle-countdown-overlay {
+  position: fixed; inset: 0; z-index: 500; display: none;
+  align-items: center; justify-content: center;
+  background: rgba(6,8,15,0.75); backdrop-filter: blur(8px);
+}
+.battle-countdown-overlay.active { display: flex; }
+.battle-countdown-num {
+  font-family: 'Playfair Display', serif; font-size: 9rem; font-weight: 900;
+  color: var(--gold); line-height: 1;
+  animation: countpop 0.5s ease;
+}
+@keyframes countpop { from { transform: scale(1.4); opacity: 0.3; } to { transform: scale(1); opacity: 1; } }
+
+/* Timer bar */
+.battle-timer-bar-wrap { height: 6px; background: var(--bg2); border-radius: 3px; margin-bottom: 1rem; overflow: hidden; }
+.battle-timer-bar { height: 100%; background: linear-gradient(90deg, var(--green), var(--gold)); border-radius: 3px; transition: width 1s linear; }
+
+/* Result modal */
+.battle-result-modal {
+  position: fixed; inset: 0; z-index: 600; display: none;
+  align-items: center; justify-content: center;
+  background: rgba(6,8,15,0.85); backdrop-filter: blur(12px);
+}
+.battle-result-modal.active { display: flex; }
+.battle-result-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--r3);
+  padding: 2.5rem 2rem; max-width: 460px; width: 90%; text-align: center;
+}
+.result-trophy { font-size: 4rem; margin-bottom: 0.75rem; }
+.result-headline { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 900; margin-bottom: 0.35rem; }
+.result-sub { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1.5rem; }
+.result-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
+.result-stat { background: var(--bg2); border-radius: var(--r); padding: 0.85rem; }
+.result-stat-val { font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 900; color: var(--gold); }
+.result-stat-lbl { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-top: 0.2rem; }
+</style>
+
 <div class="page" id="page-battle">
-  <div class="live-tests-body">
-    <div class="live-tests-header">
-      <div class="section-label">Challenge a Friend</div>
+  <div class="battle-lobby">
+    <div style="text-align:center;margin-bottom:2rem">
+      <div class="section-label">Real-Time Competition</div>
       <div class="section-title">⚔️ Typing Battle</div>
-      <p class="section-desc" style="margin-top:0.5rem">Create a challenge room and share the code with a friend. Race each other in real-time!</p>
+      <p class="section-desc" style="margin-top:0.5rem">Compete against real typists. Instant matchmaking or create a private room.</p>
     </div>
 
-    <div class="admin-section" style="max-width:600px;margin:1.5rem auto">
-      <h3>Create a Battle Room</h3>
-      <div class="form-row">
-        <div class="form-group">
+    <!-- Mode selector -->
+    <div class="battle-mode-grid" id="battle-mode-grid">
+      <div class="battle-mode-card quick" onclick="startQuickBattle()">
+        <div class="battle-mode-icon">⚡</div>
+        <div class="battle-mode-title">Quick Battle</div>
+        <div class="battle-mode-desc">Get matched with a random opponent instantly. No code needed — just click and compete!</div>
+        <span class="battle-mode-tag tag-green">Auto Matchmaking</span>
+      </div>
+      <div class="battle-mode-card private" onclick="showPrivateRoomPanel()">
+        <div class="battle-mode-icon">🔒</div>
+        <div class="battle-mode-title">Private Room</div>
+        <div class="battle-mode-desc">Create a room and share the code with a friend. Set your own passage and duration.</div>
+        <span class="battle-mode-tag tag-blue">Friend Challenge</span>
+      </div>
+    </div>
+
+    <!-- Quick battle matchmaking box -->
+    <div class="matchmaking-box" id="matchmaking-box">
+      <div class="mm-spinner"></div>
+      <div class="mm-title">Finding an Opponent…</div>
+      <div class="mm-sub">Searching for available players. This usually takes a few seconds.</div>
+      <div class="mm-players-waiting" id="mm-queue-count">🟢 Players in queue: —</div>
+      <button class="btn-danger" onclick="cancelMatchmaking()" style="width:160px">Cancel</button>
+    </div>
+
+    <!-- Private room panel -->
+    <div class="private-room-box" id="private-room-box">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+        <h3 style="margin:0">🔒 Private Battle Room</h3>
+        <button onclick="hidePrivateRoomPanel()" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.2rem">✕</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+        <div class="form-group" style="margin:0">
           <label class="form-label">Select Exam</label>
           <select class="form-select" id="battle-exam-select"></select>
         </div>
-        <div class="form-group">
+        <div class="form-group" style="margin:0">
           <label class="form-label">Duration (minutes)</label>
           <input class="form-input" id="battle-duration" type="number" min="1" max="30" value="5">
         </div>
       </div>
-      <div class="form-group" style="margin-bottom:1rem">
-        <label class="form-label">Passage Text</label>
-        <textarea class="form-textarea" id="battle-content" style="min-height:100px"
-          placeholder="Enter the passage both players will type..."></textarea>
+
+      <div class="form-group" style="margin-bottom:0.5rem">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <label class="form-label">Passage Text</label>
+          <button onclick="battleAutoFillPassage()" style="background:none;border:1px solid var(--border);padding:0.2rem 0.6rem;border-radius:var(--r);font-size:0.72rem;color:var(--gold);cursor:pointer">🎲 Auto-fill</button>
+        </div>
+        <textarea class="form-textarea" id="battle-content" style="min-height:90px"
+          placeholder="Enter the passage (min 30 chars)… or click Auto-fill to use a lesson."></textarea>
       </div>
-      <button class="btn-submit" onclick="createBattleRoom()" style="width:100%">⚔️ Create Battle Room</button>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:1rem">
+        <button class="btn-submit" onclick="createBattleRoom()">⚔️ Create Room</button>
+        <div>
+          <div style="display:flex;gap:0.5rem">
+            <input class="form-input" id="battle-join-code" placeholder="Enter code e.g. AB12CD"
+                   maxlength="8" style="text-transform:uppercase;letter-spacing:0.12em;flex:1"
+                   oninput="this.value=this.value.toUpperCase()"
+                   onkeydown="if(event.key==='Enter')joinBattleRoom()">
+            <button class="btn-submit" onclick="joinBattleRoom()" style="white-space:nowrap">Join →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Battle Arena (full width) -->
+  <div id="battle-arena" style="max-width:900px;margin:0 auto;padding:0 1.5rem 3rem">
+
+    <!-- Header bar -->
+    <div class="battle-header-bar">
+      <div>
+        <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.25rem">Room Code <span style="font-size:0.65rem;color:var(--text-muted)">(click to copy)</span></div>
+        <div class="battle-code-badge" onclick="copyBattleCode()" id="battle-room-code-display" title="Click to copy">——</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap">
+        <div class="battle-status-pill pill-waiting" id="battle-status-pill">⏳ Waiting…</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:700;color:var(--gold);min-width:60px;text-align:right" id="battle-timer-display">—</div>
+      </div>
     </div>
 
-    <div class="admin-section" style="max-width:600px;margin:0 auto 1.5rem">
-      <h3>Join a Battle Room</h3>
-      <div style="display:flex;gap:0.75rem;align-items:flex-end">
-        <div class="form-group" style="flex:1;margin:0">
-          <label class="form-label">Battle Room Code</label>
-          <input class="form-input" id="battle-join-code" placeholder="Enter 6-digit code e.g. AB12CD"
-                 maxlength="8" style="text-transform:uppercase;letter-spacing:0.15em"
-                 oninput="this.value=this.value.toUpperCase()">
-        </div>
-        <button class="btn-submit" onclick="joinBattleRoom()" style="margin-bottom:0">Join Room →</button>
+    <!-- Timer bar -->
+    <div class="battle-timer-bar-wrap"><div class="battle-timer-bar" id="battle-timer-bar" style="width:100%"></div></div>
+
+    <!-- Players grid -->
+    <div class="battle-players-grid">
+      <div class="battle-player-card me" id="bpc-me">
+        <div class="bpc-label">You</div>
+        <div class="bpc-name" id="battle-my-name">—</div>
+        <div class="bpc-wpm" id="battle-my-wpm">0</div>
+        <div class="bpc-acc" id="battle-my-acc">WPM</div>
+        <div class="bpc-progress-track"><div class="bpc-progress-fill" id="battle-my-bar" style="width:0%"></div></div>
+        <div class="bpc-pct" id="battle-my-pct">0%</div>
+      </div>
+      <div class="battle-player-card opp" id="bpc-opp">
+        <div class="bpc-label">Opponent</div>
+        <div class="bpc-name" id="battle-opp-name">Waiting…</div>
+        <div class="bpc-wpm" id="battle-opp-wpm">0</div>
+        <div class="bpc-acc" id="battle-opp-acc">WPM</div>
+        <div class="bpc-progress-track"><div class="bpc-progress-fill" id="battle-opp-bar" style="width:0%"></div></div>
+        <div class="bpc-pct" id="battle-opp-pct">0%</div>
       </div>
     </div>
 
-    <div class="hidden" id="battle-arena" style="max-width:900px;margin:0 auto">
-      <div class="admin-section" style="text-align:center;margin-bottom:1rem">
-        <div style="font-size:0.75rem;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.5rem">Battle Room Code</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:900;color:var(--gold);letter-spacing:0.25em" id="battle-room-code-display">——</div>
-        <div style="font-size:0.8rem;color:var(--text-dim);margin-top:0.5rem">Share this code with your friend to join</div>
-        <div style="margin-top:0.75rem;padding:0.5rem 0.75rem;background:var(--bg2);border-radius:var(--r);font-size:0.82rem" id="battle-room-status">Waiting for opponent...</div>
-      </div>
+    <!-- Status message -->
+    <div style="text-align:center;padding:0.6rem 1rem;background:var(--card2);border-radius:var(--r);font-size:0.83rem;margin-bottom:1rem;color:var(--text-dim)" id="battle-room-status">Waiting for opponent to join…</div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
-        <div class="admin-section" style="text-align:center;margin:0">
-          <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.4rem">You</div>
-          <div style="font-size:1.1rem;font-weight:700;color:var(--gold)" id="battle-my-name">—</div>
-          <div style="font-size:2rem;font-weight:900;color:var(--blue2);font-family:'JetBrains Mono',monospace" id="battle-my-progress">0%</div>
-          <div style="font-size:0.8rem;color:var(--text-dim)" id="battle-my-wpm">0 WPM</div>
-        </div>
-        <div class="admin-section" style="text-align:center;margin:0">
-          <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.4rem">Opponent</div>
-          <div style="font-size:1.1rem;font-weight:700;color:var(--red)" id="battle-opp-name">Waiting...</div>
-          <div style="font-size:2rem;font-weight:900;color:var(--red);font-family:'JetBrains Mono',monospace" id="battle-opp-progress">0%</div>
-          <div style="font-size:0.8rem;color:var(--text-dim)" id="battle-opp-wpm">0 WPM</div>
-        </div>
-      </div>
+    <!-- Passage -->
+    <div class="split-panel" style="margin-bottom:0.75rem">
+      <div class="split-panel-label">📖 Battle Passage</div>
+      <div class="passage-container-split" id="battle-passage-display" style="max-height:160px;font-size:0.95rem;line-height:1.8"></div>
+    </div>
 
-      <div style="margin-bottom:1rem">
-        <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:0.25rem"><span>Your progress</span><span id="battle-my-chars">0/0</span></div>
-        <div class="progress-bar-wrapper" style="margin-bottom:0.5rem"><div class="progress-bar-fill" id="battle-my-bar" style="width:0%;background:var(--blue2)"></div></div>
-        <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--text-muted);margin-bottom:0.25rem"><span>Opponent progress</span><span id="battle-opp-chars">0/0</span></div>
-        <div class="progress-bar-wrapper"><div class="progress-bar-fill" id="battle-opp-bar" style="width:0%;background:var(--red)"></div></div>
-      </div>
+    <!-- Typing box -->
+    <div class="split-panel" style="margin-bottom:1rem">
+      <div class="split-panel-label">⌨️ Type Here</div>
+      <textarea class="typing-box" id="battle-typing-box"
+        placeholder="Waiting for battle to start…"
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+        oninput="handleBattleInput(event)" onkeydown="handleBattleKeydown(event)"
+        disabled></textarea>
+    </div>
 
-      <div class="split-panel" style="margin-bottom:1rem">
-        <div class="split-panel-label">📖 Battle Passage</div>
-        <div class="passage-container-split" id="battle-passage-display" style="max-height:180px"></div>
-      </div>
-      <div class="split-panel">
-        <div class="split-panel-label">⌨️ Type Here</div>
-        <textarea class="typing-box" id="battle-typing-box"
-          placeholder="Battle starts when both players are ready..."
-          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-          oninput="handleBattleInput(event)" onkeydown="handleBattleKeydown(event)"
-          disabled></textarea>
-      </div>
+    <!-- Actions -->
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+      <button class="btn-primary" id="battle-ready-btn" onclick="setBattleReady()" style="flex:1">✓ I'm Ready!</button>
+      <button class="btn-danger" onclick="leaveBattleRoom()" style="flex:1">🚪 Leave Room</button>
+    </div>
+  </div>
+</div>
 
-      <div style="display:flex;gap:1rem;margin-top:1rem;flex-wrap:wrap">
-        <button class="btn-primary" id="battle-ready-btn" onclick="setBattleReady()" style="flex:1">✓ I'm Ready!</button>
-        <button class="btn-danger" onclick="leaveBattleRoom()" style="flex:1">Leave Room</button>
-      </div>
+<!-- Countdown overlay -->
+<div class="battle-countdown-overlay" id="battle-countdown-overlay">
+  <div style="text-align:center">
+    <div class="battle-countdown-num" id="battle-countdown-num">3</div>
+    <div style="color:var(--text-dim);font-size:1rem;margin-top:0.5rem">Get ready…</div>
+  </div>
+</div>
+
+<!-- Result modal -->
+<div class="battle-result-modal" id="battle-result-modal">
+  <div class="battle-result-card">
+    <div class="result-trophy" id="result-trophy">🏆</div>
+    <div class="result-headline" id="result-headline">You Win!</div>
+    <div class="result-sub" id="result-sub">Battle complete</div>
+    <div class="result-stats-grid">
+      <div class="result-stat"><div class="result-stat-val" id="res-my-wpm">—</div><div class="result-stat-lbl">Your WPM</div></div>
+      <div class="result-stat"><div class="result-stat-val" id="res-opp-wpm">—</div><div class="result-stat-lbl">Opponent WPM</div></div>
+      <div class="result-stat"><div class="result-stat-val" id="res-my-acc">—</div><div class="result-stat-lbl">Your Accuracy</div></div>
+      <div class="result-stat"><div class="result-stat-val" id="res-opp-acc">—</div><div class="result-stat-lbl">Opp. Accuracy</div></div>
+    </div>
+    <div style="display:flex;gap:0.75rem">
+      <button class="btn-primary" style="flex:1" onclick="closeBattleResult();startQuickBattle()">⚡ Rematch</button>
+      <button class="btn-secondary" style="flex:1" onclick="closeBattleResult()">Back to Lobby</button>
     </div>
   </div>
 </div>
@@ -2197,7 +2402,7 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
 // ════════════════════════════════════════════════════════════
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, onSnapshot,
-         serverTimestamp, query, orderBy, deleteField }
+         serverTimestamp, query, orderBy, deleteField, where, getDocs, deleteDoc }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -2225,6 +2430,9 @@ window._fbQuery       = query;
 window._fbOrderBy     = orderBy;
 window._fbOnSnapshot  = onSnapshot;
 window._fbDeleteField = deleteField;
+window._fbWhere       = where;
+window._fbGetDocs     = getDocs;
+window._fbDeleteDoc   = deleteDoc;
 
 // ── SHA-256 helper (for write-token generation) ──
 window._sha256 = async (str) => {
@@ -5247,127 +5455,295 @@ setInterval(() => {
 }, 1000);
 
 // ════════════════════════════════════════════════════════════
-//  TYPING BATTLE
+//  TYPING BATTLE  (v2 — matchmaking + private rooms)
 // ════════════════════════════════════════════════════════════
-const BATTLES_COL = 'battles';
-let _battleUnsub = null;
-let _currentBattleId = null;
-let _battleInterval = null;
+const BATTLES_COL  = 'battles';
+const QUEUE_COL    = 'battle_queue';
 
+let _battleUnsub      = null;
+let _queueUnsub       = null;
+let _currentBattleId  = null;
+let _battleInterval   = null;
+let _battleStartTime  = null;
+let _battleDuration   = 300; // seconds
+let _battleContent    = '';
+let _isMatchmaking    = false;
+let _myQueueDocId     = null;
+
+// ── Lobby UI helpers ──────────────────────────────────────
 function renderBattlePage() {
-  const battleEl = document.getElementById('battle-exam-select');
-  if (battleEl && battleEl.options.length === 0) {
-    battleEl.innerHTML = APP.exams.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+  const sel = document.getElementById('battle-exam-select');
+  if (sel && sel.options.length === 0) {
+    sel.innerHTML = APP.exams.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
   }
 }
 
+function showPrivateRoomPanel() {
+  if (!requireUser(() => showPrivateRoomPanel())) return;
+  document.getElementById('battle-mode-grid').style.display = 'none';
+  document.getElementById('matchmaking-box').classList.remove('active');
+  document.getElementById('private-room-box').classList.add('active');
+}
+
+function hidePrivateRoomPanel() {
+  document.getElementById('private-room-box').classList.remove('active');
+  document.getElementById('battle-mode-grid').style.display = '';
+}
+
+function battleAutoFillPassage() {
+  const examId = document.getElementById('battle-exam-select').value;
+  const pool = APP.lessons.filter(l => !examId || l.examId === examId || examId === 'ALL');
+  if (!pool.length) { showToast('No lessons found for this exam', 'error'); return; }
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  document.getElementById('battle-content').value = pick.content;
+  showToast('Passage filled: ' + pick.title, 'success');
+}
+
+function copyBattleCode() {
+  const code = document.getElementById('battle-room-code-display').textContent.trim();
+  if (!code || code === '——') return;
+  navigator.clipboard.writeText(code).then(() => showToast('Code copied: ' + code, 'success'));
+}
+
+// ── Quick Battle — Matchmaking queue ─────────────────────
+async function startQuickBattle() {
+  if (!requireUser(() => startQuickBattle())) return;
+  if (!window._db) { showToast('Cloud required for Quick Battle. Please try Private Room.', 'error'); return; }
+
+  _isMatchmaking = true;
+  document.getElementById('battle-mode-grid').style.display = 'none';
+  document.getElementById('private-room-box').classList.remove('active');
+  document.getElementById('matchmaking-box').classList.add('active');
+
+  // Pick a random lesson as the passage
+  const passage = _pickRandomPassage();
+
+  // Write myself to queue
+  const myEntry = {
+    userId: APP.user.id, name: APP.user.name,
+    joinedAt: Date.now(), passage,
+    matched: false, battleId: null
+  };
+
+  try {
+    const ref = await window._fbAddDoc(window._fbCollection(window._db, QUEUE_COL), myEntry);
+    _myQueueDocId = ref.id;
+  } catch(e) {
+    showToast('Failed to join queue: ' + e.message, 'error');
+    cancelMatchmaking();
+    return;
+  }
+
+  // Watch queue for a match
+  _watchQueue();
+  _pollQueueCount();
+}
+
+function _pickRandomPassage() {
+  if (APP.lessons && APP.lessons.length) {
+    const l = APP.lessons[Math.floor(Math.random() * APP.lessons.length)];
+    return l.content || l.passage || '';
+  }
+  return 'The Indian Railways is one of the largest railway networks in the world. It runs more than 13,000 passenger trains daily, carrying 23 million passengers. The history of Indian Railways dates to 1853 when the first passenger train ran between Bori Bunder and Thane. Today, Indian Railways employs more than 1.4 million people, making it one of the world largest employers.';
+}
+
+let _queueCountInterval = null;
+function _pollQueueCount() {
+  if (_queueCountInterval) clearInterval(_queueCountInterval);
+  _queueCountInterval = setInterval(async () => {
+    if (!_isMatchmaking || !window._db) return;
+    try {
+      const snap = await window._fbGetDocs(
+        window._fbQuery(window._fbCollection(window._db, QUEUE_COL),
+          window._fbWhere('matched', '==', false))
+      );
+      const el = document.getElementById('mm-queue-count');
+      if (el) el.textContent = '🟢 Players in queue: ' + snap.size;
+    } catch(e) {}
+  }, 3000);
+}
+
+function _watchQueue() {
+  if (_queueUnsub) _queueUnsub();
+  if (!window._db || !_myQueueDocId) return;
+
+  const myRef = window._fbDoc(window._db, QUEUE_COL, _myQueueDocId);
+  _queueUnsub = window._fbOnSnapshot(myRef, async (snap) => {
+    if (!snap.exists() || !_isMatchmaking) return;
+    const data = snap.data();
+
+    if (data.matched && data.battleId) {
+      // I was matched — join the battle
+      _isMatchmaking = false;
+      _stopQueuePolling();
+      showToast('Opponent found! Starting battle…', 'success');
+      const battleSnap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, data.battleId));
+      if (battleSnap.exists()) {
+        const battle = battleSnap.data();
+        // Add me as player 2
+        const update = {};
+        update[`players.${APP.user.id}`] = { name: APP.user.name, progress: 0, wpm: 0, acc: 100, ready: true, typed: '' };
+        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, data.battleId), update, { merge: true });
+        _enterBattleArena({ ...battle, players: { ...battle.players, [APP.user.id]: { name: APP.user.name, progress: 0, wpm: 0, acc: 100, ready: true, typed: '' } } }, data.battleId);
+        // Trigger countdown on both sides
+        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, data.battleId), { status: 'countdown', countdownAt: Date.now() }, { merge: true });
+      }
+      return;
+    }
+
+    // I'm still waiting — try to match with someone else in queue
+    try {
+      const now = Date.now();
+      const qSnap = await window._fbGetDocs(
+        window._fbQuery(window._fbCollection(window._db, QUEUE_COL),
+          window._fbWhere('matched', '==', false))
+      );
+      const others = qSnap.docs.filter(d => d.id !== _myQueueDocId && d.data().userId !== APP.user.id);
+      if (others.length > 0) {
+        // Pick oldest unmatched opponent
+        others.sort((a, b) => a.data().joinedAt - b.data().joinedAt);
+        const oppDoc = others[0];
+        const opp = oppDoc.data();
+
+        const code = generateBattleCode();
+        const passage = data.passage || opp.passage || _pickRandomPassage();
+        const battle = {
+          code, type: 'quick',
+          content: passage,
+          duration: 300,
+          createdAt: now,
+          status: 'countdown',
+          countdownAt: now,
+          players: {
+            [APP.user.id]: { name: APP.user.name, progress: 0, wpm: 0, acc: 100, ready: true, typed: '' },
+            [opp.userId]: { name: opp.name, progress: 0, wpm: 0, acc: 100, ready: true, typed: '' }
+          }
+        };
+
+        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), battle);
+        // Mark both queue entries as matched
+        await window._fbSetDoc(myRef, { matched: true, battleId: code }, { merge: true });
+        await window._fbSetDoc(window._fbDoc(window._db, QUEUE_COL, oppDoc.id), { matched: true, battleId: code }, { merge: true });
+        _isMatchmaking = false;
+        _stopQueuePolling();
+        _enterBattleArena(battle, code);
+      }
+    } catch(e) { console.warn('Matchmaking attempt error:', e); }
+  });
+}
+
+function _stopQueuePolling() {
+  if (_queueCountInterval) { clearInterval(_queueCountInterval); _queueCountInterval = null; }
+  if (_queueUnsub) { _queueUnsub(); _queueUnsub = null; }
+  document.getElementById('matchmaking-box').classList.remove('active');
+}
+
+async function cancelMatchmaking() {
+  _isMatchmaking = false;
+  _stopQueuePolling();
+  if (_myQueueDocId && window._db) {
+    try { await window._fbDeleteDoc(window._fbDoc(window._db, QUEUE_COL, _myQueueDocId)); } catch(e) {}
+    _myQueueDocId = null;
+  }
+  document.getElementById('battle-mode-grid').style.display = '';
+  showToast('Matchmaking cancelled', 'info');
+}
+
+// ── Private Room ──────────────────────────────────────────
 async function createBattleRoom() {
   if (!requireUser(() => createBattleRoom())) return;
-  const examId = document.getElementById('battle-exam-select').value;
-  const dur = parseInt(document.getElementById('battle-duration').value) || 5;
+  if (!window._db) { showToast('Cloud connection required for battles between devices.', 'error'); return; }
+
+  const examId  = document.getElementById('battle-exam-select').value;
+  const dur     = parseInt(document.getElementById('battle-duration').value) || 5;
   const content = document.getElementById('battle-content').value.trim();
   if (!content || content.length < 30) { showToast('Please enter a passage (min 30 chars)', 'error'); return; }
 
   const code = generateBattleCode();
   const battle = {
-    code, examId,
-    content,
+    code, type: 'private', examId, content,
     duration: dur * 60,
     createdAt: Date.now(),
     status: 'waiting',
     players: {
-      [APP.user.id]: { name: APP.user.name, progress: 0, wpm: 0, ready: false, typed: '' }
+      [APP.user.id]: { name: APP.user.name, progress: 0, wpm: 0, acc: 100, ready: false, typed: '' }
     }
   };
 
   try {
-    if (window._db) {
-      try {
-        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), battle);
-      } catch(fbErr) {
-        // Firestore write failed — fall back to localStorage (single-device battle)
-        localStorage.setItem('typssc_battle_' + code, JSON.stringify(battle));
-        showToast('⚠ Cloud unavailable — battle saved locally (same-device only)', 'info');
-      }
-    } else {
-      localStorage.setItem('typssc_battle_' + code, JSON.stringify(battle));
-    }
-    _currentBattleId = code;
-    showBattleArena(battle, code);
-    subscribeToBattle(code);
-    showToast('Battle room created! Share code: ' + code, 'success');
+    await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), battle);
+    _enterBattleArena(battle, code);
+    showToast('Room created! Share code: ' + code, 'success');
   } catch(e) {
-    showToast('Failed to create battle room: ' + (e.message || e), 'error');
+    showToast('Failed to create room: ' + e.message, 'error');
   }
 }
 
 async function joinBattleRoom() {
   if (!requireUser(() => joinBattleRoom())) return;
+  if (!window._db) { showToast('Cloud connection required to join battles.', 'error'); return; }
+
   const code = document.getElementById('battle-join-code').value.trim().toUpperCase();
   if (!code || code.length < 4) { showToast('Enter a valid room code', 'error'); return; }
 
   try {
-    let battle;
-    if (window._db) {
-      try {
-        const snap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, code));
-        if (snap.exists()) {
-          battle = snap.data();
-        } else {
-          // Firestore didn't find it — try localStorage fallback
-          const b = localStorage.getItem('typssc_battle_' + code);
-          if (!b) { showToast('Room not found. Check the code.', 'error'); return; }
-          battle = JSON.parse(b);
-        }
-      } catch(fbErr) {
-        // Firestore read failed — try localStorage
-        const b = localStorage.getItem('typssc_battle_' + code);
-        if (!b) { showToast('Room not found (cloud unavailable). Check the code.', 'error'); return; }
-        battle = JSON.parse(b);
-      }
-    } else {
-      const b = localStorage.getItem('typssc_battle_' + code);
-      if (!b) { showToast('Room not found.', 'error'); return; }
-      battle = JSON.parse(b);
-    }
+    const snap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, code));
+    if (!snap.exists()) { showToast('Room not found. Check the code.', 'error'); return; }
 
+    const battle = snap.data();
     if (battle.status === 'ended') { showToast('This battle has already ended.', 'error'); return; }
     if (Object.keys(battle.players).length >= 2 && !battle.players[APP.user.id]) {
       showToast('Room is full (max 2 players)', 'error'); return;
     }
 
-    battle.players[APP.user.id] = { name: APP.user.name, progress: 0, wpm: 0, ready: false, typed: '' };
-    if (window._db) {
-      try {
-        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), battle, { merge: true });
-      } catch(fbErr) {
-        localStorage.setItem('typssc_battle_' + code, JSON.stringify(battle));
-      }
-    } else {
-      localStorage.setItem('typssc_battle_' + code, JSON.stringify(battle));
-    }
-    _currentBattleId = code;
-    showBattleArena(battle, code);
-    subscribeToBattle(code);
+    const update = {};
+    update[`players.${APP.user.id}`] = { name: APP.user.name, progress: 0, wpm: 0, acc: 100, ready: false, typed: '' };
+    await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), update, { merge: true });
+
+    const updatedSnap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, code));
+    _enterBattleArena(updatedSnap.data(), code);
     showToast('Joined battle room!', 'success');
   } catch(e) {
-    showToast('Failed to join room: ' + e.message, 'error');
+    showToast('Failed to join: ' + e.message, 'error');
   }
 }
 
-function generateBattleCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-}
+// ── Arena ─────────────────────────────────────────────────
+function _enterBattleArena(battle, code) {
+  _currentBattleId = code;
+  _battleContent   = battle.content || '';
+  _battleDuration  = battle.duration || 300;
 
-function showBattleArena(battle, code) {
-  document.getElementById('battle-arena').classList.remove('hidden');
+  // Hide lobby, show arena
+  document.getElementById('battle-mode-grid').style.display = 'none';
+  document.getElementById('matchmaking-box').classList.remove('active');
+  document.getElementById('private-room-box').classList.remove('active');
+  const arena = document.getElementById('battle-arena');
+  arena.classList.add('active');
+  arena.style.display = 'block';
+
   document.getElementById('battle-room-code-display').textContent = code;
   document.getElementById('battle-my-name').textContent = APP.user.name;
 
-  const passDisplay = document.getElementById('battle-passage-display');
-  if (passDisplay) passDisplay.textContent = battle.content;
+  // Render passage
+  renderBattlePassage('', _battleContent);
+
+  // Reset typing box
+  const box = document.getElementById('battle-typing-box');
+  box.value = ''; box.disabled = true;
+  document.getElementById('battle-ready-btn').style.display = '';
+  document.getElementById('battle-ready-btn').textContent = '✓ I\'m Ready!';
+  document.getElementById('battle-ready-btn').disabled = false;
+
+  // Timer bar reset
+  document.getElementById('battle-timer-bar').style.width = '100%';
+  document.getElementById('battle-timer-display').textContent = _formatTime(_battleDuration);
+
+  updateBattleUI(battle);
+  subscribeToBattle(code);
 }
+
+function showBattleArena(battle, code) { _enterBattleArena(battle, code); }
 
 function subscribeToBattle(code) {
   if (_battleUnsub) _battleUnsub();
@@ -5376,84 +5752,273 @@ function subscribeToBattle(code) {
   _battleUnsub = window._fbOnSnapshot(ref, (snap) => {
     if (!snap.exists()) return;
     const battle = snap.data();
+    _battleContent = battle.content || _battleContent;
     updateBattleUI(battle);
-  });
+    if (battle.status === 'countdown' && !_countdownRunning) {
+      _startCountdown(battle);
+    }
+  }, (err) => { console.warn('Battle snapshot error:', err); });
 }
+
+// ── Status / UI update ────────────────────────────────────
+let _countdownRunning = false;
 
 function updateBattleUI(battle) {
-  const players = battle.players || {};
-  const myData = players[APP.user.id];
-  const oppData = Object.entries(players).find(([id]) => id !== APP.user.id);
-
-  const statusEl = document.getElementById('battle-room-status');
+  const players    = battle.players || {};
+  const myData     = players[APP.user.id];
+  const oppEntry   = Object.entries(players).find(([id]) => id !== APP.user.id);
+  const oppData    = oppEntry ? oppEntry[1] : null;
   const playerCount = Object.keys(players).length;
+  const pill       = document.getElementById('battle-status-pill');
+  const statusEl   = document.getElementById('battle-room-status');
+
+  // Status pill
   if (battle.status === 'waiting') {
-    statusEl.textContent = playerCount === 1 ? '⏳ Waiting for opponent to join...' : '✓ Opponent joined! Click "I\'m Ready" when ready.';
+    pill.className = 'battle-status-pill pill-waiting';
+    pill.textContent = playerCount < 2 ? '⏳ Waiting for opponent…' : '✅ Opponent joined!';
+    statusEl.textContent = playerCount < 2
+      ? 'Share the code above with your friend to join.'
+      : '✅ Opponent joined! Click "I\'m Ready!" when ready.';
+  } else if (battle.status === 'countdown') {
+    pill.className = 'battle-status-pill pill-countdown';
+    pill.textContent = '🚀 Starting…';
+    statusEl.textContent = 'Battle starting! Get ready…';
   } else if (battle.status === 'live') {
-    statusEl.innerHTML = '<span style="color:var(--red)">🔴 BATTLE IN PROGRESS</span>';
+    pill.className = 'battle-status-pill pill-live';
+    pill.textContent = '🔴 LIVE';
+    statusEl.textContent = '🔴 Battle in progress! Type as fast as you can!';
     document.getElementById('battle-ready-btn').style.display = 'none';
     const box = document.getElementById('battle-typing-box');
-    if (box && box.disabled) { box.disabled = false; box.focus(); }
-    if (!_battleInterval) startBattleTracking(battle);
+    if (box.disabled) { box.disabled = false; box.focus(); }
+    if (!_battleInterval) _startBattleTracking(battle);
   } else if (battle.status === 'ended') {
-    statusEl.innerHTML = '<span style="color:var(--gold)">🏆 Battle Ended!</span>';
+    pill.className = 'battle-status-pill pill-ended';
+    pill.textContent = '🏆 Ended';
+    statusEl.textContent = '🏆 Battle has ended.';
     if (_battleInterval) { clearInterval(_battleInterval); _battleInterval = null; }
     document.getElementById('battle-typing-box').disabled = true;
+    _showBattleResult(battle);
   }
 
+  // My stats
   if (myData) {
-    const myPct = Math.round(myData.progress || 0);
-    document.getElementById('battle-my-progress').textContent = myPct + '%';
-    document.getElementById('battle-my-wpm').textContent = (myData.wpm || 0) + ' WPM';
-    document.getElementById('battle-my-bar').style.width = myPct + '%';
-    document.getElementById('battle-my-chars').textContent = (myData.typed || '').length + '/' + (battle.content || '').length;
+    const pct = Math.round(myData.progress || 0);
+    document.getElementById('battle-my-wpm').textContent = myData.wpm || 0;
+    document.getElementById('battle-my-acc').textContent = 'WPM · ' + (myData.acc || 100) + '% acc';
+    document.getElementById('battle-my-bar').style.width  = pct + '%';
+    document.getElementById('battle-my-pct').textContent  = pct + '%';
   }
 
+  // Opponent stats
   if (oppData) {
-    const [, opp] = oppData;
-    const oppPct = Math.round(opp.progress || 0);
-    document.getElementById('battle-opp-name').textContent = opp.name || 'Opponent';
-    document.getElementById('battle-opp-progress').textContent = oppPct + '%';
-    document.getElementById('battle-opp-wpm').textContent = (opp.wpm || 0) + ' WPM';
-    document.getElementById('battle-opp-bar').style.width = oppPct + '%';
-    document.getElementById('battle-opp-chars').textContent = (opp.typed || '').length + '/' + (battle.content || '').length;
+    const oppPct = Math.round(oppData.progress || 0);
+    document.getElementById('battle-opp-name').textContent    = oppData.name || 'Opponent';
+    document.getElementById('battle-opp-wpm').textContent     = oppData.wpm || 0;
+    document.getElementById('battle-opp-acc').textContent     = 'WPM · ' + (oppData.acc || 100) + '% acc';
+    document.getElementById('battle-opp-bar').style.width     = oppPct + '%';
+    document.getElementById('battle-opp-pct').textContent     = oppPct + '%';
   } else {
-    document.getElementById('battle-opp-name').textContent = 'Waiting...';
+    document.getElementById('battle-opp-name').textContent = 'Waiting…';
   }
 }
 
-let _battleStartTime = null;
-function startBattleTracking(battle) {
-  _battleStartTime = Date.now();
-  _battleInterval = setInterval(async () => {
-    const typed = document.getElementById('battle-typing-box').value;
-    const elapsed = Math.max(0.01, (Date.now() - _battleStartTime) / 1000);
-    const wpm = Math.round((typed.length / 5) / (elapsed / 60));
-    const progress = battle.content ? Math.min(100, Math.round(typed.length / battle.content.length * 100)) : 0;
-
-    renderBattlePassage(typed, battle.content);
-
-    if (window._db && _currentBattleId) {
-      const update = {};
-      update[`players.${APP.user.id}.typed`] = typed;
-      update[`players.${APP.user.id}.wpm`] = wpm;
-      update[`players.${APP.user.id}.progress`] = progress;
-      try {
-        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, _currentBattleId), update, { merge: true });
-      } catch(e) {}
-    }
-
-    if (typed.length >= (battle.content || '').length) {
-      clearInterval(_battleInterval); _battleInterval = null;
-      showToast('🏆 You finished the passage!', 'success');
+// ── Countdown (3-2-1 overlay) ─────────────────────────────
+function _startCountdown(battle) {
+  if (_countdownRunning) return;
+  _countdownRunning = true;
+  const overlay = document.getElementById('battle-countdown-overlay');
+  const numEl   = document.getElementById('battle-countdown-num');
+  overlay.classList.add('active');
+  let n = 3;
+  numEl.textContent = n;
+  const iv = setInterval(async () => {
+    n--;
+    if (n > 0) {
+      numEl.style.animation = 'none';
+      void numEl.offsetWidth;
+      numEl.style.animation = 'countpop 0.5s ease';
+      numEl.textContent = n;
+    } else {
+      clearInterval(iv);
+      overlay.classList.remove('active');
+      _countdownRunning = false;
+      // Trigger live
+      if (window._db && _currentBattleId) {
+        try {
+          await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, _currentBattleId),
+            { status: 'live', startedAt: Date.now() }, { merge: true });
+        } catch(e) {}
+      }
     }
   }, 1000);
 }
 
+// ── Timer helpers ─────────────────────────────────────────
+function _formatTime(secs) {
+  const m = Math.floor(secs / 60).toString().padStart(2, '0');
+  const s = (secs % 60).toString().padStart(2, '0');
+  return m + ':' + s;
+}
+
+// ── Tracking interval ─────────────────────────────────────
+function _startBattleTracking(battle) {
+  _battleStartTime = Date.now();
+  const totalDur = battle.duration || _battleDuration;
+
+  _battleInterval = setInterval(async () => {
+    if (!_currentBattleId) { clearInterval(_battleInterval); _battleInterval = null; return; }
+    const typed   = document.getElementById('battle-typing-box').value;
+    const elapsed = Math.max(0.01, (Date.now() - _battleStartTime) / 1000);
+    const remaining = Math.max(0, totalDur - Math.floor(elapsed));
+    const wpm     = Math.round((typed.length / 5) / (elapsed / 60));
+    const content = _battleContent || battle.content || '';
+    const progress = content ? Math.min(100, Math.round(typed.length / content.length * 100)) : 0;
+
+    // Accuracy
+    let correct = 0;
+    for (let i = 0; i < typed.length; i++) {
+      if (i < content.length && typed[i] === content[i]) correct++;
+    }
+    const acc = typed.length ? Math.round((correct / typed.length) * 100) : 100;
+
+    // Timer bar
+    document.getElementById('battle-timer-bar').style.width = ((remaining / totalDur) * 100) + '%';
+    document.getElementById('battle-timer-display').textContent = _formatTime(remaining);
+    if (remaining <= 0) {
+      clearInterval(_battleInterval); _battleInterval = null;
+      if (window._db) {
+        try { await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, _currentBattleId), { status: 'ended' }, { merge: true }); } catch(e) {}
+      }
+    }
+
+    renderBattlePassage(typed, content);
+
+    if (window._db) {
+      const update = {};
+      update[`players.${APP.user.id}.typed`]    = typed;
+      update[`players.${APP.user.id}.wpm`]      = wpm;
+      update[`players.${APP.user.id}.acc`]      = acc;
+      update[`players.${APP.user.id}.progress`] = progress;
+      try { await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, _currentBattleId), update, { merge: true }); } catch(e) {}
+    }
+
+    if (typed.length >= content.length && content.length > 0) {
+      clearInterval(_battleInterval); _battleInterval = null;
+      if (window._db) {
+        try { await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, _currentBattleId), { status: 'ended' }, { merge: true }); } catch(e) {}
+      }
+      showToast('🏆 You finished the passage!', 'success');
+    }
+  }, 800);
+}
+
+// ── Battle result modal ───────────────────────────────────
+function _showBattleResult(battle) {
+  const players  = battle.players || {};
+  const myData   = players[APP.user.id] || {};
+  const oppEntry = Object.entries(players).find(([id]) => id !== APP.user.id);
+  const oppData  = oppEntry ? oppEntry[1] : {};
+
+  const myWpm  = myData.wpm  || 0;
+  const oppWpm = oppData.wpm || 0;
+  const myAcc  = myData.acc  || 100;
+  const oppAcc = oppData.acc || 100;
+  const myProg = myData.progress || 0;
+  const oppProg = oppData.progress || 0;
+
+  const iWon = myProg > oppProg || (myProg === oppProg && myWpm >= oppWpm);
+
+  document.getElementById('result-trophy').textContent   = iWon ? '🏆' : '💪';
+  document.getElementById('result-headline').textContent  = iWon ? 'You Win! 🎉' : 'You Lost…';
+  document.getElementById('result-sub').textContent       = iWon
+    ? `You outtyped ${oppData.name || 'opponent'} — great speed!`
+    : `${oppData.name || 'Opponent'} was faster this time. Try again!`;
+  document.getElementById('res-my-wpm').textContent  = myWpm;
+  document.getElementById('res-opp-wpm').textContent = oppWpm || '—';
+  document.getElementById('res-my-acc').textContent  = myAcc + '%';
+  document.getElementById('res-opp-acc').textContent = (oppWpm ? oppAcc + '%' : '—');
+
+  // Crown on winning card
+  const meCard  = document.getElementById('bpc-me');
+  const oppCard = document.getElementById('bpc-opp');
+  meCard.classList.toggle('winner', iWon);
+  oppCard.classList.toggle('winner', !iWon && !!oppWpm);
+  if (iWon) { meCard.innerHTML += '<div class="winner-crown">👑</div>'; }
+  else if (oppWpm) { oppCard.innerHTML += '<div class="winner-crown">👑</div>'; }
+
+  setTimeout(() => {
+    document.getElementById('battle-result-modal').classList.add('active');
+  }, 600);
+}
+
+function closeBattleResult() {
+  document.getElementById('battle-result-modal').classList.remove('active');
+  leaveBattleRoom();
+}
+
+// ── Ready button (private rooms) ──────────────────────────
+async function setBattleReady() {
+  if (!_currentBattleId || !window._db) return;
+  const code = _currentBattleId;
+  try {
+    const update = {};
+    update[`players.${APP.user.id}.ready`] = true;
+    await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), update, { merge: true });
+    const snap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, code));
+    if (snap.exists()) {
+      const battle = snap.data();
+      const players = battle.players || {};
+      const allReady = Object.values(players).every(p => p.ready);
+      if (allReady && Object.keys(players).length >= 2) {
+        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code),
+          { status: 'countdown', countdownAt: Date.now() }, { merge: true });
+        showToast('Both ready — starting countdown!', 'success');
+      } else {
+        showToast('You\'re ready! Waiting for opponent…', 'info');
+      }
+    }
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+  document.getElementById('battle-ready-btn').textContent = '✓ Ready! Waiting…';
+  document.getElementById('battle-ready-btn').disabled = true;
+}
+
+// ── Leave room ────────────────────────────────────────────
+async function leaveBattleRoom() {
+  if (_battleUnsub)  { _battleUnsub();  _battleUnsub  = null; }
+  if (_battleInterval) { clearInterval(_battleInterval); _battleInterval = null; }
+  _stopQueuePolling();
+  _countdownRunning = false;
+  document.getElementById('battle-countdown-overlay').classList.remove('active');
+  document.getElementById('battle-result-modal').classList.remove('active');
+
+  // Mark ended in Firestore
+  if (_currentBattleId && window._db) {
+    try { await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, _currentBattleId), { status: 'ended' }, { merge: true }); } catch(e) {}
+  }
+  _currentBattleId = null;
+
+  // Reset arena
+  const arena = document.getElementById('battle-arena');
+  arena.classList.remove('active'); arena.style.display = 'none';
+  document.getElementById('battle-typing-box').value = '';
+  document.getElementById('battle-typing-box').disabled = true;
+  document.getElementById('battle-ready-btn').style.display = '';
+  document.getElementById('battle-ready-btn').textContent = '✓ I\'m Ready!';
+  document.getElementById('battle-ready-btn').disabled = false;
+  document.getElementById('battle-mode-grid').style.display = '';
+  document.getElementById('bpc-me').classList.remove('winner');
+  document.getElementById('bpc-opp').classList.remove('winner');
+  // Remove crowns
+  document.querySelectorAll('.winner-crown').forEach(el => el.remove());
+
+  _isMatchmaking = false;
+  showToast('Left battle room', 'info');
+}
+
+// ── Passage rendering ─────────────────────────────────────
 function renderBattlePassage(typed, passage) {
   const el = document.getElementById('battle-passage-display');
   if (!el || !passage) return;
-  window.__typssc_rendering = true;
   let html = '';
   for (let i = 0; i < passage.length; i++) {
     const ch = passage[i] === ' ' ? '&nbsp;' : passage[i];
@@ -5468,7 +6033,9 @@ function renderBattlePassage(typed, passage) {
     }
   }
   el.innerHTML = html;
-  window.__typssc_rendering = false;
+  // Auto-scroll to current char
+  const cur = el.querySelector('.char.current');
+  if (cur) cur.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
 function handleBattleInput(e) {}
@@ -5479,40 +6046,9 @@ function handleBattleKeydown(e) {
   }
 }
 
-async function setBattleReady() {
-  if (!_currentBattleId) return;
-  const code = _currentBattleId;
-  if (window._db) {
-    const update = {};
-    update[`players.${APP.user.id}.ready`] = true;
-    await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), update, { merge: true });
-    const snap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, code));
-    if (snap.exists()) {
-      const battle = snap.data();
-      const allReady = Object.values(battle.players).every(p => p.ready);
-      if (allReady && Object.keys(battle.players).length >= 2) {
-        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), { status: 'live' }, { merge: true });
-        showToast('Both players ready — Battle started! 🔴', 'success');
-      } else {
-        showToast('You\'re ready! Waiting for opponent...', 'info');
-      }
-    }
-  }
-  document.getElementById('battle-ready-btn').textContent = '✓ Ready! Waiting...';
-  document.getElementById('battle-ready-btn').disabled = true;
-}
-
-async function leaveBattleRoom() {
-  if (_battleUnsub) { _battleUnsub(); _battleUnsub = null; }
-  if (_battleInterval) { clearInterval(_battleInterval); _battleInterval = null; }
-  _currentBattleId = null;
-  document.getElementById('battle-arena').classList.add('hidden');
-  document.getElementById('battle-join-code').value = '';
-  document.getElementById('battle-typing-box').value = '';
-  document.getElementById('battle-typing-box').disabled = true;
-  document.getElementById('battle-ready-btn').textContent = '✓ I\'m Ready!';
-  document.getElementById('battle-ready-btn').disabled = false;
-  showToast('Left battle room', 'info');
+function generateBattleCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
 // ════════════════════════════════════════════════════════════
