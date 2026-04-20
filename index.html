@@ -451,7 +451,70 @@ nav {
   font-size:0.8rem;
 }
 .exam-lessons-count span { color:var(--text-dim); }
-.exam-lessons-count strong { color:var(--gold); }
+.exam-expand-hint {
+  font-size: 0.72rem; color: var(--text-muted);
+  transition: color 0.2s, transform 0.3s;
+  display: inline-block;
+  user-select: none;
+}
+.exam-card.ec-open .exam-expand-hint {
+  color: var(--gold);
+  transform: rotate(180deg);
+}
+
+/* ─── EXAM CARD LESSONS DRAWER ─── */
+.ec-lessons-drawer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0 -1.5rem -1.5rem;
+}
+.exam-card.ec-open .ec-lessons-drawer {
+  max-height: 700px;
+}
+.ec-lessons-inner {
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+}
+.ec-lesson-row {
+  display: flex; align-items: center; gap: 0.85rem;
+  padding: 0.7rem 1.5rem; cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border);
+}
+.ec-lesson-row:last-child { border-bottom: none; }
+.ec-lesson-row:hover { background: var(--card2); }
+.ec-lesson-num {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+  color: var(--text-muted); font-weight: 600; min-width: 18px; text-align: center; flex-shrink: 0;
+}
+.ec-lesson-info { flex: 1; min-width: 0; }
+.ec-lesson-title {
+  font-size: 0.85rem; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ec-lesson-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.1rem; }
+.ec-lesson-start {
+  padding: 0.28rem 0.75rem; border-radius: var(--r); font-size: 0.75rem; font-weight: 700;
+  background: rgba(212,168,67,0.1); color: var(--gold);
+  border: 1px solid rgba(212,168,67,0.25); cursor: pointer;
+  transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+}
+.ec-lesson-start:hover { background: rgba(212,168,67,0.22); }
+.ec-no-lessons {
+  padding: 1rem 1.5rem; font-size: 0.8rem; color: var(--text-muted); font-style: italic;
+}
+.ec-drawer-footer {
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid var(--border);
+  background: var(--card2);
+}
+.ec-full-rules-btn {
+  font-size: 0.75rem; font-weight: 600; color: var(--text-muted);
+  background: none; border: none; cursor: pointer; padding: 0;
+  transition: color 0.2s;
+}
+.ec-full-rules-btn:hover { color: var(--gold); }
 
 /* ─── EXAM DETAIL PAGE ─── */
 .exam-detail-hero {
@@ -924,7 +987,8 @@ nav {
   animation: toast-in 0.3s ease;
   border-left:3px solid;
 }
-@keyframes toast-in { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes toast-in { from{transform:translateX(110%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes toast-out { from{transform:translateX(0);opacity:1} to{transform:translateX(110%);opacity:0} }
 .toast.success { background:var(--card2); border-color:var(--green); color:var(--text); }
 .toast.error { background:var(--card2); border-color:var(--red); color:var(--text); }
 .toast.info { background:var(--card2); border-color:var(--blue); color:var(--text); }
@@ -1275,6 +1339,7 @@ body.light-mode .theme-toggle::after { transform:translateX(18px); }
   letter-spacing:0.03em; word-break:break-word;
   max-height:220px; overflow-y:auto;
   padding: 0.25rem 0;
+  scroll-behavior: smooth;
 }
 .typing-box {
   width:100%; min-height:130px; max-height:200px;
@@ -1285,6 +1350,7 @@ body.light-mode .theme-toggle::after { transform:translateX(18px); }
   line-height:1.85; letter-spacing:0.03em;
   transition:border-color 0.25s, box-shadow 0.25s;
 }
+.typing-box:disabled { opacity: 0.55; cursor: not-allowed; border-color: var(--border) !important; box-shadow: none !important; }
 .typing-box:focus { border-color:var(--gold3); box-shadow:0 0 0 3px rgba(212,168,67,0.12); }
 .typing-box.incorrect-char { border-color:var(--red); box-shadow:0 0 0 3px rgba(239,68,68,0.12); }
 .typing-box.correct-streak { border-color:var(--green); box-shadow:0 0 0 3px rgba(34,197,94,0.1); }
@@ -1606,10 +1672,11 @@ footer::before {
   width: 2px; height: 1.1em;
   background: var(--gold);
   margin-left: 1px;
-  animation: blink-cursor 0.9s step-end infinite;
+  animation: blink-cursor 0.75s ease-in-out infinite;
   vertical-align: text-bottom;
+  border-radius: 1px;
 }
-@keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes blink-cursor { 0%, 100% { opacity: 1; } 45%, 55% { opacity: 0; } }
 
 /* ─── KEYBOARD SHORTCUT HINTS ─── */
 .kbd {
@@ -1623,10 +1690,11 @@ footer::before {
 
 /* ─── WPM MILESTONE FLASH ─── */
 @keyframes wpm-flash {
-  0% { color: var(--gold2); transform: scale(1.15); }
-  100% { color: inherit; transform: scale(1); }
+  0%   { color: var(--gold2); transform: scale(1.2); }
+  60%  { color: var(--gold);  transform: scale(1.05); }
+  100% { color: inherit;      transform: scale(1); }
 }
-.wpm-milestone { animation: wpm-flash 0.5s ease; }
+.wpm-milestone { animation: wpm-flash 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
 
 /* ─── NAV PROGRESS INDICATOR ─── */
 .nav-progress {
@@ -1748,7 +1816,9 @@ footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)) !important; }
   overflow-x: hidden;
 }
 
-/* ── Smooth scrolling on iOS ── */
+/* ─── END EXAM CARD LESSONS DRAWER ─── */
+
+/* Smooth scrolling on iOS */
 .passage-container-split, .ec-passage-panel, .admin-list, .rankings-table, .cmp-panel {
   -webkit-overflow-scrolling: touch;
 }
@@ -2186,7 +2256,8 @@ footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)) !important; }
       <textarea class="typing-box" id="typing-box-visible"
         placeholder="Click here and start typing when the test begins..."
         autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-        oninput="handleVisibleInput(event)" onkeydown="handleVisibleKeydown(event)"></textarea>
+        oninput="handleVisibleInput(event)" onkeydown="handleVisibleKeydown(event)"
+        disabled></textarea>
       <div class="typing-feedback-bar idle" id="typing-feedback">
         <div class="feedback-dot"></div>
         <span id="feedback-text">Start typing to see feedback...</span>
@@ -4144,26 +4215,61 @@ function renderAllExams() {
   grid.innerHTML = APP.exams.map(e => examCardHTML(e)).join('');
 }
 
+function toggleExamCard(card, examId) {
+  const isOpen = card.classList.contains('ec-open');
+  // Close all other open cards first
+  document.querySelectorAll('.exam-card.ec-open').forEach(c => {
+    if (c !== card) c.classList.remove('ec-open');
+  });
+  card.classList.toggle('ec-open', !isOpen);
+  // Smooth scroll the card into view if opening
+  if (!isOpen) {
+    setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 120);
+  }
+}
+
 function examCardHTML(exam) {
   const lessons = APP.lessons.filter(l => l.examId === exam.id);
   const backStr = exam.rules.backspaceAllowed ? '✓ Backspace OK' : '✗ No Backspace';
   const speedStr = exam.rules.requiredSpeed + ' ' + exam.rules.metric;
-  const durStr = Math.round(exam.rules.duration/60) + ' min';
-  return `<div class="exam-card" style="--exam-color:${exam.color}" onclick="navigate('exam-detail',{examId:'${exam.id}'})">
+  const durStr = Math.round(exam.rules.duration / 60) + ' min';
+
+  const lessonsHtml = lessons.length === 0
+    ? `<div class="ec-no-lessons">No lessons added yet.</div>`
+    : lessons.map((l, i) => {
+        const words = l.content.trim().split(/\s+/).length;
+        const mins  = Math.round((l.duration || exam.rules.duration) / 60);
+        return `<div class="ec-lesson-row" onclick="event.stopPropagation();initiateTest('${l.id}','${exam.id}',null)">
+          <div class="ec-lesson-num">${i + 1}</div>
+          <div class="ec-lesson-info">
+            <div class="ec-lesson-title">${l.title}</div>
+            <div class="ec-lesson-meta">⏱ ${mins}m &nbsp;·&nbsp; ${words} words</div>
+          </div>
+          <button class="ec-lesson-start" onclick="event.stopPropagation();initiateTest('${l.id}','${exam.id}',null)">Start →</button>
+        </div>`;
+      }).join('');
+
+  return `<div class="exam-card" style="--exam-color:${exam.color}" onclick="toggleExamCard(this,'${exam.id}')">
     <div class="exam-card-header">
-      <div class="exam-icon">${exam.icon||'📋'}</div>
+      <div class="exam-icon">${exam.icon || '📋'}</div>
       <div class="exam-badge">${exam.rules.metric}</div>
     </div>
     <div class="exam-name">${exam.name}</div>
     <div class="exam-fullname">${exam.fullName}</div>
     <div class="exam-meta">
       <div class="exam-meta-item">⏱ ${durStr}</div>
-      <div class="exam-meta-item" style="color:${exam.rules.backspaceAllowed?'var(--green)':'var(--red)'}">${backStr}</div>
+      <div class="exam-meta-item" style="color:${exam.rules.backspaceAllowed ? 'var(--green)' : 'var(--red)'}">${backStr}</div>
       <div class="exam-meta-item" style="color:var(--gold)">🎯 ${speedStr}</div>
     </div>
     <div class="exam-lessons-count">
-      <span>${lessons.length} lesson${lessons.length!==1?'s':''} available</span>
-      <strong>Practice →</strong>
+      <span>${lessons.length} lesson${lessons.length !== 1 ? 's' : ''}</span>
+      <span class="exam-expand-hint">Tap to see lessons ▾</span>
+    </div>
+    <div class="ec-lessons-drawer">
+      <div class="ec-lessons-inner">${lessonsHtml}</div>
+      <div class="ec-drawer-footer">
+        <button class="ec-full-rules-btn" onclick="event.stopPropagation();navigate('exam-detail',{examId:'${exam.id}'})">📋 View Full Rules</button>
+      </div>
     </div>
   </div>`;
 }
@@ -4562,10 +4668,13 @@ function updateTimer() {
   }
   document.getElementById('stat-timer').textContent = formatTime(remaining);
   // Warning color when < 30s
+  const timerEl2 = document.getElementById('stat-timer');
   if (remaining < 30) {
-    document.getElementById('stat-timer').style.color = 'var(--red)';
+    timerEl2.style.color = 'var(--red)';
   } else if (remaining < 60) {
-    document.getElementById('stat-timer').style.color = 'var(--orange)';
+    timerEl2.style.color = 'var(--orange)';
+  } else {
+    timerEl2.style.color = '';
   }
 }
 
@@ -4574,7 +4683,16 @@ function updateLiveStats() {
   const elapsed = Math.max(0.01, (Date.now() - APP.test.startTime) / 1000);
   const res = calculateResults(APP.test.typedText, APP.test.passage, elapsed, APP.test.totalKeystrokes, APP.test.metric);
   const speedVal = APP.test.metric === 'KDPH' ? res.netKdph : res.netWPM;
-  document.getElementById('stat-wpm').textContent = speedVal;
+  const wpmEl = document.getElementById('stat-wpm');
+  const prevWpm = parseInt(wpmEl.textContent) || 0;
+  wpmEl.textContent = speedVal;
+  // Flash on milestone jumps (every 10 WPM)
+  if (speedVal > 0 && Math.floor(speedVal / 10) > Math.floor(prevWpm / 10)) {
+    wpmEl.classList.remove('wpm-milestone');
+    void wpmEl.offsetWidth; // reflow to restart animation
+    wpmEl.classList.add('wpm-milestone');
+    setTimeout(() => wpmEl.classList.remove('wpm-milestone'), 700);
+  }
   document.getElementById('stat-accuracy').textContent = res.accuracy + '%';
   document.getElementById('stat-keystrokes').textContent = APP.test.totalKeystrokes;
   // Word-level display
@@ -4588,6 +4706,8 @@ function updateLiveStats() {
 function resetStats() {
   ['stat-wpm','stat-accuracy','stat-keystrokes','stat-correct','stat-incorrect','stat-words','stat-gross-wpm','stat-kdph']
     .forEach(id => { const el=document.getElementById(id); if(el) el.textContent = id==='stat-accuracy'?'100%':'0'; });
+  const pcEl = document.getElementById('stat-progress-chars');
+  if (pcEl) pcEl.textContent = '0/0';
   document.getElementById('stat-timer').textContent = formatTime(APP.test.duration);
   document.getElementById('stat-timer').style.color = '';
   document.getElementById('test-progress').style.width = '0%';
@@ -4953,6 +5073,8 @@ async function adminLoginPage() {
 }
 
 async function syncResultToCloud(r) {
+  if (!_supabase) return; // Supabase not available, skip cloud sync
+  try {
   const { error } = await _supabase
     .from('results')
     .insert([{
@@ -4961,6 +5083,7 @@ async function syncResultToCloud(r) {
       accuracy: r.accuracy
     }]);
   if (error) console.error("Cloud Sync failed:", error);
+  } catch(e) { console.warn('syncResultToCloud error:', e.message); }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -5849,7 +5972,7 @@ function showToast(msg, type='info', duration=3000) {
   toast.textContent = msg;
   container.appendChild(toast);
   setTimeout(() => {
-    toast.style.animation = 'toast-in 0.3s ease reverse';
+    toast.style.animation = 'toast-out 0.3s ease forwards';
     setTimeout(() => toast.remove(), 300);
   }, duration);
 }
@@ -5938,7 +6061,9 @@ function enterExamCenterMode() {
 
   // Sync timer from main test
   const remaining = APP.test.active ? Math.max(0, APP.test.duration - (Date.now() - APP.test.startTime) / 1000) : APP.test.duration;
-  document.getElementById('ec-timer').textContent = formatTime(remaining);
+  const timerElInit = document.getElementById('ec-timer');
+  timerElInit.textContent = formatTime(remaining);
+  timerElInit.style.color = remaining < 60 ? '#c00' : remaining < 180 ? '#c77a00' : '#003580';
   document.getElementById('ec-duration').textContent = formatTime(APP.test.duration);
 
   // Sync passage
@@ -5977,7 +6102,7 @@ function enterExamCenterMode() {
       const rem = Math.max(0, APP.test.duration - (Date.now() - APP.test.startTime) / 1000);
       const timerEl = document.getElementById('ec-timer');
       timerEl.textContent = formatTime(rem);
-      timerEl.style.color = rem < 60 ? '#c00' : rem < 180 ? '#c77a00' : '#c00';
+      timerEl.style.color = rem < 60 ? '#c00' : rem < 180 ? '#c77a00' : '#003580';
       if (rem <= 0) {
         document.getElementById('ec-typing-box').disabled = true;
         document.getElementById('ec-submit-btn').disabled = true;
@@ -6131,13 +6256,14 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ════════════════════════════════════════════════════════════
-//  LIVE TEST COUNTDOWN AUTO-REFRESH
-// ════════════════════════════════════════════════════════════
-setInterval(() => {
-  if (currentPage === 'live-tests') {
-  }
-}, 1000);
+// ── Stub: updateLessonExamInfo — exam select change is handled via populateExamSelects() listener ──
+function updateLessonExamInfo() {
+  const sel = document.getElementById('lesson-exam-select');
+  const note = document.getElementById('lesson-all-note');
+  if (note && sel) note.textContent = sel.value === 'ALL' ? '⚡ This lesson will be added to ALL exams' : '';
+}
+
+// Live test countdown auto-refresh handled by renderLiveTests() internal setTimeout
 
 // ════════════════════════════════════════════════════════════
 //  TYPING BATTLE  (v2 — matchmaking + private rooms)
@@ -6470,11 +6596,13 @@ async function setBattleReady() {
     return;
   }
 
-  // Poll until both ready or timeout (10s), then trigger countdown
-  // This is robust regardless of snapshot delivery timing
-  const deadline = Date.now() + 10000;
+  // Poll until both ready (up to 3 minutes), then trigger countdown.
+  // Transient errors skip the tick rather than killing the poll entirely.
+  const deadline = Date.now() + 180000; // 3-minute window
+  let _pollErrorCount = 0;
   const poll = setInterval(async () => {
     if (!_currentBattleId || _currentBattleId !== code) { clearInterval(poll); return; }
+    if (Date.now() > deadline) { clearInterval(poll); return; }
     try {
       const snap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, code));
       if (!snap.exists()) { clearInterval(poll); return; }
@@ -6482,14 +6610,17 @@ async function setBattleReady() {
       if (battle.status !== 'waiting') { clearInterval(poll); return; } // already moved on
       const players = battle.players || {};
       const allReady = Object.keys(players).length >= 2 && Object.values(players).every(p => p.ready);
+      _pollErrorCount = 0; // reset on success
       if (allReady) {
         clearInterval(poll);
         await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code),
           { status: 'countdown', countdownAt: Date.now() }, { merge: true });
-      } else if (Date.now() > deadline) {
-        clearInterval(poll);
       }
-    } catch(e) { clearInterval(poll); }
+    } catch(e) {
+      // Transient error: skip this tick; abort only after 5 consecutive failures
+      _pollErrorCount++;
+      if (_pollErrorCount >= 5) { clearInterval(poll); showToast('Connection issue — try leaving and rejoining', 'error'); }
+    }
   }, 800);
 }
 
@@ -6516,13 +6647,16 @@ function _startCountdown(battle) {
     } else {
       clearInterval(iv);
       overlay.classList.remove('active');
-      _countdownRunning = false;
       if (window._db && _currentBattleId) {
         try {
           await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, _currentBattleId),
             { status: 'live', startedAt: Date.now() }, { merge: true });
-        } catch(e) {}
+        } catch(e) {
+          console.warn('Failed to set battle live:', e);
+        }
       }
+      // Reset AFTER the write so a failed write doesn't re-trigger an infinite countdown loop
+      _countdownRunning = false;
     }
   }, 1000);
 }
@@ -6540,7 +6674,9 @@ function _formatTime(secs) {
 //  BATTLE TRACKING  (live typing stats)
 // ─────────────────────────────────────────────────────────
 function _startBattleTracking(battle) {
-  _battleStartTime = Date.now();
+  // Use the Firestore startedAt timestamp so both players' timers are in sync.
+  // Fall back to Date.now() only if startedAt is missing (e.g. older rooms).
+  _battleStartTime = battle.startedAt || Date.now();
   const totalDur = battle.duration || _battleDuration;
 
   _battleInterval = setInterval(async () => {
@@ -6750,7 +6886,12 @@ function renderBattlePassage(typed, passage) {
       html += `<span class="char untyped">${ch}</span>`;
     }
   }
+  // Set the security flag so the MutationObserver doesn't mistake our own
+  // DOM update for an external scrape and blur the passage mid-battle.
+  window.__typssc_rendering = true;
+  window.__typssc_typing = true;
   el.innerHTML = html;
+  setTimeout(function() { window.__typssc_rendering = false; window.__typssc_typing = false; }, 0);
   const cur = el.querySelector('.char.current');
   if (cur) cur.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
@@ -6759,7 +6900,7 @@ function handleBattleInput(e) {
   const box = document.getElementById('battle-typing-box');
   if (!box || !_currentBattleId) return;
   const typed = box.value;
-  const passage = _battlePassage || '';
+  const passage = _battleContent || '';
   renderBattlePassage(typed, passage);
 }
 
