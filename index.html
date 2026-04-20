@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="X-Frame-Options" content="DENY">
 <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
@@ -11,10 +14,11 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
 <meta name="googlebot" content="noindex, nofollow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com https://www.gstatic.com https://sbbqixppvmukvqfqlaqj.supabase.co; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://sbbqixppvmukvqfqlaqj.supabase.co wss://sbbqixppvmukvqfqlaqj.supabase.co https://firestore.googleapis.com wss://firestore.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com; frame-ancestors 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com https://www.gstatic.com https://sbbqixppvmukvqfqlaqj.supabase.co; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://sbbqixppvmukvqfqlaqj.supabase.co wss://sbbqixppvmukvqfqlaqj.supabase.co https://firestore.googleapis.com wss://firestore.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://cdn.jsdelivr.net; frame-ancestors 'none';">
 <!-- Security: No caching of sensitive content -->
 <meta name="theme-color" content="#06080f">
-<title>TypSSc — Government Exam Typing Platform</title>
+<title>TypSSc — Government Exam Typing Practice Platform</title>
+<meta name="description" content="Practice typing for RRB NTPC, SSC CGL, SSC CHSL and other government exams. Accurate speed metrics, official exam rules, live competitions and rankings.">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -996,108 +1000,241 @@ footer strong { color:var(--gold); }
 .rhc-stat-label { font-size:0.65rem; color:var(--text-muted); }
 
 /* ─── FULLY RESPONSIVE ─── */
+/* ═══════════════════════════════════════════════════════
+   COMPREHENSIVE MOBILE / SMARTPHONE RESPONSIVE STYLES
+   ═══════════════════════════════════════════════════════ */
+
 @media (max-width:1024px) {
   .test-split-body { padding:1rem 1.25rem 1.5rem; }
   .section { padding:3rem 1.25rem; }
   .admin-panel { padding:1.5rem 1.25rem; }
+  .battle-lobby { padding:1.5rem 1.25rem; }
 }
 
 @media (max-width:768px) {
-  /* Nav */
+  /* ── Nav ── */
   nav { padding:0 1rem; height:56px; }
   .nav-links { display:none; }
   .nav-brand { font-size:1.1rem; }
   .nav-logo { width:30px; height:30px; font-size:0.85rem; }
-  .nav-right { gap:0.5rem; }
-  .nav-admin-btn { padding:0.38rem 0.7rem; font-size:0.72rem; }
-  .user-badge { padding:0.28rem 0.55rem; font-size:0.72rem; }
+  .nav-right { gap:0.4rem; }
+  .nav-admin-btn { padding:0.35rem 0.65rem; font-size:0.7rem; }
+  .nav-msg-btn { display:none; }          /* hidden on mobile — available in hamburger drawer */
+  .user-badge { padding:0.28rem 0.5rem; font-size:0.72rem; }
   .theme-toggle-label { display:none; }
+  .theme-toggle { width:34px; height:19px; }
+  .theme-toggle::after { width:13px; height:13px; }
+  body.light-mode .theme-toggle::after { transform:translateX(15px); }
 
-  /* Pages */
+  /* ── Pages ── */
   .page { padding-top:56px; }
 
-  /* Hero */
-  .hero { padding:2rem 1rem; min-height:auto; }
-  .hero h1 { font-size:clamp(1.7rem,7vw,2.5rem); }
-  .hero p { font-size:0.95rem; }
-  .hero-stats { gap:1.5rem; flex-wrap:wrap; justify-content:center; }
+  /* ── Hero ── */
+  .hero { padding:2.5rem 1rem 3rem; min-height:calc(100vh - 56px); }
+  .hero h1 { font-size:clamp(1.75rem,7vw,2.5rem); margin-bottom:1rem; }
+  .hero p { font-size:0.925rem; margin-bottom:2rem; }
+  .hero-stats { gap:1.5rem; flex-wrap:wrap; justify-content:center; margin-bottom:2rem; }
   .hero-stat-num { font-size:1.5rem; }
-  .hero-cta { gap:0.75rem; }
-  .btn-primary, .btn-secondary { padding:0.75rem 1.4rem; font-size:0.875rem; }
+  .hero-stat-label { font-size:0.7rem; }
+  .hero-cta { gap:0.75rem; flex-direction:column; align-items:center; }
+  .btn-primary, .btn-secondary { padding:0.8rem 1.75rem; font-size:0.9rem; width:100%; max-width:280px; display:flex; align-items:center; justify-content:center; }
+  .hero-scroll-hint { display:none; }
 
-  /* Exam/Lesson grids */
-  .exams-grid { grid-template-columns:1fr; gap:1rem; }
+  /* ── Sections ── */
+  .section { padding:2.5rem 1rem; }
+  .section-title { font-size:1.5rem; }
+
+  /* ── Feature cards ── */
+  .feature-card { padding:1.5rem 1.25rem; }
+
+  /* ── Exam/Lesson grids ── */
+  .exams-grid { grid-template-columns:1fr; gap:0.85rem; margin-top:1.5rem; }
+  .exam-card { padding:1.25rem; }
   .lessons-grid { grid-template-columns:1fr; }
   .rules-grid { grid-template-columns:repeat(2,1fr); }
+  .exam-detail-hero { padding:1.5rem 1rem 1.25rem; }
+  .lessons-section { padding:1.25rem 1rem 2rem; }
+  .lessons-header { flex-wrap:wrap; gap:0.5rem; }
 
-  /* Test header */
-  .test-header { padding:0.75rem 1rem; flex-wrap:wrap; gap:0.75rem; }
-  .test-stats { gap:0.75rem; flex-wrap:wrap; }
-  .test-stat-val { font-size:1.1rem; }
-  .test-stat-label { font-size:0.58rem; }
-  .test-info { flex-wrap:wrap; gap:0.4rem; }
+  /* ── Test page ── */
+  #page-test { padding-top:56px; }
+  .test-header { padding:0.6rem 1rem; flex-wrap:wrap; gap:0.5rem; }
+  .test-info { flex-wrap:wrap; gap:0.35rem; order:1; width:100%; }
+  .test-stats { gap:0.6rem; flex-wrap:wrap; order:2; width:100%; justify-content:space-between; }
+  .test-controls { order:3; gap:0.5rem; flex-wrap:wrap; }
+  .test-stat-val { font-size:1.05rem; }
+  .test-stat-label { font-size:0.56rem; }
+  .test-stat { min-width:52px; }
+  .test-exam-badge { font-size:0.68rem; }
+  .test-lesson-name { font-size:0.85rem; }
+  .test-split-body { padding:0.75rem 0.75rem 1.25rem; gap:0.75rem; }
+  .split-panel { padding:0.875rem; }
+  .split-panel-label { font-size:0.58rem; margin-bottom:0.6rem; }
+  .passage-container-split { font-size:0.875rem; line-height:1.95; max-height:170px; }
+  .typing-box { font-size:0.875rem; min-height:120px; max-height:180px; }
+  .typing-feedback-bar { font-size:0.75rem; padding:0.4rem 0.75rem; }
+  .test-footer-stats { flex-wrap:wrap; gap:0.6rem; padding:0.75rem 0; }
+  .tf-stat-val { font-size:0.9rem; }
+  .highlight-toggle-btn { font-size:0.7rem; padding:0.35rem 0.6rem; }
+  .btn-submit-test { font-size:0.75rem; padding:0.4rem 0.8rem; }
+  .btn-ec-mode { font-size:0.7rem; padding:0.35rem 0.65rem; }
+  .rule-alert { font-size:0.8rem; padding:0.6rem 1rem; }
 
-  /* Test body */
-  .test-split-body { padding:0.75rem 1rem 1.25rem; gap:0.85rem; }
-  .split-panel { padding:1rem; }
-  .passage-container-split { font-size:0.88rem; line-height:1.9; max-height:180px; }
-  .typing-box { font-size:0.88rem; min-height:110px; }
-  .test-footer-stats { flex-wrap:wrap; gap:0.5rem; }
-
-  /* Result page */
-  .result-body { padding:1.5rem 1rem; }
+  /* ── Result page ── */
+  .result-body { padding:1.5rem 0.875rem; }
+  .result-title { font-size:1.5rem; }
   .result-stats-grid { grid-template-columns:repeat(2,1fr); gap:0.75rem; }
+  .result-stat-num { font-size:1.75rem; }
+  .result-actions { flex-direction:column; align-items:stretch; }
+  .result-actions button { width:100%; }
+  .cmp-panel-wrap { grid-template-columns:1fr; }
 
-  /* Admin */
-  .admin-panel { padding:1rem; }
-  .admin-tabs { flex-wrap:wrap; gap:0.25rem; }
-  .admin-tab { padding:0.5rem 0.75rem; font-size:0.78rem; }
+  /* ── Admin ── */
+  .admin-panel { padding:0.875rem; }
+  .admin-header { flex-wrap:wrap; gap:0.5rem; }
+  .admin-title { font-size:1.25rem; }
+  .admin-tabs { flex-wrap:wrap; gap:0.25rem; overflow-x:auto; padding-bottom:0.25rem; }
+  .admin-tab { padding:0.45rem 0.7rem; font-size:0.75rem; white-space:nowrap; }
+  .admin-section { padding:1rem; }
   .form-row { grid-template-columns:1fr; }
-  .admin-list { overflow-x:auto; }
+  .admin-list { overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .admin-list table { min-width:520px; }
 
-  /* Live tests */
-  .live-tests-body { padding:1.25rem 1rem; }
-  .live-test-meta { flex-wrap:wrap; gap:0.4rem; }
+  /* ── Live tests ── */
+  .live-tests-body { padding:1.25rem 0.875rem; }
+  .live-test-card { padding:1.25rem; }
+  .live-test-name { font-size:1rem; }
+  .live-test-meta { flex-wrap:wrap; gap:0.4rem; font-size:0.75rem; }
   .live-test-actions { flex-wrap:wrap; }
+  .live-status-tabs { gap:0.35rem; flex-wrap:wrap; }
+  .status-tab { padding:0.4rem 0.9rem; font-size:0.8rem; }
 
-  /* Rankings */
-  .rankings-body { padding:1.25rem 1rem; }
-  .rankings-table { overflow-x:auto; }
+  /* ── Rankings ── */
+  .rankings-body { padding:1.25rem 0.875rem; }
+  .rankings-table { overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .rankings-table table { min-width:480px; }
   .rankings-podium { gap:0.5rem; }
+  .podium-block { width:72px; }
+  .podium-name { font-size:0.72rem; max-width:80px; }
 
-  /* Results history */
-  .result-history-card { flex-direction:column; align-items:flex-start; }
-  .rhc-stats { gap:1rem; }
+  /* ── Results history ── */
+  .result-history-card { flex-direction:column; align-items:flex-start; gap:0.75rem; }
+  .rhc-stats { gap:1rem; flex-wrap:wrap; }
+  .rhc-stat-val { font-size:1rem; }
 
-  /* Modals */
-  .modal { padding:1.5rem; }
+  /* ── Modals ── */
+  .modal-overlay { padding:0.75rem; align-items:flex-end; }
+  .modal { padding:1.5rem; border-radius:var(--r2) var(--r2) 0 0; max-width:100% !important; margin-bottom:-1rem; padding-bottom:2.5rem; }
 
-  /* Sections */
-  .section { padding:2rem 1rem; }
-  .exam-detail-hero { padding:1.5rem 1rem 1.25rem; }
-  .lessons-section { padding:1.25rem 1rem; }
+  /* ── Battle ── */
+  .battle-lobby { padding:1.25rem 0.875rem; }
+  .battle-mode-grid { grid-template-columns:1fr; gap:0.85rem; }
+  .battle-mode-card { padding:1.5rem 1.25rem; }
+  .battle-players-grid { grid-template-columns:1fr; }
+  .battle-header-bar { flex-direction:column; align-items:flex-start; gap:0.6rem; }
+  .battle-result-card { padding:1.75rem 1.25rem; }
+  #battle-arena { padding:0 0.875rem 2rem; }
+  .private-room-box { padding:1.25rem; }
+  .private-room-box > div:first-child + div { grid-template-columns:1fr !important; }
+  .private-room-box > div:last-child { grid-template-columns:1fr !important; }
+
+  /* ── Exam center ── */
+  .ec-banner { padding:0.35rem 0.75rem; }
+  .ec-banner-title { font-size:0.8rem; }
+  .ec-banner-right { gap:0.75rem; font-size:0.68rem; }
+  .ec-main { padding:0.5rem 0.75rem 0.35rem; }
+  .ec-stats-row { flex-wrap:wrap; gap:0.5rem; padding:0.4rem 0.75rem; }
+  .ec-stat-box { min-width:60px; padding-right:0.6rem; }
+  .ec-stat-val { font-size:1.1rem; }
+  .ec-stat-label { font-size:0.55rem; }
+  .ec-passage-panel { padding:0.75rem; font-size:0.9rem; max-height:28vh; }
+  .ec-typing-box { font-size:0.9rem; }
+  .ec-action-bar { padding:0.4rem 0.75rem; flex-wrap:wrap; gap:0.4rem; }
+  .ec-btn { padding:0.4rem 0.9rem; font-size:0.75rem; }
+  .ec-notice { font-size:0.65rem; }
+
+  /* ── Toasts ── */
+  .toast-container { right:0.75rem; bottom:1rem; }
+  .toast { font-size:0.82rem; max-width:calc(100vw - 2rem); }
+
+  /* ── Footer ── */
+  footer { padding:2rem 1rem !important; }
+  .footer-links { gap:1rem; }
 }
 
 @media (max-width:480px) {
-  /* Extra small phones */
+  /* ── Nav ── */
   nav { padding:0 0.75rem; }
-  .nav-brand { font-size:1rem; gap:0.4rem; }
-  .hero h1 { font-size:1.6rem; }
+  .nav-brand { font-size:0.95rem; gap:0.35rem; }
+  .user-badge span#nav-username { display:none; }   /* show only avatar on tiny screens */
+  .user-badge { padding:0.25rem 0.4rem; }
+  .theme-toggle { width:30px; height:17px; }
+  .theme-toggle::after { width:11px; height:11px; top:3px; left:3px; }
+  body.light-mode .theme-toggle::after { transform:translateX(13px); }
+
+  /* ── Hero ── */
+  .hero { padding:2rem 0.875rem 2.5rem; }
+  .hero h1 { font-size:1.65rem; }
+  .hero p { font-size:0.875rem; }
   .hero-stats { gap:1rem; }
   .hero-stat-num { font-size:1.3rem; }
-  .btn-primary, .btn-secondary { padding:0.65rem 1.1rem; font-size:0.82rem; width:100%; justify-content:center; }
-  .hero-cta { flex-direction:column; align-items:stretch; }
-  .rules-grid { grid-template-columns:1fr; }
+  .hero-badge { font-size:0.65rem; }
+  .btn-primary, .btn-secondary { max-width:100%; font-size:0.875rem; padding:0.75rem 1.25rem; }
+
+  /* ── Sections ── */
+  .section { padding:2rem 0.875rem; }
+  .section-title { font-size:1.35rem; }
+  .section-label { font-size:0.65rem; }
+
+  /* ── Exam cards ── */
+  .exam-card { padding:1rem; }
+  .exam-icon { width:40px; height:40px; font-size:1.1rem; }
+  .exam-name { font-size:1.15rem; }
+  .exam-fullname { font-size:0.73rem; }
+  .exam-meta-item { font-size:0.7rem; }
+  .rules-grid { grid-template-columns:1fr 1fr; }
+
+  /* ── Test page ── */
+  .test-stats { gap:0.4rem; }
+  .test-stat { min-width:48px; }
+  .test-stat-val { font-size:1rem; }
+  .test-stat-label { font-size:0.52rem; }
+  .split-panel { padding:0.75rem; }
+  .passage-container-split { font-size:0.84rem; max-height:150px; line-height:1.85; }
+  .typing-box { min-height:100px; font-size:0.84rem; }
+
+  /* ── Result ── */
   .result-stats-grid { grid-template-columns:1fr 1fr; }
-  .test-stats { gap:0.5rem; }
-  .test-stat { min-width:60px; }
-  .highlight-toggle-btn { font-size:0.68rem; padding:0.32rem 0.55rem; }
-  .btn-submit-test { font-size:0.75rem; padding:0.4rem 0.85rem; }
-  .passage-container-split { max-height:150px; font-size:0.84rem; }
-  .typing-box { min-height:95px; font-size:0.84rem; }
+  .result-stat-num { font-size:1.5rem; }
+
+  /* ── Admin tabs ── */
+  .admin-tabs { gap:0.2rem; }
+  .admin-tab { padding:0.4rem 0.6rem; font-size:0.7rem; }
+
+  /* ── Battle ── */
+  .battle-mode-icon { font-size:2rem; }
+  .battle-mode-title { font-size:1.1rem; }
+  .bpc-wpm { font-size:1.4rem; }
+  .battle-countdown-num { font-size:6rem; }
+
+  /* ── Modals ── */
+  .modal { padding:1.25rem; padding-bottom:2rem; }
+  .modal h3 { font-size:1.1rem; }
+
+  /* ── Footer ── */
+  .footer-links { gap:0.75rem; }
+  .footer-brand { font-size:1.2rem; }
 }
+
+/* ── Very small phones (iPhone SE etc) ── */
+@media (max-width:360px) {
+  nav { padding:0 0.6rem; }
+  .hero h1 { font-size:1.45rem; }
+  .section { padding:1.75rem 0.75rem; }
+  .test-stat-val { font-size:0.9rem; }
+  .test-header { padding:0.5rem 0.75rem; }
+}
+
 
 /* ─── DARK/LIGHT MODE TOGGLE ─── */
 .theme-toggle {
@@ -1240,13 +1377,400 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
 /* Live test cards */
 .live-test-card { box-shadow: 0 2px 12px rgba(0,0,0,0.25); }
 
+/* ─── ACCESSIBILITY: keyboard focus rings ─── */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+button:focus-visible, .nav-link:focus-visible, .status-tab:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 /* Scrollbar premium */
 ::-webkit-scrollbar { width:5px; height:5px; }
 ::-webkit-scrollbar-thumb { background: linear-gradient(var(--gold3),var(--border2)); border-radius:4px; }
 
+/* ─── LOADING SCREEN ─── */
+#page-loader {
+  position: fixed; inset: 0; z-index: 99999;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1.5rem;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+#page-loader.fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
+.loader-logo {
+  width: 64px; height: 64px;
+  background: linear-gradient(135deg, var(--gold3), var(--gold), #f0c96a);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; font-weight: 900; color: #000;
+  box-shadow: 0 0 40px rgba(212,168,67,0.4);
+  animation: loader-pulse 1.5s ease infinite;
+}
+@keyframes loader-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(212,168,67,0.3); transform: scale(1); }
+  50% { box-shadow: 0 0 50px rgba(212,168,67,0.6); transform: scale(1.05); }
+}
+.loader-bar-wrap {
+  width: 200px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden;
+}
+.loader-bar {
+  height: 100%; background: linear-gradient(90deg, var(--gold3), var(--gold), var(--gold2));
+  border-radius: 2px;
+  animation: loader-fill 1.8s ease forwards;
+}
+@keyframes loader-fill { from { width: 0%; } to { width: 100%; } }
+.loader-text { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* ─── MOBILE HAMBURGER NAV ─── */
+.nav-hamburger {
+  display: none;
+  flex-direction: column; gap: 5px;
+  cursor: pointer; padding: 0.4rem;
+  background: none; border: none;
+  z-index: 110;
+}
+.nav-hamburger span {
+  display: block; width: 22px; height: 2px;
+  background: var(--text-dim); border-radius: 2px;
+  transition: all 0.3s ease;
+}
+.nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-hamburger.open span:nth-child(2) { opacity: 0; }
+.nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.mobile-nav-drawer {
+  position: fixed; top: 56px; left: 0; right: 0;
+  background: rgba(6,8,15,0.98);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem;
+  flex-direction: column; gap: 0.25rem;
+  z-index: 99;
+  display: flex;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.mobile-nav-drawer.open {
+  pointer-events: all;
+  opacity: 1;
+  transform: translateY(0);
+}
+body.light-mode .mobile-nav-drawer { background: rgba(240,244,255,0.98); }
+.mobile-nav-link {
+  padding: 0.75rem 1rem; border-radius: var(--r); font-size: 0.95rem; font-weight: 500;
+  color: var(--text-dim); cursor: pointer; transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.mobile-nav-link:hover, .mobile-nav-link.active {
+  color: var(--gold); background: rgba(212,168,67,0.08); border-color: rgba(212,168,67,0.2);
+}
+
+@media (max-width: 768px) {
+  .nav-hamburger { display: flex; }
+}
+
+/* ─── HERO PARTICLES ─── */
+.hero-particles {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+}
+.hero-particle {
+  position: absolute; border-radius: 50%;
+  background: var(--gold); opacity: 0;
+  animation: particle-float linear infinite;
+}
+@keyframes particle-float {
+  0% { transform: translateY(100%) scale(0); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(-100vh) scale(1.5); opacity: 0; }
+}
+
+/* ─── SCROLL REVEAL ANIMATIONS ─── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* ─── ENHANCED HERO ─── */
+.hero-scroll-hint {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+  color: var(--text-muted); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+  animation: scroll-bounce 2s ease infinite;
+}
+.hero-scroll-hint svg { opacity: 0.5; }
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(5px); }
+}
+
+/* ─── IMPROVED FEATURE CARDS ─── */
+.feature-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 2rem 1.75rem;
+  position: relative; overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.feature-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--feature-accent, linear-gradient(90deg, var(--gold3), var(--gold)));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.feature-card:hover { border-color: var(--border2); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.4); }
+.feature-card:hover::before { opacity: 1; }
+.feature-icon-wrap {
+  width: 48px; height: 48px; border-radius: var(--r); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--card2); font-size: 1.4rem;
+  margin-bottom: 1.25rem;
+  transition: all 0.3s;
+}
+.feature-card:hover .feature-icon-wrap { border-color: var(--border2); background: var(--card3); transform: scale(1.08); }
+.feature-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+.feature-desc { font-size: 0.875rem; color: var(--text-dim); line-height: 1.65; }
+
+/* ─── STATS TICKER IN HERO ─── */
+.hero-stat-num { transition: color 0.3s; }
+.hero-stat { position: relative; }
+.hero-stat::after {
+  content: '';
+  position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+  width: 20px; height: 2px; background: var(--gold3); border-radius: 2px;
+  opacity: 0.5;
+}
+
+/* ─── ENHANCED FOOTER ─── */
+footer {
+  border-top: 1px solid var(--border) !important;
+  padding: 3rem 2rem !important;
+  margin-top: 6rem !important;
+  position: relative;
+  overflow: hidden;
+}
+footer::before {
+  content: '';
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 200px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold3), transparent);
+}
+.footer-inner {
+  max-width: 900px; margin: 0 auto;
+  display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
+}
+.footer-brand {
+  font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700;
+  color: var(--text);
+}
+.footer-brand span { color: var(--gold); }
+.footer-tagline { color: var(--text-muted); font-size: 0.82rem; }
+.footer-links {
+  display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center;
+}
+.footer-link {
+  font-size: 0.8rem; color: var(--text-muted); cursor: pointer; transition: color 0.2s;
+}
+.footer-link:hover { color: var(--gold); }
+.footer-divider {
+  width: 100%; max-width: 400px; height: 1px; background: var(--border);
+}
+.footer-copy {
+  font-size: 0.75rem; color: var(--text-muted);
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
+}
+
+/* ─── TYPING CURSOR BLINK ─── */
+.char.current::after {
+  content: '';
+  display: inline-block;
+  width: 2px; height: 1.1em;
+  background: var(--gold);
+  margin-left: 1px;
+  animation: blink-cursor 0.9s step-end infinite;
+  vertical-align: text-bottom;
+}
+@keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ─── KEYBOARD SHORTCUT HINTS ─── */
+.kbd {
+  display: inline-block;
+  padding: 0.1rem 0.35rem; border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72em; font-weight: 600;
+  background: var(--card2); border: 1px solid var(--border2); color: var(--text-dim);
+  box-shadow: 0 1px 0 var(--border2);
+  vertical-align: middle;
+}
+
+/* ─── WPM MILESTONE FLASH ─── */
+@keyframes wpm-flash {
+  0% { color: var(--gold2); transform: scale(1.15); }
+  100% { color: inherit; transform: scale(1); }
+}
+.wpm-milestone { animation: wpm-flash 0.5s ease; }
+
+/* ─── NAV PROGRESS INDICATOR ─── */
+.nav-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 200;
+  background: linear-gradient(90deg, var(--gold3), var(--gold), var(--gold2));
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 0.1s linear;
+  pointer-events: none;
+}
+
+/* ─── MY RESULTS EMPTY STATE ─── */
+.empty-results-state {
+  text-align: center; padding: 4rem 2rem;
+  color: var(--text-muted);
+}
+.empty-results-state .er-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+.empty-results-state h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-dim); }
+.empty-results-state p { font-size: 0.875rem; }
+
+/* ─── GOLD SHINE ANIMATION ON BRAND ─── */
+@keyframes shine-sweep {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.nav-brand:hover span {
+  background: linear-gradient(90deg, var(--gold3) 0%, var(--gold2) 40%, var(--gold3) 60%, var(--gold) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shine-sweep 1.5s linear;
+}
+
+/* ─── BATTLE ARENA GLOW ─── */
+.pill-live::before {
+  content: ''; display: inline-block;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--red); margin-right: 0.35rem;
+  animation: pulse-dot 1s infinite;
+}
+
+/* ─── RESULT CONFETTI CANVAS ─── */
+#confetti-canvas {
+  position: fixed; inset: 0; pointer-events: none;
+  z-index: 9000; display: none;
+}
+
+
+/* ─── HOME QUICK LESSONS ─── */
+.home-exam-group { margin-bottom: 2rem; }
+.home-exam-group-header {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-bottom: 0.85rem; padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.home-exam-group-header:hover .home-exam-group-title { color: var(--gold); }
+.home-exam-group-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+  border: 1px solid var(--border); background: var(--card2);
+}
+.home-exam-group-title {
+  font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700;
+  transition: color 0.2s; flex: 1;
+}
+.home-exam-group-meta { font-size: 0.72rem; color: var(--text-muted); }
+.home-exam-group-arrow { font-size: 0.75rem; color: var(--text-muted); transition: transform 0.2s; }
+.home-exam-group-header:hover .home-exam-group-arrow { transform: translateX(3px); }
+.home-lessons-row { display: flex; flex-direction: column; gap: 0.5rem; }
+.home-lesson-row {
+  display: flex; align-items: center; gap: 1rem;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 0.85rem 1rem;
+  cursor: pointer; transition: all 0.2s;
+  position: relative; overflow: hidden;
+}
+.home-lesson-row::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--lesson-accent, var(--gold3));
+  border-radius: 0 2px 2px 0;
+}
+.home-lesson-row:hover { border-color: var(--border2); transform: translateX(3px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.home-lesson-num { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-muted); font-weight: 600; min-width: 24px; text-align: center; }
+.home-lesson-info { flex: 1; min-width: 0; }
+.home-lesson-title { font-size: 0.9rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-lesson-preview { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-lesson-meta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.72rem; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; }
+.home-lesson-start {
+  padding: 0.35rem 0.85rem; border-radius: var(--r); font-size: 0.78rem; font-weight: 700;
+  background: rgba(212,168,67,0.1); color: var(--gold); border: 1px solid rgba(212,168,67,0.25);
+  cursor: pointer; transition: all 0.2s; flex-shrink: 0; white-space: nowrap;
+}
+.home-lesson-start:hover { background: rgba(212,168,67,0.2); }
+.home-lessons-empty { text-align: center; padding: 2.5rem; color: var(--text-muted); background: var(--card); border: 1px dashed var(--border); border-radius: var(--r2); font-size: 0.875rem; }
+@media (max-width: 600px) {
+  .home-lesson-row { padding: 0.75rem 0.85rem; gap: 0.65rem; }
+  .home-lesson-title { font-size: 0.85rem; }
+  .home-lesson-preview { display: none; }
+  .home-lesson-meta { display: none; }
+}
+/* ── Touch / tap improvements ── */
+button, .nav-link, .exam-card, .lesson-card, .mobile-nav-link,
+.status-tab, .live-test-card, .battle-mode-card {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ── Safe area insets (notch phones) ── */
+nav { padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
+footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)) !important; }
+.toast-container { right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); }
+
+/* ── Prevent horizontal overflow on mobile ── */
+.page, .hero, .section, .lessons-section, .exam-detail-hero,
+.live-tests-body, .rankings-body, .result-body, .admin-panel, .battle-lobby {
+  overflow-x: hidden;
+}
+
+/* ── Smooth scrolling on iOS ── */
+.passage-container-split, .ec-passage-panel, .admin-list, .rankings-table, .cmp-panel {
+  -webkit-overflow-scrolling: touch;
+}
+
 </style>
 </head>
 <body>
+
+<!-- ████ PAGE LOADER ████ -->
+<div id="page-loader">
+  <div class="loader-logo">T</div>
+  <div class="loader-bar-wrap">
+    <div class="loader-bar"></div>
+  </div>
+  <div class="loader-text">Loading TypSSc…</div>
+</div>
+
+<!-- Nav scroll progress -->
+<div class="nav-progress" id="nav-progress"></div>
+
+<!-- Confetti canvas for test pass -->
+<canvas id="confetti-canvas"></canvas>
 
 <!-- ████ SECURITY: DevTools Warning Overlay ████ -->
 <div id="_sec-devtools-overlay">
@@ -1273,16 +1797,30 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
   <div class="nav-right">
     <div style="display:flex;align-items:center;gap:0.4rem">
       <span class="theme-toggle-label" id="theme-label">🌙</span>
-      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode" aria-label="Toggle theme"></button>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode" aria-label="Toggle light or dark mode"></button>
     </div>
     <div class="user-badge" onclick="openUserModal()">
       <div class="avatar" id="nav-avatar">?</div>
       <span id="nav-username">Set Name</span>
     </div>
-    <button class="nav-admin-btn" onclick="navigate('admin')">⚙ Admin</button>
-    <button class="nav-admin-btn" style="background:linear-gradient(135deg,#1e3a5f,var(--blue));color:#fff" onclick="openMessageModal()">💬 Message Admin</button>
+    <button class="nav-admin-btn" id="nav-admin-btn" onclick="navigate('admin')" aria-label="Open admin panel" style="display:none">⚙ Admin</button>
+    <button class="nav-admin-btn nav-msg-btn" style="background:linear-gradient(135deg,#1e3a5f,var(--blue));color:#fff" onclick="openMessageModal()" aria-label="Send message to admin">💬 <span class="nav-msg-text">Message Admin</span></button>
+    <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileNav()" aria-label="Toggle mobile menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
+
+<!-- Mobile nav drawer -->
+<div class="mobile-nav-drawer" id="mobile-nav-drawer">
+  <div class="mobile-nav-link active" data-nav="home" onclick="navigate('home');closeMobileNav()">🏠 Home</div>
+  <div class="mobile-nav-link" data-nav="exams" onclick="navigate('exams');closeMobileNav()">📚 Exams</div>
+  <div class="mobile-nav-link" data-nav="live-tests" onclick="navigate('live-tests');closeMobileNav()">🔴 Live Tests</div>
+  <div class="mobile-nav-link" data-nav="battle" onclick="navigate('battle');closeMobileNav()">⚔️ Battle</div>
+  <div class="mobile-nav-link" data-nav="my-results" onclick="navigate('my-results');closeMobileNav()">📊 My Results</div>
+  <div style="height:1px;background:var(--border);margin:0.25rem 0"></div>
+  <div class="mobile-nav-link" onclick="openMessageModal();closeMobileNav()">💬 Message Admin</div>
+</div>
 
 <div class="toast-container" id="toast-container"></div>
 
@@ -1313,7 +1851,7 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
 
   <!-- Candidate info bar -->
   <div class="ec-info-bar">
-    <span>Roll No: <strong id="ec-roll">TYP-2024-001</strong></span>
+    <span>Roll No: <strong id="ec-roll">TYP-2025-001</strong></span>
     <span>Language: <strong id="ec-lang">English</strong></span>
     <span>Required Speed: <strong id="ec-speed">30 WPM</strong></span>
     <span>Test Duration: <strong id="ec-duration">10:00</strong></span>
@@ -1456,10 +1994,11 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
 <div class="page active" id="page-home">
   <div class="hero">
     <div class="hero-bg"></div>
-    <div class="hero-badge">India's #1 Typing Exam Practice Platform</div>
-    <h1>Master Typing for<br>Government Exams</h1>
-    <p>Practice with official exam patterns for RRB NTPC, SSC CGL, SSC CHSL and more. Accurate speed, real rules, live competitions.</p>
-    <div class="hero-stats">
+    <div class="hero-particles" id="hero-particles"></div>
+    <div class="hero-badge reveal">India's #1 Typing Exam Practice Platform</div>
+    <h1 class="reveal reveal-delay-1">Master Typing for<br>Government Exams</h1>
+    <p class="reveal reveal-delay-2">Practice with official exam patterns for RRB NTPC, SSC CGL, SSC CHSL and more. Accurate speed, real rules, live competitions.</p>
+    <div class="hero-stats reveal reveal-delay-3">
       <div class="hero-stat">
         <div class="hero-stat-num" id="stat-students">0</div>
         <div class="hero-stat-label">Students</div>
@@ -1473,9 +2012,13 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
         <div class="hero-stat-label">Live Tests</div>
       </div>
     </div>
-    <div class="hero-cta">
+    <div class="hero-cta reveal reveal-delay-4">
       <button class="btn-primary" onclick="navigate('exams')">Start Practicing →</button>
       <button class="btn-secondary" onclick="navigate('live-tests')">View Live Tests</button>
+    </div>
+    <div class="hero-scroll-hint">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M8 13l-3-3M8 13l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Scroll down
     </div>
   </div>
 
@@ -1486,33 +2029,71 @@ body.light-mode .test-header { background: rgba(228,234,248,0.98) !important; }
     <div class="exams-grid" id="home-exams-grid"></div>
   </div>
 
+  <div class="section" style="border-top:1px solid var(--border);padding-top:3rem">
+    <div class="section-label">Quick Access</div>
+    <div class="section-title">Browse All Lessons</div>
+    <div class="section-desc">Click any lesson to start practicing immediately.</div>
+    <div id="home-quick-lessons" style="margin-top:2rem"></div>
+  </div>
+
   <div class="section" style="border-top:1px solid var(--border)">
     <div class="section-label">Platform Features</div>
-    <div class="section-title">Everything You Need</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-top:2rem">
-      <div class="admin-section" style="margin:0">
-        <div style="font-size:1.5rem;margin-bottom:0.5rem">⚡</div>
-        <div style="font-weight:700;margin-bottom:0.25rem">Exam-Specific Rules</div>
-        <div style="font-size:0.85rem;color:var(--text-dim)">NTPC blocks backspace; CGL uses KDPH metric — all rules enforced automatically.</div>
+    <div class="section-title">Everything You Need to Succeed</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.25rem;margin-top:2.5rem">
+      <div class="feature-card reveal" style="--feature-accent:linear-gradient(90deg,var(--gold3),var(--gold))">
+        <div class="feature-icon-wrap">⚡</div>
+        <div class="feature-title">Exam-Specific Rules</div>
+        <div class="feature-desc">NTPC blocks backspace; CGL uses KDPH metric — all rules enforced automatically so you practice under real exam conditions.</div>
       </div>
-      <div class="admin-section" style="margin:0">
-        <div style="font-size:1.5rem;margin-bottom:0.5rem">📊</div>
-        <div style="font-weight:700;margin-bottom:0.25rem">Accurate Analytics</div>
-        <div style="font-size:0.85rem;color:var(--text-dim)">Precise Net WPM, Gross WPM, KDPH, accuracy down to each character.</div>
+      <div class="feature-card reveal reveal-delay-1" style="--feature-accent:linear-gradient(90deg,var(--blue),var(--blue2))">
+        <div class="feature-icon-wrap">📊</div>
+        <div class="feature-title">Accurate Analytics</div>
+        <div class="feature-desc">Precise Net WPM, Gross WPM, KDPH and accuracy down to each character. See exactly where you need to improve.</div>
       </div>
-      <div class="admin-section" style="margin:0">
-        <div style="font-size:1.5rem;margin-bottom:0.5rem">🔴</div>
-        <div style="font-weight:700;margin-bottom:0.25rem">Live Competitions</div>
-        <div style="font-size:0.85rem;color:var(--text-dim)">Real-time tests scheduled by admin with live countdowns and final rankings.</div>
+      <div class="feature-card reveal reveal-delay-2" style="--feature-accent:linear-gradient(90deg,var(--red),#f87171)">
+        <div class="feature-icon-wrap">🔴</div>
+        <div class="feature-title">Live Competitions</div>
+        <div class="feature-desc">Real-time tests scheduled by admin with live countdowns, instant rankings and head-to-head battle mode.</div>
       </div>
-      <div class="admin-section" style="margin:0">
-        <div style="font-size:1.5rem;margin-bottom:0.5rem">🏆</div>
-        <div style="font-weight:700;margin-bottom:0.25rem">Rankings & History</div>
-        <div style="font-size:0.85rem;color:var(--text-dim)">Track your improvement over time and compare with other students.</div>
+      <div class="feature-card reveal reveal-delay-3" style="--feature-accent:linear-gradient(90deg,var(--purple),#a78bfa)">
+        <div class="feature-icon-wrap">🏆</div>
+        <div class="feature-title">Rankings & History</div>
+        <div class="feature-desc">Track your improvement over time, appear on leaderboards, and compare with other students nationwide.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-2" style="--feature-accent:linear-gradient(90deg,var(--green),#4ade80)">
+        <div class="feature-icon-wrap">🎓</div>
+        <div class="feature-title">Exam Center Mode</div>
+        <div class="feature-desc">Simulate the actual NIC/SSC exam software experience with the official UI, fonts, and rules — no surprises on exam day.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-3" style="--feature-accent:linear-gradient(90deg,var(--orange),#fb923c)">
+        <div class="feature-icon-wrap">⚔️</div>
+        <div class="feature-title">Battle Mode</div>
+        <div class="feature-desc">Challenge friends in private rooms or get auto-matched with random opponents for intense real-time typing duels.</div>
       </div>
     </div>
   </div>
-  <footer><strong>TypSSc</strong> — Built for serious exam aspirants</footer>
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">Typ<span>SSc</span></div>
+      <div class="footer-tagline">Built for serious government exam aspirants across India</div>
+      <div class="footer-links">
+        <span class="footer-link" onclick="navigate('home')">Home</span>
+        <span class="footer-link" onclick="navigate('exams')">Exams</span>
+        <span class="footer-link" onclick="navigate('live-tests')">Live Tests</span>
+        <span class="footer-link" onclick="navigate('battle')">Battle</span>
+        <span class="footer-link" onclick="navigate('my-results')">My Results</span>
+        <span class="footer-link" onclick="openMessageModal()">Contact Admin</span>
+      </div>
+      <div class="footer-divider"></div>
+      <div class="footer-copy">
+        <span>© <span id="footer-year"></span> <strong style="color:var(--gold)">TypSSc</strong></span>
+        <span style="color:var(--border2)">·</span>
+        <span>RRB NTPC · SSC CGL · SSC CHSL · More</span>
+        <span style="color:var(--border2)">·</span>
+        <span>All content protected</span>
+      </div>
+    </div>
+  </footer>
 </div>
 
 <div class="page" id="page-exams">
@@ -2499,13 +3080,7 @@ if (typeof window._onFirebaseReady === 'function') window._onFirebaseReady();
   }
   setInterval(_checkSizeDelta, 1000);
 
-  // Method B: debugger timing trap (only fires when DevTools is actively paused)
-  setInterval(function() {
-    const t = performance.now();
-    // eslint-disable-next-line no-debugger
-    debugger;
-    if (performance.now() - t > 200) _onDevToolsOpen();
-  }, 5000);
+  // Method B: debugger timing trap removed (caused false positives and browser freezes)
 
   // ── 2. CONSOLE PROTECTION: Show a deterrent warning without breaking Firebase ──
   // IMPORTANT: Do NOT override console with noops — Firebase/Supabase SDK
@@ -2543,6 +3118,14 @@ if (typeof window._onFirebaseReady === 'function') window._onFirebaseReady();
   document.addEventListener('keydown', function(e) {
     const key = (e.key || '').toLowerCase();
     const ctrl = e.ctrlKey || e.metaKey;
+
+    // ── SECRET ADMIN SHORTCUT: Ctrl + Shift + A ──
+    if (ctrl && e.shiftKey && key === 'a') {
+      e.preventDefault();
+      if (typeof navigate === 'function') navigate('admin');
+      return false;
+    }
+
     // DevTools / inspector shortcuts
     if (e.key === 'F12') { e.preventDefault(); return false; }
     if (ctrl && e.shiftKey && ['i','j','c','k','m','e'].includes(key)) { e.preventDefault(); return false; }
@@ -2761,10 +3344,17 @@ if (typeof window._onFirebaseReady === 'function') window._onFirebaseReady();
 // ════════════════════════════════════════════════════════════
 // [INJECTED] SUPABASE SECURE CLOUD AUTHENTICATION
 // ════════════════════════════════════════════════════════════
-const _supabase = supabase.createClient(
-  'https://sbbqixppvmukvqfqlaqj.supabase.co', 
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNiYnFpeHBwdm11a3ZxZnFsYXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDI0NjgsImV4cCI6MjA5MTgxODQ2OH0.I1bFbcqIwz-picHME-_TTXcZe3iXnA7uFRARGtH4o4Q'
-);
+let _supabase = null;
+try {
+  if (typeof supabase !== 'undefined' && supabase.createClient) {
+    _supabase = supabase.createClient(
+      'https://sbbqixppvmukvqfqlaqj.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNiYnFpeHBwdm11a3ZxZnFsYXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNDI0NjgsImV4cCI6MjA5MTgxODQ2OH0.I1bFbcqIwz-picHME-_TTXcZe3iXnA7uFRARGtH4o4Q'
+    );
+  }
+} catch(e) {
+  console.warn('Supabase failed to initialise — admin auth will use local fallback:', e.message);
+}
 
 // ════════════════════════════════════════════════════════════
 //  APP STATE
@@ -3456,6 +4046,8 @@ function renderNavUser() {
   const n = APP.user.name || 'Set Name';
   document.getElementById('nav-username').textContent = n;
   document.getElementById('nav-avatar').textContent = n[0] ? n[0].toUpperCase() : '?';
+  const adminBtn = document.getElementById('nav-admin-btn');
+  if (adminBtn) adminBtn.style.display = APP.adminLoggedIn ? '' : 'none';
 }
 
 // ════════════════════════════════════════════════════════════
@@ -3465,6 +4057,85 @@ function renderHomeExams() {
   const grid = document.getElementById('home-exams-grid');
   if (!grid) return;
   grid.innerHTML = APP.exams.map(e => examCardHTML(e)).join('');
+  renderHomeQuickLessons();
+}
+
+function renderHomeQuickLessons() {
+  const container = document.getElementById('home-quick-lessons');
+  if (!container) return;
+
+  if (APP.lessons.length === 0) {
+    container.innerHTML = `<div class="home-lessons-empty">
+      <div style="font-size:2rem;margin-bottom:0.75rem">📝</div>
+      <div style="font-weight:600;color:var(--text-dim);margin-bottom:0.3rem">No lessons yet</div>
+      <div>An admin can add practice passages from the Admin Panel.</div>
+    </div>`;
+    return;
+  }
+
+  // Group lessons by exam
+  let html = '';
+  APP.exams.forEach(exam => {
+    const lessons = APP.lessons.filter(l => l.examId === exam.id);
+    if (lessons.length === 0) return;
+    const dur = Math.round(exam.rules.duration / 60);
+    html += `
+    <div class="home-exam-group reveal">
+      <div class="home-exam-group-header" onclick="navigate('exam-detail',{examId:'${exam.id}'})">
+        <div class="home-exam-group-icon" style="border-color:${exam.color}33;background:${exam.color}11">${exam.icon || '📋'}</div>
+        <div class="home-exam-group-title">${exam.name}</div>
+        <div class="home-exam-group-meta">${lessons.length} lesson${lessons.length !== 1 ? 's' : ''} &nbsp;·&nbsp; ${dur} min &nbsp;·&nbsp; ${exam.rules.requiredSpeed} ${exam.rules.metric}</div>
+        <div class="home-exam-group-arrow">→</div>
+      </div>
+      <div class="home-lessons-row">
+        ${lessons.map((l, i) => {
+          const words = l.content.trim().split(/\s+/).length;
+          const mins = Math.round((l.duration || exam.rules.duration) / 60);
+          return `<div class="home-lesson-row" style="--lesson-accent:${exam.color}" onclick="initiateTest('${l.id}','${exam.id}',null)">
+            <div class="home-lesson-num">${i + 1}</div>
+            <div class="home-lesson-info">
+              <div class="home-lesson-title">${l.title}</div>
+              <div class="home-lesson-preview">${l.content.slice(0, 100)}…</div>
+            </div>
+            <div class="home-lesson-meta">
+              <span>⏱ ${mins}m</span>
+              <span style="color:var(--border2)">·</span>
+              <span>${words}w</span>
+            </div>
+            <button class="home-lesson-start" onclick="event.stopPropagation();initiateTest('${l.id}','${exam.id}',null)">Start →</button>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+
+  // Lessons with no matching exam (orphaned)
+  const knownExamIds = new Set(APP.exams.map(e => e.id));
+  const orphans = APP.lessons.filter(l => !knownExamIds.has(l.examId));
+  if (orphans.length > 0) {
+    html += `<div class="home-exam-group reveal">
+      <div class="home-exam-group-header">
+        <div class="home-exam-group-icon">📋</div>
+        <div class="home-exam-group-title">Other Lessons</div>
+        <div class="home-exam-group-meta">${orphans.length} lesson${orphans.length !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="home-lessons-row">
+        ${orphans.map((l, i) => `
+          <div class="home-lesson-row" onclick="initiateTest('${l.id}','${l.examId}',null)">
+            <div class="home-lesson-num">${i + 1}</div>
+            <div class="home-lesson-info">
+              <div class="home-lesson-title">${l.title}</div>
+              <div class="home-lesson-preview">${l.content.slice(0, 100)}…</div>
+            </div>
+            <button class="home-lesson-start" onclick="event.stopPropagation();initiateTest('${l.id}','${l.examId}',null)">Start →</button>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  container.innerHTML = html || `<div class="home-lessons-empty">No lessons available yet.</div>`;
+  // Re-run scroll reveal for newly inserted cards
+  setTimeout(initScrollReveal, 60);
 }
 
 function renderAllExams() {
@@ -4186,6 +4857,11 @@ async function adminLogin() {
   const email = (document.getElementById('input-admin-id').value || '').trim();
   const pass = document.getElementById('input-admin-pass').value;
 
+  if (!_supabase) {
+    showToast('Authentication service unavailable. Check your internet connection.', 'error');
+    return;
+  }
+
   const { data, error } = await _supabase.auth.signInWithPassword({
     email: email,
     password: pass
@@ -4199,6 +4875,7 @@ async function adminLogin() {
     document.getElementById('input-admin-id').value = '';
     document.getElementById('input-admin-pass').value = '';
     closeModal('modal-admin-login');
+    renderNavUser();
     navigate('admin');
     showToast('Admin Access Granted via Supabase!', 'success');
   } else {
@@ -4234,6 +4911,11 @@ async function adminLoginPage() {
   const email = (document.getElementById('admin-id-input').value || '').trim();
   const pass = document.getElementById('admin-pass-input').value;
 
+  if (!_supabase) {
+    showToast('Authentication service unavailable. Check your internet connection.', 'error');
+    return;
+  }
+
   const { data, error } = await _supabase.auth.signInWithPassword({
     email: email,
     password: pass
@@ -4245,6 +4927,7 @@ async function adminLoginPage() {
     try { sessionStorage.removeItem('__typssc_lockout'); } catch(e) {}
     document.getElementById('admin-id-input').value = '';
     document.getElementById('admin-pass-input').value = '';
+    renderNavUser();
     renderAdminPage();
     showToast('Admin Access Granted via Supabase!', 'success');
   } else {
@@ -4297,6 +4980,7 @@ function showResult(r, res) {
   if (r.passed) {
     verdict.className = 'result-verdict pass';
     verdict.innerHTML = `✓ You PASSED! Your net speed of <strong>${speedVal} ${speedLabel}</strong> meets the required ${APP.test.requiredSpeed} ${speedLabel}.`;
+    setTimeout(() => { if (window.launchConfetti) window.launchConfetti(); }, 400);
   } else {
     verdict.className = 'result-verdict fail';
     verdict.innerHTML = `✗ Not Passed. Your net speed of <strong>${speedVal} ${speedLabel}</strong> is below the required ${APP.test.requiredSpeed} ${speedLabel}. Keep practicing!`;
@@ -4643,6 +5327,7 @@ function renderMyResults() {
 // ════════════════════════════════════════════════════════════
 function adminLogout() {
   APP.adminLoggedIn = false;
+  renderNavUser();
   renderAdminPage();
 }
 
@@ -5457,20 +6142,24 @@ setInterval(() => {
 // ════════════════════════════════════════════════════════════
 //  TYPING BATTLE  (v2 — matchmaking + private rooms)
 // ════════════════════════════════════════════════════════════
-const BATTLES_COL  = 'battles';
-const QUEUE_COL    = 'battle_queue';
+const BATTLES_COL = 'battles';
+const QUEUE_COL   = 'battle_queue';
 
-let _battleUnsub      = null;
-let _queueUnsub       = null;
-let _currentBattleId  = null;
-let _battleInterval   = null;
-let _battleStartTime  = null;
-let _battleDuration   = 300; // seconds
-let _battleContent    = '';
-let _isMatchmaking    = false;
-let _myQueueDocId     = null;
+let _battleUnsub     = null;
+let _queueUnsub      = null;
+let _currentBattleId = null;
+let _battleInterval  = null;
+let _battleStartTime = null;
+let _battleDuration  = 300;
+let _battleContent   = '';
+let _isMatchmaking   = false;
+let _myQueueDocId    = null;
+let _countdownRunning = false;
+let _queueCountInterval = null;
 
-// ── Lobby UI helpers ──────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+//  LOBBY HELPERS
+// ─────────────────────────────────────────────────────────
 function renderBattlePage() {
   const sel = document.getElementById('battle-exam-select');
   if (sel && sel.options.length === 0) {
@@ -5501,42 +6190,8 @@ function battleAutoFillPassage() {
 
 function copyBattleCode() {
   const code = document.getElementById('battle-room-code-display').textContent.trim();
-  if (!code || code === '——') return;
+  if (!code || code === '\u2014\u2014') return;
   navigator.clipboard.writeText(code).then(() => showToast('Code copied: ' + code, 'success'));
-}
-
-// ── Quick Battle — Matchmaking queue ─────────────────────
-async function startQuickBattle() {
-  if (!requireUser(() => startQuickBattle())) return;
-  if (!window._db) { showToast('Cloud required for Quick Battle. Please try Private Room.', 'error'); return; }
-
-  _isMatchmaking = true;
-  document.getElementById('battle-mode-grid').style.display = 'none';
-  document.getElementById('private-room-box').classList.remove('active');
-  document.getElementById('matchmaking-box').classList.add('active');
-
-  // Pick a random lesson as the passage
-  const passage = _pickRandomPassage();
-
-  // Write myself to queue
-  const myEntry = {
-    userId: APP.user.id, name: APP.user.name,
-    joinedAt: Date.now(), passage,
-    matched: false, battleId: null
-  };
-
-  try {
-    const ref = await window._fbAddDoc(window._fbCollection(window._db, QUEUE_COL), myEntry);
-    _myQueueDocId = ref.id;
-  } catch(e) {
-    showToast('Failed to join queue: ' + e.message, 'error');
-    cancelMatchmaking();
-    return;
-  }
-
-  // Watch queue for a match
-  _watchQueue();
-  _pollQueueCount();
 }
 
 function _pickRandomPassage() {
@@ -5547,18 +6202,47 @@ function _pickRandomPassage() {
   return 'The Indian Railways is one of the largest railway networks in the world. It runs more than 13,000 passenger trains daily, carrying 23 million passengers. The history of Indian Railways dates to 1853 when the first passenger train ran between Bori Bunder and Thane. Today, Indian Railways employs more than 1.4 million people, making it one of the world largest employers.';
 }
 
-let _queueCountInterval = null;
+function generateBattleCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+// ─────────────────────────────────────────────────────────
+//  QUICK BATTLE — MATCHMAKING
+// ─────────────────────────────────────────────────────────
+async function startQuickBattle() {
+  if (!requireUser(() => startQuickBattle())) return;
+  if (!window._db) { showToast('Cloud required for Quick Battle. Please try Private Room.', 'error'); return; }
+
+  _isMatchmaking = true;
+  document.getElementById('battle-mode-grid').style.display = 'none';
+  document.getElementById('private-room-box').classList.remove('active');
+  document.getElementById('matchmaking-box').classList.add('active');
+
+  const passage = _pickRandomPassage();
+  const myEntry = { userId: APP.user.id, name: APP.user.name, joinedAt: Date.now(), passage, matched: false, battleId: null };
+
+  try {
+    const ref = await window._fbAddDoc(window._fbCollection(window._db, QUEUE_COL), myEntry);
+    _myQueueDocId = ref.id;
+  } catch(e) {
+    showToast('Failed to join queue: ' + e.message, 'error');
+    cancelMatchmaking();
+    return;
+  }
+
+  _watchQueue();
+  _pollQueueCount();
+}
+
 function _pollQueueCount() {
   if (_queueCountInterval) clearInterval(_queueCountInterval);
   _queueCountInterval = setInterval(async () => {
     if (!_isMatchmaking || !window._db) return;
     try {
-      const snap = await window._fbGetDocs(
-        window._fbQuery(window._fbCollection(window._db, QUEUE_COL),
-          window._fbWhere('matched', '==', false))
-      );
+      const snap = await window._fbGetDocs(window._fbQuery(window._fbCollection(window._db, QUEUE_COL), window._fbWhere('matched', '==', false)));
       const el = document.getElementById('mm-queue-count');
-      if (el) el.textContent = '🟢 Players in queue: ' + snap.size;
+      if (el) el.textContent = '\uD83D\uDFE2 Players in queue: ' + snap.size;
     } catch(e) {}
   }, 3000);
 }
@@ -5573,55 +6257,44 @@ function _watchQueue() {
     const data = snap.data();
 
     if (data.matched && data.battleId) {
-      // I was matched — join the battle
       _isMatchmaking = false;
       _stopQueuePolling();
-      showToast('Opponent found! Starting battle…', 'success');
-      const battleSnap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, data.battleId));
-      if (battleSnap.exists()) {
-        const battle = battleSnap.data();
-        // Add me as player 2
-        const update = {};
-        update[`players.${APP.user.id}`] = { name: APP.user.name, progress: 0, wpm: 0, acc: 100, ready: true, typed: '' };
-        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, data.battleId), update, { merge: true });
-        _enterBattleArena({ ...battle, players: { ...battle.players, [APP.user.id]: { name: APP.user.name, progress: 0, wpm: 0, acc: 100, ready: true, typed: '' } } }, data.battleId);
-        // Trigger countdown on both sides
-        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, data.battleId), { status: 'countdown', countdownAt: Date.now() }, { merge: true });
-      }
+      showToast('Opponent found! Starting battle\u2026', 'success');
+      try {
+        const battleSnap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, data.battleId));
+        if (battleSnap.exists()) {
+          const battle = battleSnap.data();
+          const update = {};
+          update[`players.${APP.user.id}`] = { name: APP.user.name, progress: 0, wpm: 0, acc: 100, ready: true, typed: '' };
+          await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, data.battleId), update, { merge: true });
+          await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, data.battleId), { status: 'countdown', countdownAt: Date.now() }, { merge: true });
+          const fresh = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, data.battleId));
+          _enterBattleArena(fresh.data(), data.battleId);
+        }
+      } catch(e) { showToast('Error joining matched battle: ' + e.message, 'error'); }
       return;
     }
 
-    // I'm still waiting — try to match with someone else in queue
+    // Try to match with someone else
     try {
-      const now = Date.now();
-      const qSnap = await window._fbGetDocs(
-        window._fbQuery(window._fbCollection(window._db, QUEUE_COL),
-          window._fbWhere('matched', '==', false))
-      );
+      const qSnap = await window._fbGetDocs(window._fbQuery(window._fbCollection(window._db, QUEUE_COL), window._fbWhere('matched', '==', false)));
       const others = qSnap.docs.filter(d => d.id !== _myQueueDocId && d.data().userId !== APP.user.id);
       if (others.length > 0) {
-        // Pick oldest unmatched opponent
         others.sort((a, b) => a.data().joinedAt - b.data().joinedAt);
         const oppDoc = others[0];
         const opp = oppDoc.data();
-
         const code = generateBattleCode();
+        const now = Date.now();
         const passage = data.passage || opp.passage || _pickRandomPassage();
         const battle = {
-          code, type: 'quick',
-          content: passage,
-          duration: 300,
-          createdAt: now,
-          status: 'countdown',
-          countdownAt: now,
+          code, type: 'quick', content: passage, duration: 300,
+          createdAt: now, status: 'countdown', countdownAt: now,
           players: {
             [APP.user.id]: { name: APP.user.name, progress: 0, wpm: 0, acc: 100, ready: true, typed: '' },
-            [opp.userId]: { name: opp.name, progress: 0, wpm: 0, acc: 100, ready: true, typed: '' }
+            [opp.userId]:  { name: opp.name,      progress: 0, wpm: 0, acc: 100, ready: true, typed: '' }
           }
         };
-
         await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), battle);
-        // Mark both queue entries as matched
         await window._fbSetDoc(myRef, { matched: true, battleId: code }, { merge: true });
         await window._fbSetDoc(window._fbDoc(window._db, QUEUE_COL, oppDoc.id), { matched: true, battleId: code }, { merge: true });
         _isMatchmaking = false;
@@ -5649,7 +6322,9 @@ async function cancelMatchmaking() {
   showToast('Matchmaking cancelled', 'info');
 }
 
-// ── Private Room ──────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+//  PRIVATE ROOM
+// ─────────────────────────────────────────────────────────
 async function createBattleRoom() {
   if (!requireUser(() => createBattleRoom())) return;
   if (!window._db) { showToast('Cloud connection required for battles between devices.', 'error'); return; }
@@ -5708,13 +6383,18 @@ async function joinBattleRoom() {
   }
 }
 
-// ── Arena ─────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+//  ARENA
+// ─────────────────────────────────────────────────────────
 function _enterBattleArena(battle, code) {
-  _currentBattleId = code;
-  _battleContent   = battle.content || '';
-  _battleDuration  = battle.duration || 300;
+  // Reset all state
+  _currentBattleId  = code;
+  _battleContent    = battle.content || '';
+  _battleDuration   = battle.duration || 300;
+  _countdownRunning = false;
+  if (_battleInterval) { clearInterval(_battleInterval); _battleInterval = null; }
 
-  // Hide lobby, show arena
+  // Show arena, hide lobby
   document.getElementById('battle-mode-grid').style.display = 'none';
   document.getElementById('matchmaking-box').classList.remove('active');
   document.getElementById('private-room-box').classList.remove('active');
@@ -5725,29 +6405,32 @@ function _enterBattleArena(battle, code) {
   document.getElementById('battle-room-code-display').textContent = code;
   document.getElementById('battle-my-name').textContent = APP.user.name;
 
-  // Render passage
   renderBattlePassage('', _battleContent);
 
-  // Reset typing box
   const box = document.getElementById('battle-typing-box');
   box.value = ''; box.disabled = true;
-  document.getElementById('battle-ready-btn').style.display = '';
-  document.getElementById('battle-ready-btn').textContent = '✓ I\'m Ready!';
-  document.getElementById('battle-ready-btn').disabled = false;
 
-  // Timer bar reset
+  const readyBtn = document.getElementById('battle-ready-btn');
+  readyBtn.style.display = '';
+  readyBtn.textContent = '\u2713 I\'m Ready!';
+  readyBtn.disabled = false;
+
   document.getElementById('battle-timer-bar').style.width = '100%';
   document.getElementById('battle-timer-display').textContent = _formatTime(_battleDuration);
 
   updateBattleUI(battle);
-  subscribeToBattle(code);
+  _subscribeToBattle(code);
 }
 
 function showBattleArena(battle, code) { _enterBattleArena(battle, code); }
 
-function subscribeToBattle(code) {
-  if (_battleUnsub) _battleUnsub();
+// ─────────────────────────────────────────────────────────
+//  REAL-TIME SUBSCRIPTION
+// ─────────────────────────────────────────────────────────
+function _subscribeToBattle(code) {
+  if (_battleUnsub) { _battleUnsub(); _battleUnsub = null; }
   if (!window._db) return;
+
   const ref = window._fbDoc(window._db, BATTLES_COL, code);
   _battleUnsub = window._fbOnSnapshot(ref, (snap) => {
     if (!snap.exists()) return;
@@ -5757,80 +6440,72 @@ function subscribeToBattle(code) {
     if (battle.status === 'countdown' && !_countdownRunning) {
       _startCountdown(battle);
     }
-  }, (err) => { console.warn('Battle snapshot error:', err); });
+  }, (err) => console.warn('Battle snapshot error:', err));
 }
 
-// ── Status / UI update ────────────────────────────────────
-let _countdownRunning = false;
+// Alias so old code still works
+function subscribeToBattle(code) { _subscribeToBattle(code); }
 
-function updateBattleUI(battle) {
-  const players    = battle.players || {};
-  const myData     = players[APP.user.id];
-  const oppEntry   = Object.entries(players).find(([id]) => id !== APP.user.id);
-  const oppData    = oppEntry ? oppEntry[1] : null;
-  const playerCount = Object.keys(players).length;
-  const pill       = document.getElementById('battle-status-pill');
-  const statusEl   = document.getElementById('battle-room-status');
+// ─────────────────────────────────────────────────────────
+//  READY BUTTON
+// ─────────────────────────────────────────────────────────
+async function setBattleReady() {
+  if (!_currentBattleId || !window._db) return;
+  const code = _currentBattleId;
 
-  // Status pill
-  if (battle.status === 'waiting') {
-    pill.className = 'battle-status-pill pill-waiting';
-    pill.textContent = playerCount < 2 ? '⏳ Waiting for opponent…' : '✅ Opponent joined!';
-    statusEl.textContent = playerCount < 2
-      ? 'Share the code above with your friend to join.'
-      : '✅ Opponent joined! Click "I\'m Ready!" when ready.';
-  } else if (battle.status === 'countdown') {
-    pill.className = 'battle-status-pill pill-countdown';
-    pill.textContent = '🚀 Starting…';
-    statusEl.textContent = 'Battle starting! Get ready…';
-  } else if (battle.status === 'live') {
-    pill.className = 'battle-status-pill pill-live';
-    pill.textContent = '🔴 LIVE';
-    statusEl.textContent = '🔴 Battle in progress! Type as fast as you can!';
-    document.getElementById('battle-ready-btn').style.display = 'none';
-    const box = document.getElementById('battle-typing-box');
-    if (box.disabled) { box.disabled = false; box.focus(); }
-    if (!_battleInterval) _startBattleTracking(battle);
-  } else if (battle.status === 'ended') {
-    pill.className = 'battle-status-pill pill-ended';
-    pill.textContent = '🏆 Ended';
-    statusEl.textContent = '🏆 Battle has ended.';
-    if (_battleInterval) { clearInterval(_battleInterval); _battleInterval = null; }
-    document.getElementById('battle-typing-box').disabled = true;
-    _showBattleResult(battle);
+  const readyBtn = document.getElementById('battle-ready-btn');
+  readyBtn.textContent = '\u2713 Ready! Waiting\u2026';
+  readyBtn.disabled = true;
+
+  try {
+    // Write own ready flag
+    const update = {};
+    update[`players.${APP.user.id}.ready`] = true;
+    await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), update, { merge: true });
+    showToast('You\'re ready! Waiting for opponent\u2026', 'info');
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+    readyBtn.textContent = '\u2713 I\'m Ready!';
+    readyBtn.disabled = false;
+    return;
   }
 
-  // My stats
-  if (myData) {
-    const pct = Math.round(myData.progress || 0);
-    document.getElementById('battle-my-wpm').textContent = myData.wpm || 0;
-    document.getElementById('battle-my-acc').textContent = 'WPM · ' + (myData.acc || 100) + '% acc';
-    document.getElementById('battle-my-bar').style.width  = pct + '%';
-    document.getElementById('battle-my-pct').textContent  = pct + '%';
-  }
-
-  // Opponent stats
-  if (oppData) {
-    const oppPct = Math.round(oppData.progress || 0);
-    document.getElementById('battle-opp-name').textContent    = oppData.name || 'Opponent';
-    document.getElementById('battle-opp-wpm').textContent     = oppData.wpm || 0;
-    document.getElementById('battle-opp-acc').textContent     = 'WPM · ' + (oppData.acc || 100) + '% acc';
-    document.getElementById('battle-opp-bar').style.width     = oppPct + '%';
-    document.getElementById('battle-opp-pct').textContent     = oppPct + '%';
-  } else {
-    document.getElementById('battle-opp-name').textContent = 'Waiting…';
-  }
+  // Poll until both ready or timeout (10s), then trigger countdown
+  // This is robust regardless of snapshot delivery timing
+  const deadline = Date.now() + 10000;
+  const poll = setInterval(async () => {
+    if (!_currentBattleId || _currentBattleId !== code) { clearInterval(poll); return; }
+    try {
+      const snap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, code));
+      if (!snap.exists()) { clearInterval(poll); return; }
+      const battle = snap.data();
+      if (battle.status !== 'waiting') { clearInterval(poll); return; } // already moved on
+      const players = battle.players || {};
+      const allReady = Object.keys(players).length >= 2 && Object.values(players).every(p => p.ready);
+      if (allReady) {
+        clearInterval(poll);
+        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code),
+          { status: 'countdown', countdownAt: Date.now() }, { merge: true });
+      } else if (Date.now() > deadline) {
+        clearInterval(poll);
+      }
+    } catch(e) { clearInterval(poll); }
+  }, 800);
 }
 
-// ── Countdown (3-2-1 overlay) ─────────────────────────────
+// ─────────────────────────────────────────────────────────
+//  COUNTDOWN  3-2-1
+// ─────────────────────────────────────────────────────────
 function _startCountdown(battle) {
   if (_countdownRunning) return;
   _countdownRunning = true;
+
   const overlay = document.getElementById('battle-countdown-overlay');
   const numEl   = document.getElementById('battle-countdown-num');
   overlay.classList.add('active');
+  numEl.textContent = '3';
+
   let n = 3;
-  numEl.textContent = n;
   const iv = setInterval(async () => {
     n--;
     if (n > 0) {
@@ -5842,7 +6517,6 @@ function _startCountdown(battle) {
       clearInterval(iv);
       overlay.classList.remove('active');
       _countdownRunning = false;
-      // Trigger live
       if (window._db && _currentBattleId) {
         try {
           await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, _currentBattleId),
@@ -5853,37 +6527,42 @@ function _startCountdown(battle) {
   }, 1000);
 }
 
-// ── Timer helpers ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+//  TIMER HELPERS
+// ─────────────────────────────────────────────────────────
 function _formatTime(secs) {
   const m = Math.floor(secs / 60).toString().padStart(2, '0');
   const s = (secs % 60).toString().padStart(2, '0');
   return m + ':' + s;
 }
 
-// ── Tracking interval ─────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+//  BATTLE TRACKING  (live typing stats)
+// ─────────────────────────────────────────────────────────
 function _startBattleTracking(battle) {
   _battleStartTime = Date.now();
   const totalDur = battle.duration || _battleDuration;
 
   _battleInterval = setInterval(async () => {
     if (!_currentBattleId) { clearInterval(_battleInterval); _battleInterval = null; return; }
-    const typed   = document.getElementById('battle-typing-box').value;
-    const elapsed = Math.max(0.01, (Date.now() - _battleStartTime) / 1000);
-    const remaining = Math.max(0, totalDur - Math.floor(elapsed));
-    const wpm     = Math.round((typed.length / 5) / (elapsed / 60));
-    const content = _battleContent || battle.content || '';
-    const progress = content ? Math.min(100, Math.round(typed.length / content.length * 100)) : 0;
 
-    // Accuracy
+    const typed     = document.getElementById('battle-typing-box').value;
+    const elapsed   = (Date.now() - _battleStartTime) / 60000;
+    const words     = typed.trim().split(/\s+/).filter(Boolean).length;
+    const wpm       = elapsed > 0 ? Math.round(words / elapsed) : 0;
+    const content   = _battleContent;
+    const remaining = Math.max(0, totalDur - Math.floor((Date.now() - _battleStartTime) / 1000));
+    const progress  = content ? Math.min(100, Math.round(typed.length / content.length * 100)) : 0;
+
     let correct = 0;
     for (let i = 0; i < typed.length; i++) {
       if (i < content.length && typed[i] === content[i]) correct++;
     }
     const acc = typed.length ? Math.round((correct / typed.length) * 100) : 100;
 
-    // Timer bar
     document.getElementById('battle-timer-bar').style.width = ((remaining / totalDur) * 100) + '%';
     document.getElementById('battle-timer-display').textContent = _formatTime(remaining);
+
     if (remaining <= 0) {
       clearInterval(_battleInterval); _battleInterval = null;
       if (window._db) {
@@ -5894,12 +6573,12 @@ function _startBattleTracking(battle) {
     renderBattlePassage(typed, content);
 
     if (window._db) {
-      const update = {};
-      update[`players.${APP.user.id}.typed`]    = typed;
-      update[`players.${APP.user.id}.wpm`]      = wpm;
-      update[`players.${APP.user.id}.acc`]      = acc;
-      update[`players.${APP.user.id}.progress`] = progress;
-      try { await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, _currentBattleId), update, { merge: true }); } catch(e) {}
+      const upd = {};
+      upd[`players.${APP.user.id}.typed`]    = typed;
+      upd[`players.${APP.user.id}.wpm`]      = wpm;
+      upd[`players.${APP.user.id}.acc`]      = acc;
+      upd[`players.${APP.user.id}.progress`] = progress;
+      try { await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, _currentBattleId), upd, { merge: true }); } catch(e) {}
     }
 
     if (typed.length >= content.length && content.length > 0) {
@@ -5907,44 +6586,104 @@ function _startBattleTracking(battle) {
       if (window._db) {
         try { await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, _currentBattleId), { status: 'ended' }, { merge: true }); } catch(e) {}
       }
-      showToast('🏆 You finished the passage!', 'success');
+      showToast('\uD83C\uDFC6 You finished the passage!', 'success');
     }
   }, 800);
 }
 
-// ── Battle result modal ───────────────────────────────────
+// ─────────────────────────────────────────────────────────
+//  UI UPDATE
+// ─────────────────────────────────────────────────────────
+function updateBattleUI(battle) {
+  const players     = battle.players || {};
+  const myData      = players[APP.user.id];
+  const oppEntry    = Object.entries(players).find(([id]) => id !== APP.user.id);
+  const oppData     = oppEntry ? oppEntry[1] : null;
+  const playerCount = Object.keys(players).length;
+  const pill        = document.getElementById('battle-status-pill');
+  const statusEl    = document.getElementById('battle-room-status');
+
+  if (battle.status === 'waiting') {
+    pill.className   = 'battle-status-pill pill-waiting';
+    pill.textContent = playerCount < 2 ? '\u23F3 Waiting for opponent\u2026' : '\u2705 Opponent joined!';
+    statusEl.textContent = playerCount < 2
+      ? 'Share the code above with your friend to join.'
+      : '\u2705 Opponent joined! Click "I\'m Ready!" when ready.';
+  } else if (battle.status === 'countdown') {
+    pill.className   = 'battle-status-pill pill-countdown';
+    pill.textContent = '\uD83D\uDE80 Starting\u2026';
+    statusEl.textContent = 'Battle starting! Get ready\u2026';
+  } else if (battle.status === 'live') {
+    pill.className   = 'battle-status-pill pill-live';
+    pill.textContent = '\uD83D\uDD34 LIVE';
+    statusEl.textContent = '\uD83D\uDD34 Battle in progress! Type as fast as you can!';
+    document.getElementById('battle-ready-btn').style.display = 'none';
+    const box = document.getElementById('battle-typing-box');
+    if (box.disabled) { box.disabled = false; box.focus(); }
+    if (!_battleInterval) _startBattleTracking(battle);
+  } else if (battle.status === 'ended') {
+    pill.className   = 'battle-status-pill pill-ended';
+    pill.textContent = '\uD83C\uDFC6 Ended';
+    statusEl.textContent = '\uD83C\uDFC6 Battle has ended.';
+    if (_battleInterval) { clearInterval(_battleInterval); _battleInterval = null; }
+    document.getElementById('battle-typing-box').disabled = true;
+    _showBattleResult(battle);
+  }
+
+  if (myData) {
+    const pct = Math.round(myData.progress || 0);
+    document.getElementById('battle-my-wpm').textContent = myData.wpm || 0;
+    document.getElementById('battle-my-acc').textContent = 'WPM \u00B7 ' + (myData.acc || 100) + '% acc';
+    document.getElementById('battle-my-bar').style.width  = pct + '%';
+    document.getElementById('battle-my-pct').textContent  = pct + '%';
+  }
+
+  if (oppData) {
+    const oppPct = Math.round(oppData.progress || 0);
+    document.getElementById('battle-opp-name').textContent = oppData.name || 'Opponent';
+    document.getElementById('battle-opp-wpm').textContent  = oppData.wpm || 0;
+    document.getElementById('battle-opp-acc').textContent  = 'WPM \u00B7 ' + (oppData.acc || 100) + '% acc';
+    document.getElementById('battle-opp-bar').style.width  = oppPct + '%';
+    document.getElementById('battle-opp-pct').textContent  = oppPct + '%';
+  } else {
+    document.getElementById('battle-opp-name').textContent = 'Waiting\u2026';
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+//  BATTLE RESULT
+// ─────────────────────────────────────────────────────────
 function _showBattleResult(battle) {
   const players  = battle.players || {};
   const myData   = players[APP.user.id] || {};
   const oppEntry = Object.entries(players).find(([id]) => id !== APP.user.id);
   const oppData  = oppEntry ? oppEntry[1] : {};
 
-  const myWpm  = myData.wpm  || 0;
-  const oppWpm = oppData.wpm || 0;
-  const myAcc  = myData.acc  || 100;
-  const oppAcc = oppData.acc || 100;
-  const myProg = myData.progress || 0;
+  const myWpm   = myData.wpm  || 0;
+  const oppWpm  = oppData.wpm || 0;
+  const myAcc   = myData.acc  || 100;
+  const oppAcc  = oppData.acc || 100;
+  const myProg  = myData.progress  || 0;
   const oppProg = oppData.progress || 0;
 
   const iWon = myProg > oppProg || (myProg === oppProg && myWpm >= oppWpm);
 
-  document.getElementById('result-trophy').textContent   = iWon ? '🏆' : '💪';
-  document.getElementById('result-headline').textContent  = iWon ? 'You Win! 🎉' : 'You Lost…';
+  document.getElementById('result-trophy').textContent    = iWon ? '\uD83C\uDFC6' : '\uD83D\uDCAA';
+  document.getElementById('result-headline').textContent  = iWon ? 'You Win! \uD83C\uDF89' : 'You Lost\u2026';
   document.getElementById('result-sub').textContent       = iWon
-    ? `You outtyped ${oppData.name || 'opponent'} — great speed!`
+    ? `You outtyped ${oppData.name || 'opponent'} \u2014 great speed!`
     : `${oppData.name || 'Opponent'} was faster this time. Try again!`;
   document.getElementById('res-my-wpm').textContent  = myWpm;
-  document.getElementById('res-opp-wpm').textContent = oppWpm || '—';
+  document.getElementById('res-opp-wpm').textContent = oppWpm || '\u2014';
   document.getElementById('res-my-acc').textContent  = myAcc + '%';
-  document.getElementById('res-opp-acc').textContent = (oppWpm ? oppAcc + '%' : '—');
+  document.getElementById('res-opp-acc').textContent = (oppWpm ? oppAcc + '%' : '\u2014');
 
-  // Crown on winning card
   const meCard  = document.getElementById('bpc-me');
   const oppCard = document.getElementById('bpc-opp');
   meCard.classList.toggle('winner', iWon);
   oppCard.classList.toggle('winner', !iWon && !!oppWpm);
-  if (iWon) { meCard.innerHTML += '<div class="winner-crown">👑</div>'; }
-  else if (oppWpm) { oppCard.innerHTML += '<div class="winner-crown">👑</div>'; }
+  if (iWon) { meCard.innerHTML += '<div class="winner-crown">\uD83D\uDC51</div>'; }
+  else if (oppWpm) { oppCard.innerHTML += '<div class="winner-crown">\uD83D\uDC51</div>'; }
 
   setTimeout(() => {
     document.getElementById('battle-result-modal').classList.add('active');
@@ -5956,33 +6695,13 @@ function closeBattleResult() {
   leaveBattleRoom();
 }
 
-// ── Ready button (private rooms) ──────────────────────────
-async function setBattleReady() {
-  if (!_currentBattleId || !window._db) return;
-  const code = _currentBattleId;
-  try {
-    const update = {};
-    update[`players.${APP.user.id}.ready`] = true;
-    await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code), update, { merge: true });
-    const snap = await window._fbGetDoc(window._fbDoc(window._db, BATTLES_COL, code));
-    if (snap.exists()) {
-      const battle = snap.data();
-      const players = battle.players || {};
-      const allReady = Object.values(players).every(p => p.ready);
-      if (allReady && Object.keys(players).length >= 2) {
-        await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, code),
-          { status: 'countdown', countdownAt: Date.now() }, { merge: true });
-        showToast('Both ready — starting countdown!', 'success');
-      } else {
-        showToast('You\'re ready! Waiting for opponent…', 'info');
-      }
-    }
-  } catch(e) { showToast('Error: ' + e.message, 'error'); }
-  document.getElementById('battle-ready-btn').textContent = '✓ Ready! Waiting…';
-  document.getElementById('battle-ready-btn').disabled = true;
-}
+// ─────────────────────────────────────────────────────────
+//  READY BUTTON (private rooms) — handled by setBattleReady above
+// ─────────────────────────────────────────────────────────
 
-// ── Leave room ────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+//  LEAVE ROOM
+// ─────────────────────────────────────────────────────────
 async function leaveBattleRoom() {
   if (_battleUnsub)  { _battleUnsub();  _battleUnsub  = null; }
   if (_battleInterval) { clearInterval(_battleInterval); _battleInterval = null; }
@@ -5991,31 +6710,30 @@ async function leaveBattleRoom() {
   document.getElementById('battle-countdown-overlay').classList.remove('active');
   document.getElementById('battle-result-modal').classList.remove('active');
 
-  // Mark ended in Firestore
   if (_currentBattleId && window._db) {
     try { await window._fbSetDoc(window._fbDoc(window._db, BATTLES_COL, _currentBattleId), { status: 'ended' }, { merge: true }); } catch(e) {}
   }
   _currentBattleId = null;
 
-  // Reset arena
   const arena = document.getElementById('battle-arena');
   arena.classList.remove('active'); arena.style.display = 'none';
   document.getElementById('battle-typing-box').value = '';
   document.getElementById('battle-typing-box').disabled = true;
   document.getElementById('battle-ready-btn').style.display = '';
-  document.getElementById('battle-ready-btn').textContent = '✓ I\'m Ready!';
+  document.getElementById('battle-ready-btn').textContent = '\u2713 I\'m Ready!';
   document.getElementById('battle-ready-btn').disabled = false;
   document.getElementById('battle-mode-grid').style.display = '';
   document.getElementById('bpc-me').classList.remove('winner');
   document.getElementById('bpc-opp').classList.remove('winner');
-  // Remove crowns
   document.querySelectorAll('.winner-crown').forEach(el => el.remove());
 
   _isMatchmaking = false;
   showToast('Left battle room', 'info');
 }
 
-// ── Passage rendering ─────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+//  PASSAGE RENDERING
+// ─────────────────────────────────────────────────────────
 function renderBattlePassage(typed, passage) {
   const el = document.getElementById('battle-passage-display');
   if (!el || !passage) return;
@@ -6033,12 +6751,17 @@ function renderBattlePassage(typed, passage) {
     }
   }
   el.innerHTML = html;
-  // Auto-scroll to current char
   const cur = el.querySelector('.char.current');
   if (cur) cur.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
-function handleBattleInput(e) {}
+function handleBattleInput(e) {
+  const box = document.getElementById('battle-typing-box');
+  if (!box || !_currentBattleId) return;
+  const typed = box.value;
+  const passage = _battlePassage || '';
+  renderBattlePassage(typed, passage);
+}
 
 function handleBattleKeydown(e) {
   if ((e.ctrlKey || e.metaKey) && ['c','v','x','a'].includes(e.key.toLowerCase())) {
@@ -6046,15 +6769,173 @@ function handleBattleKeydown(e) {
   }
 }
 
-function generateBattleCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+// ═════════════════════════════════════════════════════════════
+//  PROFESSIONAL ENHANCEMENTS
+// ═════════════════════════════════════════════════════════════
+
+// ── Page Loader ──
+function dismissLoader() {
+  const loader = document.getElementById('page-loader');
+  if (loader) {
+    setTimeout(() => {
+      loader.classList.add('fade-out');
+      setTimeout(() => loader.remove(), 600);
+    }, 1600);
+  }
+}
+// Hard fallback: if loader is still present after 6s (e.g. Firebase timed out), force remove it
+setTimeout(function() {
+  const loader = document.getElementById('page-loader');
+  if (loader) { loader.classList.add('fade-out'); setTimeout(() => { try { loader.remove(); } catch(e) {} }, 600); }
+}, 6000);
+window.addEventListener('DOMContentLoaded', dismissLoader);
+
+// ── Mobile Nav ──
+function toggleMobileNav() {
+  const drawer = document.getElementById('mobile-nav-drawer');
+  const hamburger = document.getElementById('nav-hamburger');
+  const isOpen = drawer.classList.contains('open');
+  if (isOpen) {
+    drawer.classList.remove('open');
+    hamburger.classList.remove('open');
+  } else {
+    drawer.classList.add('open');
+    hamburger.classList.add('open');
+  }
+}
+function closeMobileNav() {
+  document.getElementById('mobile-nav-drawer').classList.remove('open');
+  document.getElementById('nav-hamburger').classList.remove('open');
+}
+// Close mobile nav when clicking outside
+document.addEventListener('click', function(e) {
+  const drawer = document.getElementById('mobile-nav-drawer');
+  const hamburger = document.getElementById('nav-hamburger');
+  if (drawer && !drawer.contains(e.target) && hamburger && !hamburger.contains(e.target)) {
+    drawer.classList.remove('open');
+    hamburger.classList.remove('open');
+  }
+});
+
+// ── Scroll Reveal ──
+function initScrollReveal() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 }
 
-// ════════════════════════════════════════════════════════════
-//  BOOT
-// ════════════════════════════════════════════════════════════
+// ── Hero Particles ──
+function initHeroParticles() {
+  const container = document.getElementById('hero-particles');
+  if (!container) return;
+  const count = 18;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'hero-particle';
+    const size = Math.random() * 4 + 2;
+    const delay = Math.random() * 8;
+    const duration = Math.random() * 8 + 6;
+    const left = Math.random() * 100;
+    p.style.cssText = `width:${size}px;height:${size}px;left:${left}%;bottom:-10%;animation-delay:${delay}s;animation-duration:${duration}s;opacity:0.4;`;
+    container.appendChild(p);
+  }
+}
+
+// ── Nav Scroll Progress ──
+function initNavProgress() {
+  const bar = document.getElementById('nav-progress');
+  if (!bar) return;
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? scrollTop / docHeight : 0;
+    bar.style.transform = `scaleX(${pct})`;
+  }, { passive: true });
+}
+
+// ── Animated Counter for hero stats — uses existing animateCounter(id, target) above ──
+// (no duplicate needed — the original handles hero stat counters)
+
+// ── Confetti for Test Pass ──
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  if (!canvas) return;
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const colors = ['#d4a843', '#f0c96a', '#3b7af8', '#22c55e', '#8b5cf6', '#f97316'];
+  const pieces = Array.from({ length: 80 }, () => ({
+    x: Math.random() * canvas.width,
+    y: -10 - Math.random() * 200,
+    w: Math.random() * 10 + 4,
+    h: Math.random() * 6 + 3,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    vx: (Math.random() - 0.5) * 3,
+    vy: Math.random() * 4 + 2,
+    angle: Math.random() * 360,
+    spin: (Math.random() - 0.5) * 6,
+    alpha: 1,
+  }));
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.angle += p.spin;
+      if (frame > 120) p.alpha -= 0.012;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.alpha);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    if (frame < 200) requestAnimationFrame(draw);
+    else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = 'none'; }
+  }
+  requestAnimationFrame(draw);
+}
+// expose globally so result page can call it
+window.launchConfetti = launchConfetti;
+
+// ── Init all enhancements after DOM ready ──
+window.addEventListener('DOMContentLoaded', function() {
+  initHeroParticles();
+  initNavProgress();
+  initScrollReveal();
+
+  // Patch navigate after it's defined by the main app boot
+  setTimeout(function() {
+    (function() {
+      const _orig = window.navigate;
+      if (_orig && !_orig.__patched) {
+        window.navigate = function(page) {
+          _orig(page);
+          document.querySelectorAll('.mobile-nav-link').forEach(l => {
+            l.classList.toggle('active', l.dataset.nav === page);
+          });
+          setTimeout(initScrollReveal, 120);
+        };
+        window.navigate.__patched = true;
+      }
+    })();
+  }, 500);
+});
+
+
+
 window.addEventListener('DOMContentLoaded', () => {
+  // ── Set footer copyright year ──
+  const fy = document.getElementById('footer-year');
+  if (fy) fy.textContent = new Date().getFullYear();
+
   // ── Restore admin lockout from session ──
   try {
     const storedLockout = sessionStorage.getItem('__typssc_lockout');
